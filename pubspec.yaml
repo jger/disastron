@@ -258,6 +258,7 @@ flutter_launcher_icons:
   android: "launcher_icon"
   ios: false
   min_sdk_android: 21 # android min sdk min:16, default 21
+  background_color: "#101010"
 #    web:
 #      generate: true
 #      image_path: "path/to/image.png"
