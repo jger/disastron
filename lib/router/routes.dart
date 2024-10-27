@@ -37,6 +37,21 @@ class AppRouter extends RootStackRouter {
           path: '/',
           guards: [authGuard],
         ),
+    AutoRoute(
+      page: DashboardRoute.page,
+      path: '/dashboard',
+      guards: [authGuard],
+    ),
+    AutoRoute(
+      page: MessagesRoute.page,
+      path: '/messages',
+      guards: [authGuard],
+    ),
+    AutoRoute(
+      page: TodosRoute.page,
+      path: '/todos',
+      guards: [authGuard],
+    ),
         AutoRoute(
           page: LoginRoute.page,
           path: '/login',

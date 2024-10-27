@@ -17,56 +17,45 @@
 
 library;
 
+import 'package:disastron/shared/widgets/app_app_bar.dart';
 import 'package:disastron/shared/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 
 class AppScaffold extends StatefulWidget {
-  const AppScaffold({required this.body, super.key});
+  const AppScaffold({
+    required this.body,
+    required this.title,
+    this.bottomNavigationBar,
+    this.showAppBar = true,
+    this.floatingActionButton,
+    super.key,
+  });
 
   final Widget body;
+  final String title;
+  final Widget? bottomNavigationBar;
+  final bool showAppBar;
+  final Widget? floatingActionButton;
 
   @override
   State<AppScaffold> createState() => _AppScaffoldState();
 }
 
 class _AppScaffoldState extends State<AppScaffold> {
-  int currentPageIndex = 0;
-
   @override
   Widget build(BuildContext context) {
+    // final User? user = FirebaseAuth.instance.currentUser;
+    // if (user == null) {
+    //   log('No user', name: '🏗️ AppScaffold');
+    //   return const AppIndicator();
+    // }
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-      ),
-      drawer: const AppDrawer(),
+      appBar: widget.showAppBar ? AppAppBar() : null,
+      // drawer: const AppDrawer(),
       body: widget.body,
-      bottomNavigationBar: NavigationBar(
-        onDestinationSelected: (int index) {
-          setState(() {
-            currentPageIndex = index;
-          });
-        },
-        indicatorColor: Colors.amber,
-        selectedIndex: currentPageIndex,
-        destinations: const <Widget>[
-          NavigationDestination(
-            selectedIcon: Icon(Icons.home),
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Badge(child: Icon(Icons.notifications_sharp)),
-            label: 'Notifications',
-          ),
-          NavigationDestination(
-            icon: Badge(
-              label: Text('2'),
-              child: Icon(Icons.messenger_sharp),
-            ),
-            label: 'Messages',
-          ),
-        ],
-      ),
+      bottomNavigationBar: widget.bottomNavigationBar,
+      floatingActionButton: widget.floatingActionButton,
+      drawer: const AppDrawer(),
     );
   }
 }

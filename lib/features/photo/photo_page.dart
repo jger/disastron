@@ -20,8 +20,7 @@ library;
 import 'dart:developer';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:disastron/features/get_photo/providers/image_picker_provider.dart';
-import 'package:disastron/shared/widgets/app_drawer.dart';
+import 'package:disastron/features/photo/providers/image_picker_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -35,12 +34,15 @@ class GetPhotoPage extends ConsumerWidget {
     final ImagePicker imagePicker = ref.watch(imagePickerProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Take a photo or select one from the gallery'),
+        title: const Text('Photo'),
       ),
-      drawer: const AppDrawer(),
       body: Center(
         child: Column(
           children: [
+            const Text('Take a photo or select one from the gallery'),
+
+            const SizedBox(height: 20),
+
             // Take a photo from the gallery
             ElevatedButton(
               onPressed: () async {
