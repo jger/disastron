@@ -41,7 +41,7 @@ class ChatMessageWidget extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    return message.isUser ? const Icon(Icons.person) : _circled('assets/images/gemma.png');
+    return message.isUser ? const Icon(Icons.person) : _circled('assets/images/icon.png');
   }
 
   Widget _circled(String image) =>

@@ -52,13 +52,13 @@ class ChatScreenState extends State<ChatScreen> {
       ),
       body: Stack(
         children: [
-          Center(
-            child: Image.asset(
-              'assets/images/background.png',
-              width: 200,
-              height: 200,
-            ),
-          ),
+          // Center(
+          //   child: Image.asset(
+          //     'assets/images/background.png',
+          //     width: 200,
+          //     height: 200,
+          //   ),
+          // ),
           if (_isModelInitialized)
             ChatListWidget(
               gemmaHandler: (message) {
