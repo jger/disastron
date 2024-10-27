@@ -18,6 +18,7 @@
 library;
 
 import 'package:auto_route/auto_route.dart';
+import 'package:disastron/features/home/chat/widgets/chat_screen.dart';
 import 'package:flutter/material.dart';
 
 @RoutePage()
@@ -26,9 +27,17 @@ class MessagesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO(jge): implement build
-    return const Center(
-      child: Text('Messages'),
+    return MaterialApp(
+      title: 'Flutter Gemma Example',
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Colors.white),
+          bodyMedium: TextStyle(color: Colors.white),
+        ),
+      ),
+      themeMode: ThemeMode.dark,
+      home: const SafeArea(child: ChatScreen()),
     );
   }
 }

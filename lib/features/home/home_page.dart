@@ -18,8 +18,8 @@
 library;
 
 import 'package:auto_route/auto_route.dart';
+import 'package:disastron/features/home/chat/chat_page.dart';
 import 'package:disastron/features/home/dashboard/dashboard_page.dart';
-import 'package:disastron/features/home/messages/messages_page.dart';
 import 'package:disastron/features/home/todos/todos_page.dart';
 import 'package:disastron/shared/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';

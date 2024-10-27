@@ -44,7 +44,7 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(
       page: MessagesRoute.page,
-      path: '/messages',
+      path: '/chat',
       guards: [authGuard],
     ),
     AutoRoute(
