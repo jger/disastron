@@ -1,0 +1,9 @@
+<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" fill="#704F49"/>
+  <rect x='256' y='256' width='512' height='512' fill='#8C241280' />
+  <rect x='384' y='384' width='256' height='256' fill='#D81EDF66' />
+  <text x="50%" y="50%" font-family="Arial" font-size="200" font-weight="bold" fill="white" text-anchor="middle" alignment-baseline="middle">
+    <tspan x='50%' dy='0'>Disas</tspan>
+    <tspan x='50%' dy='0.8em'>tron</tspan>
+  </text>
+</svg>
