@@ -39,16 +39,9 @@ class ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0b2351),
+      backgroundColor: Theme.of(context).colorScheme.primary,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0b2351),
-        title: const Text(
-          'Flutter Gemma Example',
-          style: TextStyle(fontSize: 20),
-          softWrap: true,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 2,
-        ),
+        backgroundColor: Theme.of(context).colorScheme.primaryFixedDim,
       ),
       body: Stack(
         children: [

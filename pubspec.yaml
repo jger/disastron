@@ -40,6 +40,7 @@ dependencies:
   hooks_riverpod: ^3.0.0-dev.3
   image_picker: ^1.1.2
   melos: ^6.2.0
+  path_provider: ^2.1.4
   riverpod_annotation: ^3.0.0-dev.3
   shared_preferences: ^2.3.2
   svg_flutter: ^0.0.1
