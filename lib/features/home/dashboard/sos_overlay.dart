@@ -1,13 +1,19 @@
 import 'dart:async';
 
+import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:torch_light/torch_light.dart';
+import 'package:vibration/vibration.dart';
 
 const String _kBluetoothSosMessage =
     'Broadcasting SOS over Bluetooth needs device-specific protocols '
     '(e.g. Aurora-style open signaling). This build only uses flashlight, '
     'screen, tone, and vibration — Bluetooth transmit is not active yet.';
+
+const String _kSosAlarmAsset = 'assets/sounds/sos_alarm_loop.wav';
 
 /// Full-screen SOS: alternating screen flash + Morse SOS on torch + optional tone/haptics.
 Future<void> openSosOverlay(BuildContext context) {
@@ -29,6 +35,18 @@ class _SosOverlayPage extends StatefulWidget {
 
 class _SosOverlayPageState extends State<_SosOverlayPage> {
   static const int _unitMs = 160;
+  static const List<int> _kSosVibrationPattern = <int>[
+    0,
+    80,
+    50,
+    80,
+    50,
+    80,
+    50,
+    80,
+    300,
+  ];
+
   bool _surfaceLit = false;
   bool _torchReady = false;
   bool _running = true;
@@ -36,11 +54,99 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   bool _audioAlerts = true;
   bool _vibrationAlerts = true;
 
+  AudioPlayer? _alarmPlayer;
+  Timer? _hapticBurstTimer;
+
+  bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
   @override
   void initState() {
     super.initState();
     unawaited(_prepareTorch());
     unawaited(_runLoop());
+    unawaited(_bootstrapAlarmAndVibration());
+  }
+
+  Future<void> _bootstrapAlarmAndVibration() async {
+    await _ensureAlarmPlayer();
+    if (mounted && _running && _audioAlerts) {
+      unawaited(_playAlarmIfReady());
+    }
+    if (mounted && _running && _vibrationAlerts) {
+      await _startSosVibration();
+    }
+  }
+
+  Future<void> _ensureAlarmPlayer() async {
+    if (_alarmPlayer != null) {
+      return;
+    }
+    try {
+      if (!kIsWeb) {
+        final AudioSession session = await AudioSession.instance;
+        await session.configure(
+          const AudioSessionConfiguration(
+            avAudioSessionCategory: AVAudioSessionCategory.playback,
+            avAudioSessionMode: AVAudioSessionMode.defaultMode,
+            androidAudioAttributes: AndroidAudioAttributes(
+              contentType: AndroidAudioContentType.sonification,
+              usage: AndroidAudioUsage.alarm,
+            ),
+            androidAudioFocusGainType:
+                AndroidAudioFocusGainType.gainTransientMayDuck,
+          ),
+        );
+      }
+      final AudioPlayer player = AudioPlayer();
+      await player.setAsset(_kSosAlarmAsset);
+      await player.setLoopMode(LoopMode.one);
+      await player.setVolume(1);
+      if (!mounted) {
+        await player.dispose();
+        return;
+      }
+      _alarmPlayer = player;
+    } on Object {
+      await _alarmPlayer?.dispose();
+      _alarmPlayer = null;
+      if (mounted && _audioAlerts) {
+        unawaited(SystemSound.play(SystemSoundType.alert));
+      }
+    }
+  }
+
+  Future<void> _playAlarmIfReady() async {
+    if (!_audioAlerts || !_running || !mounted) {
+      return;
+    }
+    await _ensureAlarmPlayer();
+    final AudioPlayer? player = _alarmPlayer;
+    if (player == null) {
+      return;
+    }
+    try {
+      await player.seek(Duration.zero);
+      await player.play();
+    } on Object {
+      unawaited(SystemSound.play(SystemSoundType.alert));
+    }
+  }
+
+  Future<void> _pauseAlarm() async {
+    try {
+      await _alarmPlayer?.pause();
+    } on Object {
+      // ignore
+    }
+  }
+
+  Future<void> _stopAlarm() async {
+    try {
+      await _alarmPlayer?.stop();
+    } on Object {
+      // ignore
+    }
   }
 
   Future<void> _prepareTorch() async {
@@ -72,12 +178,6 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     }
     setState(() => _surfaceLit = on);
     await _setTorch(on);
-    if (on && _audioAlerts) {
-      unawaited(SystemSound.play(SystemSoundType.alert));
-    }
-    if (on && _vibrationAlerts) {
-      unawaited(HapticFeedback.mediumImpact());
-    }
   }
 
   Future<void> _dit() async {
@@ -123,8 +223,61 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     }
   }
 
+  Future<void> _startSosVibration() async {
+    if (!_vibrationAlerts || !mounted || !_running) {
+      return;
+    }
+    try {
+      final bool has = await Vibration.hasVibrator();
+      if (!has) {
+        _startHapticBurstTimer();
+        return;
+      }
+      final bool custom = await Vibration.hasCustomVibrationsSupport();
+      if (_isAndroid && custom) {
+        await Vibration.vibrate(pattern: _kSosVibrationPattern, repeat: 1);
+      } else {
+        _startHapticBurstTimer();
+      }
+    } on Object {
+      _startHapticBurstTimer();
+    }
+  }
+
+  void _startHapticBurstTimer() {
+    _hapticBurstTimer?.cancel();
+    _hapticBurstTimer = Timer.periodic(const Duration(milliseconds: 360), (_) {
+      if (!_running || !_vibrationAlerts || !mounted) {
+        return;
+      }
+      unawaited(_fireHapticBurst());
+    });
+  }
+
+  Future<void> _fireHapticBurst() async {
+    for (int i = 0; i < 5; i++) {
+      if (!_running || !_vibrationAlerts || !mounted) {
+        return;
+      }
+      await HapticFeedback.heavyImpact();
+      await Future<void>.delayed(const Duration(milliseconds: 36));
+    }
+  }
+
+  Future<void> _stopSosVibration() async {
+    _hapticBurstTimer?.cancel();
+    _hapticBurstTimer = null;
+    try {
+      await Vibration.cancel();
+    } on Object {
+      // ignore
+    }
+  }
+
   Future<void> _stop() async {
     _running = false;
+    await _stopSosVibration();
+    await _stopAlarm();
     await _pulseVisualAndTorch(false);
     await _setTorch(false);
     if (mounted) {
@@ -135,10 +288,10 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   String _sosModalitiesDescription() {
     final List<String> parts = <String>['Screen flash', 'torch Morse'];
     if (_audioAlerts) {
-      parts.add('alert tone');
+      parts.add('looping alarm tone');
     }
     if (_vibrationAlerts) {
-      parts.add('vibration');
+      parts.add('repeating vibration');
     }
     final String core = parts.join(' + ');
     final List<String> off = <String>[];
@@ -166,7 +319,15 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
 
   @override
   void dispose() {
+    _running = false;
+    _hapticBurstTimer?.cancel();
     unawaited(_setTorch(false));
+    unawaited(_stopSosVibration());
+    final AudioPlayer? player = _alarmPlayer;
+    _alarmPlayer = null;
+    if (player != null) {
+      unawaited(player.dispose());
+    }
     super.dispose();
   }
 
@@ -261,7 +422,14 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                       ),
                       SwitchListTile.adaptive(
                         value: _audioAlerts,
-                        onChanged: (bool v) => setState(() => _audioAlerts = v),
+                        onChanged: (bool v) {
+                          setState(() => _audioAlerts = v);
+                          if (v) {
+                            unawaited(_playAlarmIfReady());
+                          } else {
+                            unawaited(_pauseAlarm());
+                          }
+                        },
                         secondary: Icon(
                           Icons.volume_up_outlined,
                           color: Theme.of(context).colorScheme.primary,
@@ -272,8 +440,8 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                         ),
                         subtitle: Text(
                           _audioAlerts
-                              ? 'System tone with each flash (default)'
-                              : 'No system tone with flashes',
+                              ? 'Looping alarm tone (default)'
+                              : 'Alarm tone off',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
@@ -283,8 +451,14 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                       ),
                       SwitchListTile.adaptive(
                         value: _vibrationAlerts,
-                        onChanged: (bool v) =>
-                            setState(() => _vibrationAlerts = v),
+                        onChanged: (bool v) {
+                          setState(() => _vibrationAlerts = v);
+                          if (v) {
+                            unawaited(_startSosVibration());
+                          } else {
+                            unawaited(_stopSosVibration());
+                          }
+                        },
                         secondary: Icon(
                           Icons.vibration,
                           color: Theme.of(context).colorScheme.primary,
@@ -295,8 +469,8 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                         ),
                         subtitle: Text(
                           _vibrationAlerts
-                              ? 'Haptic pulse with each flash (default)'
-                              : 'No haptics',
+                              ? 'Repeating burst pattern (default)'
+                              : 'Vibration off',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),

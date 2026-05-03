@@ -52,3 +52,6 @@ app.*.map.json
 
 # Locally docs
 docs/
+
+# Binary model artifacts
+assets/model.bin
