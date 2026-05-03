@@ -1,7 +1,13 @@
+import 'dart:async';
+
 import 'package:disastron/features/home/model/huggingface_token_provider.dart';
+import 'package:disastron/features/home/model/model_install_prefs.dart';
 import 'package:disastron/features/home/model/predefined_models.dart'
     show modelFileTypeForUrl;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'local_gemma_model_provider.g.dart';
@@ -13,11 +19,15 @@ class LocalGemmaModelUi {
     required this.phase,
     this.progress = 0,
     this.errorMessage,
+    this.isGated403 = false,
+    this.gatedModelPageUrl,
   });
 
   final LocalGemmaPhase phase;
   final int progress;
   final String? errorMessage;
+  final bool isGated403;
+  final String? gatedModelPageUrl;
 
   bool get isReady => phase == LocalGemmaPhase.ready;
 }
@@ -26,18 +36,50 @@ ModelFileType modelFileTypeForPath(String path) {
   return modelFileTypeForUrl(Uri.file(path).toString());
 }
 
+String _basenameFromStored(String urlOrPath) {
+  final Uri uri =
+      urlOrPath.contains('://') ? Uri.parse(urlOrPath) : Uri.file(urlOrPath);
+  if (uri.pathSegments.isEmpty) {
+    return urlOrPath;
+  }
+  return uri.pathSegments.last;
+}
+
+String? _hfModelPageFromDownloadUrl(String url) {
+  final Uri? uri = Uri.tryParse(url);
+  if (uri == null) {
+    return null;
+  }
+  if (!uri.host.toLowerCase().contains('huggingface.co')) {
+    return null;
+  }
+  final List<String> segs = uri.pathSegments;
+  if (segs.length < 2) {
+    return null;
+  }
+  return 'https://huggingface.co/${segs[0]}/${segs[1]}';
+}
+
 @Riverpod(keepAlive: true)
 class LocalGemmaModel extends _$LocalGemmaModel {
+  final ModelInstallPrefs _installPrefs = ModelInstallPrefs();
+  bool _restoreInFlight = false;
+
   @override
   LocalGemmaModelUi build() {
+    final bool active = FlutterGemma.hasActiveModel();
+    if (!active && !kIsWeb) {
+      unawaited(_tryRestoreModel());
+    }
     return LocalGemmaModelUi(
-      phase: FlutterGemma.hasActiveModel()
-          ? LocalGemmaPhase.ready
-          : LocalGemmaPhase.notInstalled,
+      phase: active ? LocalGemmaPhase.ready : LocalGemmaPhase.notInstalled,
     );
   }
 
   void refreshFromEngine() {
+    if (state.phase == LocalGemmaPhase.installing) {
+      return;
+    }
     state = LocalGemmaModelUi(
       phase: FlutterGemma.hasActiveModel()
           ? LocalGemmaPhase.ready
@@ -45,19 +87,70 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     );
   }
 
+  Future<void> _tryRestoreModel() async {
+    if (kIsWeb) {
+      return;
+    }
+    if (FlutterGemma.hasActiveModel()) {
+      return;
+    }
+    if (_restoreInFlight) {
+      return;
+    }
+    _restoreInFlight = true;
+    try {
+      final ModelInstallRecord? record = await _installPrefs.read();
+      if (record == null) {
+        return;
+      }
+      final String filename = _basenameFromStored(record.urlOrPath);
+      final bool installed = await FlutterGemma.isModelInstalled(filename);
+      if (!installed) {
+        return;
+      }
+      final String dir = (await getApplicationDocumentsDirectory()).path;
+      final String localPath = p.join(dir, filename);
+      state = const LocalGemmaModelUi(phase: LocalGemmaPhase.installing);
+      try {
+        await FlutterGemma.installModel(
+          modelType: record.modelType,
+          fileType: record.fileType,
+        )
+            .fromFile(localPath)
+            .withProgress((int progress) {
+              state = LocalGemmaModelUi(
+                phase: LocalGemmaPhase.installing,
+                progress: progress,
+              );
+            })
+            .install();
+        state = const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
+      } on Object catch (e) {
+        state = LocalGemmaModelUi(
+          phase: LocalGemmaPhase.error,
+          errorMessage: e.toString(),
+        );
+      }
+    } finally {
+      _restoreInFlight = false;
+    }
+  }
+
   Future<void> installFromFile(String path) async {
     state = const LocalGemmaModelUi(phase: LocalGemmaPhase.installing);
     try {
       final ModelFileType fileType = modelFileTypeForPath(path);
+      const ModelType modelType = ModelType.gemmaIt;
       await FlutterGemma.installModel(
-        modelType: ModelType.gemmaIt,
+        modelType: modelType,
         fileType: fileType,
       )
           .fromFile(path)
-          .withProgress((int p) {
-            state = LocalGemmaModelUi(phase: LocalGemmaPhase.installing, progress: p);
+          .withProgress((int progress) {
+            state = LocalGemmaModelUi(phase: LocalGemmaPhase.installing, progress: progress);
           })
           .install();
+      await _installPrefs.save(urlOrPath: path, modelType: modelType, fileType: fileType);
       state = const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
     } on Object catch (e) {
       state = LocalGemmaModelUi(
@@ -87,15 +180,25 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         fileType: resolvedFileType,
       )
           .fromNetwork(url, token: effectiveToken)
-          .withProgress((int p) {
-            state = LocalGemmaModelUi(phase: LocalGemmaPhase.installing, progress: p);
+          .withProgress((int progress) {
+            state = LocalGemmaModelUi(phase: LocalGemmaPhase.installing, progress: progress);
           })
           .install();
+      await _installPrefs.save(
+        urlOrPath: url,
+        modelType: resolvedModelType,
+        fileType: resolvedFileType,
+      );
       state = const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
     } on Object catch (e) {
+      final String msg = e.toString();
+      final bool is403 =
+          msg.contains('403') || msg.toLowerCase().contains('forbidden');
       state = LocalGemmaModelUi(
         phase: LocalGemmaPhase.error,
-        errorMessage: e.toString(),
+        errorMessage: msg,
+        isGated403: is403,
+        gatedModelPageUrl: is403 ? _hfModelPageFromDownloadUrl(url) : null,
       );
     }
   }

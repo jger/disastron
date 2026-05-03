@@ -11,6 +11,38 @@ ModelFileType modelFileTypeForUrl(String url) {
   return ModelFileType.task;
 }
 
+/// Infer model family from URL when the UI does not ask (URL-only install tab).
+ModelType modelTypeForInferenceUrl(String url) {
+  final String trimmed = url.trim();
+  final Uri? parsed = Uri.tryParse(trimmed);
+  if (parsed != null && parsed.hasAuthority && parsed.pathSegments.length >= 2) {
+    for (final PredefinedInferenceModel m in kPredefinedInferenceModels) {
+      final Uri? presetUri = Uri.tryParse(m.url);
+      if (presetUri == null ||
+          presetUri.pathSegments.length < 2 ||
+          parsed.host != presetUri.host) {
+        continue;
+      }
+      if (parsed.pathSegments[0] == presetUri.pathSegments[0] &&
+          parsed.pathSegments[1] == presetUri.pathSegments[1]) {
+        return m.modelType;
+      }
+    }
+  }
+
+  final String lower = trimmed.toLowerCase();
+  if (lower.contains('qwen3') ||
+      lower.contains('qwen-3') ||
+      lower.contains('qwen_3') ||
+      lower.contains('qwen3.5')) {
+    return ModelType.qwen3;
+  }
+  if (lower.contains('qwen')) {
+    return ModelType.qwen;
+  }
+  return ModelType.gemmaIt;
+}
+
 /// Gemma-family installs may use a Hugging Face token for gated URLs.
 bool inferenceModelTypeUsesHuggingFaceToken(ModelType modelType) {
   return modelType == ModelType.gemmaIt ||

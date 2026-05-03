@@ -66,8 +66,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!mounted) {
       return;
     }
+    final String trimmedDisplay = result.displayText.trim();
+    final String assistantBody =
+        trimmedDisplay.isEmpty ? '(Checklist updated.)' : trimmedDisplay;
     setState(() {
-      _messages.add(Message.text(text: result.displayText));
+      _messages.add(Message.text(text: assistantBody));
       if (result.appliedCount > 0) {
         _messages.add(
           Message(

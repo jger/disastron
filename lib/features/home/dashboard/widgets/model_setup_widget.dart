@@ -11,6 +11,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 bool hasPersistedHfToken(AsyncValue<String?> tokenAsync) {
   return tokenAsync.maybeWhen(
@@ -42,7 +43,6 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
   late final TextEditingController _tokenController;
   late final TabController _installTabController;
   bool _showReplaceFlow = false;
-  ModelType _urlInstallModelType = ModelType.qwen;
 
   @override
   void initState() {
@@ -82,12 +82,6 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     if (!mounted) {
       return;
     }
-    if (!await _ensureHfTokenBeforeNetworkDownload()) {
-      return;
-    }
-    if (!mounted) {
-      return;
-    }
     if (!await confirmLargeDownloadIfNotLikelyUnmetered(context)) {
       return;
     }
@@ -97,7 +91,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     final ModelFileType fileType = modelFileTypeForUrl(url);
     await ref.read(localGemmaModelProvider.notifier).installFromNetwork(
           url,
-          modelType: _urlInstallModelType,
+          modelType: modelTypeForInferenceUrl(url),
           fileType: fileType,
         );
   }
@@ -206,8 +200,6 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           const AppearanceDropdown(),
           const SizedBox(height: 24),
         ],
-        Text('Offline model', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
         _body(context, ui, tokenAsync),
       ],
     );
@@ -259,6 +251,36 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           children: <Widget>[
             Text('Error', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
+            if (ui.isGated403) ...<Widget>[
+              Text(
+                'This model is gated on Hugging Face. Open the model page, '
+                'sign in, and accept the licence (Google terms), then retry.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              if (ui.gatedModelPageUrl != null) ...<Widget>[
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: () async {
+                    final Uri uri = Uri.parse(ui.gatedModelPageUrl!);
+                    final bool ok = await launchUrl(
+                      uri,
+                      mode: LaunchMode.externalApplication,
+                    );
+                    if (!context.mounted) {
+                      return;
+                    }
+                    if (!ok) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Could not open browser')),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.open_in_new),
+                  label: const Text('Open model page'),
+                ),
+              ],
+              const SizedBox(height: 12),
+            ],
             SelectableText(ui.errorMessage ?? 'Unknown error'),
             const SizedBox(height: 24),
             FilledButton(
@@ -420,7 +442,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               case 1:
                 return _importTabBody(context);
               default:
-                return _urlTabBody(context, tokenAsync);
+                return _urlTabBody(context);
             }
           },
         ),
@@ -577,10 +599,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     );
   }
 
-  Widget _urlTabBody(
-    BuildContext context,
-    AsyncValue<String?> tokenAsync,
-  ) {
+  Widget _urlTabBody(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -594,45 +613,6 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                   ),
             ),
             const SizedBox(height: 12),
-            Text(
-              'Model family for this URL',
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: <Widget>[
-                ChoiceChip(
-                  label: const Text('Qwen 2.5'),
-                  selected: _urlInstallModelType == ModelType.qwen,
-                  onSelected: (bool v) {
-                    if (v) {
-                      setState(() => _urlInstallModelType = ModelType.qwen);
-                    }
-                  },
-                ),
-                ChoiceChip(
-                  label: const Text('Qwen3'),
-                  selected: _urlInstallModelType == ModelType.qwen3,
-                  onSelected: (bool v) {
-                    if (v) {
-                      setState(() => _urlInstallModelType = ModelType.qwen3);
-                    }
-                  },
-                ),
-                ChoiceChip(
-                  label: const Text('Gemma'),
-                  selected: _urlInstallModelType == ModelType.gemmaIt,
-                  onSelected: (bool v) {
-                    if (v) {
-                      setState(() => _urlInstallModelType = ModelType.gemmaIt);
-                    }
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
             TextField(
               controller: _urlController,
               maxLines: 3,
@@ -641,13 +621,6 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                 hintText: 'https://…/model.task',
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Hugging Face token (required for this download)',
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
-            const SizedBox(height: 8),
-            _hfTokenFields(context, tokenAsync),
             const SizedBox(height: 12),
             FilledButton.icon(
               onPressed: _downloadFromUrl,
