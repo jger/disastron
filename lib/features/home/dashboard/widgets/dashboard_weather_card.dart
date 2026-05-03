@@ -177,7 +177,7 @@ class DashboardWeatherCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${loc.formatShortMonthDay(DateTime(2024, s.forecast!.month1to12, 1))}: '
+                    '${loc.formatShortMonthDay(DateTime(2024, s.forecast!.month1to12))}: '
                     'day ${s.forecast!.dayAvgC.toStringAsFixed(1)}°C, '
                     'night ${s.forecast!.nightAvgC.toStringAsFixed(1)}°C',
                     style: theme.textTheme.bodySmall,

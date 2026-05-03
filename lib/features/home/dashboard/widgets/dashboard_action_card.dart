@@ -28,21 +28,24 @@ class DashboardActionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               CircleAvatar(
-                radius: 26,
+                radius: 20,
                 backgroundColor: cs.primary.withValues(alpha: 0.15),
-                child: Icon(icon, size: 28, color: cs.primary),
+                child: Icon(icon, size: 24, color: cs.primary),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 title,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      height: 1.15,
                       color: fg,
                     ),
                 maxLines: 2,
@@ -54,8 +57,10 @@ class DashboardActionCard extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: cs.onSurfaceVariant,
+                      fontSize: 11,
+                      height: 1.2,
                     ),
-                maxLines: 3,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ],

@@ -11,7 +11,14 @@ ModelFileType modelFileTypeForUrl(String url) {
   return ModelFileType.task;
 }
 
-/// Curated public `.task` models (user can still paste any URL).
+/// Gemma-family installs may use a Hugging Face token for gated URLs.
+bool inferenceModelTypeUsesHuggingFaceToken(ModelType modelType) {
+  return modelType == ModelType.gemmaIt ||
+      modelType == ModelType.gemma4 ||
+      modelType == ModelType.functionGemma;
+}
+
+/// Curated public `.task` / `.litertlm` models (user can still paste any URL).
 class PredefinedInferenceModel {
   const PredefinedInferenceModel({
     required this.id,
@@ -30,7 +37,29 @@ class PredefinedInferenceModel {
   ModelFileType get fileType => modelFileTypeForUrl(url);
 }
 
+/// Smallest storage-friendly Gemma preset (used for dashboard CTA).
+const String kSmallestStoragePresetId = 'gemma3_270m_q8';
+
+PredefinedInferenceModel get kSmallestStorageDownloadPreset =>
+    kPredefinedInferenceModels.firstWhere(
+      (PredefinedInferenceModel m) => m.id == kSmallestStoragePresetId,
+    );
+
 const List<PredefinedInferenceModel> kPredefinedInferenceModels = <PredefinedInferenceModel>[
+  PredefinedInferenceModel(
+    id: 'qwen25_05b',
+    title: 'Qwen 2.5 0.5B Instruct',
+    description: 'Compact multilingual instruct model.',
+    url: 'https://huggingface.co/litert-community/Qwen2.5-0.5B-Instruct/resolve/main/Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task',
+    modelType: ModelType.qwen,
+  ),
+  PredefinedInferenceModel(
+    id: 'qwen35_08b_litertlm',
+    title: 'Qwen 3.5 0.8B (LiteRT)',
+    description: 'Public LiteRT export; very large download (~1.1GB), multimodal bundle.',
+    url: 'https://huggingface.co/LudwigBanach/Qwen3.5-0.8B-LiteRT/resolve/main/qwen35_mm_q8_ekv2048.litertlm',
+    modelType: ModelType.qwen3,
+  ),
   PredefinedInferenceModel(
     id: 'gemma3_270m_q8',
     title: 'Gemma 3 270M IT (q8)',
@@ -48,12 +77,5 @@ const List<PredefinedInferenceModel> kPredefinedInferenceModels = <PredefinedInf
     title: 'Gemma 3n E2B IT (int4)',
     description: 'Multimodal-capable family (larger download).',
     url: 'https://huggingface.co/google/gemma-3n-E2B-it-litert-preview/resolve/main/gemma-3n-E2B-it-int4.task',
-  ),
-  PredefinedInferenceModel(
-    id: 'qwen25_05b',
-    title: 'Qwen 2.5 0.5B Instruct',
-    description: 'Compact multilingual instruct model.',
-    url: 'https://huggingface.co/litert-community/Qwen2.5-0.5B-Instruct/resolve/main/Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task',
-    modelType: ModelType.qwen,
   ),
 ];

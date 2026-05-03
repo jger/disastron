@@ -4,9 +4,11 @@ import 'package:disastron/app/widgets/appearance_dropdown.dart';
 import 'package:disastron/features/home/model/active_inference_model_summary.dart';
 import 'package:disastron/features/home/model/huggingface_token_provider.dart';
 import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
+import 'package:disastron/features/home/model/model_network_install.dart';
 import 'package:disastron/features/home/model/predefined_models.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ModelSetupWidget extends ConsumerStatefulWidget {
@@ -32,6 +34,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
   late final TextEditingController _tokenController;
   late final TabController _installTabController;
   bool _showReplaceFlow = false;
+  ModelType _urlInstallModelType = ModelType.qwen;
 
   @override
   void initState() {
@@ -68,7 +71,21 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     if (url.isEmpty) {
       return;
     }
-    await ref.read(localGemmaModelProvider.notifier).installFromNetwork(url);
+    if (!mounted) {
+      return;
+    }
+    if (!await confirmLargeDownloadIfNotLikelyUnmetered(context)) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    final ModelFileType fileType = modelFileTypeForUrl(url);
+    await ref.read(localGemmaModelProvider.notifier).installFromNetwork(
+          url,
+          modelType: _urlInstallModelType,
+          fileType: fileType,
+        );
   }
 
   Future<void> _saveToken() async {
@@ -99,6 +116,15 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     setState(() {
       _urlController.text = model.url;
     });
+    if (!mounted) {
+      return;
+    }
+    if (!await confirmLargeDownloadIfNotLikelyUnmetered(context)) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
     await ref.read(localGemmaModelProvider.notifier).installFromNetwork(
           model.url,
           modelType: model.modelType,
@@ -346,7 +372,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               case 1:
                 return _importTabBody(context);
               default:
-                return _urlTabBody(context);
+                return _urlTabBody(context, tokenAsync);
             }
           },
         ),
@@ -358,6 +384,19 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     BuildContext context,
     AsyncValue<String?> tokenAsync,
   ) {
+    final List<PredefinedInferenceModel> qwenModels = kPredefinedInferenceModels
+        .where(
+          (PredefinedInferenceModel m) =>
+              !inferenceModelTypeUsesHuggingFaceToken(m.modelType),
+        )
+        .toList();
+    final List<PredefinedInferenceModel> gemmaModels = kPredefinedInferenceModels
+        .where(
+          (PredefinedInferenceModel m) =>
+              inferenceModelTypeUsesHuggingFaceToken(m.modelType),
+        )
+        .toList();
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -365,12 +404,40 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Text(
-              'Curated models from Hugging Face (token optional for gated files).',
+              'Qwen presets are public — no Hugging Face token. '
+              'Gemma presets may need a token for gated files.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
             const SizedBox(height: 12),
+            Text(
+              'Qwen',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            ...qwenModels.map(
+              (PredefinedInferenceModel m) => Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  title: Text(m.title),
+                  subtitle: Text(m.description),
+                  trailing: const Icon(Icons.download),
+                  onTap: () => _installPreset(m),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Divider(height: 24),
+            Text(
+              'Gemma',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 8),
             const SelectableText(
               'Read token: https://huggingface.co/settings/tokens',
             ),
@@ -414,7 +481,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               ],
             ),
             const SizedBox(height: 12),
-            ...kPredefinedInferenceModels.map(
+            ...gemmaModels.map(
               (PredefinedInferenceModel m) => Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
@@ -456,7 +523,12 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     );
   }
 
-  Widget _urlTabBody(BuildContext context) {
+  Widget _urlTabBody(
+    BuildContext context,
+    AsyncValue<String?> tokenAsync,
+  ) {
+    final bool showToken =
+        inferenceModelTypeUsesHuggingFaceToken(_urlInstallModelType);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -470,6 +542,45 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                   ),
             ),
             const SizedBox(height: 12),
+            Text(
+              'Model family for this URL',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: <Widget>[
+                ChoiceChip(
+                  label: const Text('Qwen 2.5'),
+                  selected: _urlInstallModelType == ModelType.qwen,
+                  onSelected: (bool v) {
+                    if (v) {
+                      setState(() => _urlInstallModelType = ModelType.qwen);
+                    }
+                  },
+                ),
+                ChoiceChip(
+                  label: const Text('Qwen3'),
+                  selected: _urlInstallModelType == ModelType.qwen3,
+                  onSelected: (bool v) {
+                    if (v) {
+                      setState(() => _urlInstallModelType = ModelType.qwen3);
+                    }
+                  },
+                ),
+                ChoiceChip(
+                  label: const Text('Gemma'),
+                  selected: _urlInstallModelType == ModelType.gemmaIt,
+                  onSelected: (bool v) {
+                    if (v) {
+                      setState(() => _urlInstallModelType = ModelType.gemmaIt);
+                    }
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             TextField(
               controller: _urlController,
               maxLines: 3,
@@ -478,6 +589,51 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                 hintText: 'https://…/model.task',
               ),
             ),
+            if (showToken) ...<Widget>[
+              const SizedBox(height: 12),
+              const SelectableText(
+                'Read token: https://huggingface.co/settings/tokens',
+              ),
+              const SizedBox(height: 8),
+              tokenAsync.when(
+                data: (String? saved) {
+                  if (saved != null && saved.isNotEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: Text('A Hugging Face token is saved.'),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (Object error, StackTrace stackTrace) => const SizedBox.shrink(),
+              ),
+              TextField(
+                controller: _tokenController,
+                obscureText: true,
+                autocorrect: false,
+                enableSuggestions: false,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'hf_…',
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: <Widget>[
+                  FilledButton(
+                    onPressed: _saveToken,
+                    child: const Text('Save token'),
+                  ),
+                  const SizedBox(width: 12),
+                  OutlinedButton(
+                    onPressed: _clearToken,
+                    child: const Text('Clear'),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 12),
             FilledButton.icon(
               onPressed: _downloadFromUrl,

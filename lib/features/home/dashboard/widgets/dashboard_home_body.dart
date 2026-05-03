@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:disastron/app/app_appearance.dart';
 import 'package:disastron/app/appearance_provider.dart';
 import 'package:disastron/features/emergency/emergency_numbers.dart';
@@ -6,8 +7,12 @@ import 'package:disastron/features/home/dashboard/dashboard_weather_provider.dar
 import 'package:disastron/features/home/dashboard/sos_overlay.dart';
 import 'package:disastron/features/home/dashboard/widgets/dashboard_action_card.dart';
 import 'package:disastron/features/home/dashboard/widgets/dashboard_weather_card.dart';
+import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
+import 'package:disastron/features/home/model/model_network_install.dart';
+import 'package:disastron/features/home/model/predefined_models.dart';
 import 'package:disastron/features/home/wiki/wiki_article_sheet.dart';
 import 'package:disastron/features/home/wiki/wiki_models.dart';
+import 'package:disastron/router/routes.gr.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -101,6 +106,94 @@ class _HcBatteryTipBannerState extends ConsumerState<_HcBatteryTipBanner> {
   }
 }
 
+/// Banner when no on-device model is installed; CTA = smallest storage preset.
+class _NoOfflineModelBanner extends ConsumerWidget {
+  const _NoOfflineModelBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final LocalGemmaModelUi ui = ref.watch(localGemmaModelProvider);
+    if (ui.phase != LocalGemmaPhase.notInstalled) {
+      return const SizedBox.shrink();
+    }
+    final PredefinedInferenceModel m = kSmallestStorageDownloadPreset;
+    final Color onC = Theme.of(context).colorScheme.onErrorContainer;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Theme.of(context).colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Icon(Icons.smart_toy_outlined, color: onC, size: 22),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'No offline model',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: onC,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Chat needs a downloaded model. Install the smallest preset '
+                '(${m.title}) or choose another under Settings → Offline model.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: onC,
+                    ),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.end,
+                children: <Widget>[
+                  TextButton(
+                    onPressed: () => context.router.push(const ModelConfigRoute()),
+                    child: const Text('Offline model settings'),
+                  ),
+                  FilledButton(
+                    onPressed: () async {
+                      if (!context.mounted) {
+                        return;
+                      }
+                      if (!await confirmLargeDownloadIfNotLikelyUnmetered(
+                            context,
+                          )) {
+                        return;
+                      }
+                      if (!context.mounted) {
+                        return;
+                      }
+                      await ref.read(localGemmaModelProvider.notifier).installFromNetwork(
+                            m.url,
+                            modelType: m.modelType,
+                            fileType: m.fileType,
+                          );
+                    },
+                    child: const Text('Download smallest'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Main dashboard scrollable body: status, quick actions.
 class DashboardHomeBody extends ConsumerWidget {
   const DashboardHomeBody({super.key});
@@ -119,24 +212,12 @@ class DashboardHomeBody extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(
-              'Status',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-            const SizedBox(height: 8),
             const _DashboardStatusCard(),
+            const SizedBox(height: 16),
+            const _NoOfflineModelBanner(),
             const SizedBox(height: 16),
             const _HcBatteryTipBanner(),
             const SizedBox(height: 16),
-            Text(
-              'Quick actions',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-            const SizedBox(height: 10),
             LayoutBuilder(
               builder: (BuildContext context, BoxConstraints c) {
                 final double w = c.maxWidth;
@@ -173,7 +254,7 @@ class DashboardHomeBody extends ConsumerWidget {
                   crossAxisCount: cols,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
-                  childAspectRatio: cols == 3 ? 0.95 : 0.92,
+                  childAspectRatio: 3 / 2,
                   children: cards,
                 );
               },

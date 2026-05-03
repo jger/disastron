@@ -1,5 +1,6 @@
 import 'package:disastron/features/home/model/huggingface_token_provider.dart';
-import 'package:disastron/features/home/model/predefined_models.dart';
+import 'package:disastron/features/home/model/predefined_models.dart'
+    show inferenceModelTypeUsesHuggingFaceToken, modelFileTypeForUrl;
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -76,11 +77,14 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     state = const LocalGemmaModelUi(phase: LocalGemmaPhase.installing);
     try {
       final String? trimmed = token?.trim();
-      final String? effectiveToken = (trimmed != null && trimmed.isNotEmpty)
-          ? trimmed
-          : await ref.read(huggingfaceTokenProvider.future);
       final ModelFileType resolvedFileType = fileType ?? modelFileTypeForUrl(url);
       final ModelType resolvedModelType = modelType ?? ModelType.gemmaIt;
+      final bool useHfToken = inferenceModelTypeUsesHuggingFaceToken(resolvedModelType);
+      final String? effectiveToken = useHfToken
+          ? ((trimmed != null && trimmed.isNotEmpty)
+              ? trimmed
+              : await ref.read(huggingfaceTokenProvider.future))
+          : null;
       await FlutterGemma.installModel(
         modelType: resolvedModelType,
         fileType: resolvedFileType,
