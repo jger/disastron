@@ -35,17 +35,6 @@ class _SosOverlayPage extends StatefulWidget {
 
 class _SosOverlayPageState extends State<_SosOverlayPage> {
   static const int _unitMs = 160;
-  static const List<int> _kSosVibrationPattern = <int>[
-    0,
-    80,
-    50,
-    80,
-    50,
-    80,
-    50,
-    80,
-    300,
-  ];
 
   bool _surfaceLit = false;
   bool _torchReady = false;
@@ -55,27 +44,13 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   bool _vibrationAlerts = true;
 
   AudioPlayer? _alarmPlayer;
-  Timer? _hapticBurstTimer;
-
-  bool get _isAndroid =>
-      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   @override
   void initState() {
     super.initState();
     unawaited(_prepareTorch());
+    unawaited(_ensureAlarmPlayer());
     unawaited(_runLoop());
-    unawaited(_bootstrapAlarmAndVibration());
-  }
-
-  Future<void> _bootstrapAlarmAndVibration() async {
-    await _ensureAlarmPlayer();
-    if (mounted && _running && _audioAlerts) {
-      unawaited(_playAlarmIfReady());
-    }
-    if (mounted && _running && _vibrationAlerts) {
-      await _startSosVibration();
-    }
   }
 
   Future<void> _ensureAlarmPlayer() async {
@@ -100,7 +75,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
       }
       final AudioPlayer player = AudioPlayer();
       await player.setAsset(_kSosAlarmAsset);
-      await player.setLoopMode(LoopMode.one);
+      await player.setLoopMode(LoopMode.off);
       await player.setVolume(1);
       if (!mounted) {
         await player.dispose();
@@ -116,37 +91,29 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     }
   }
 
-  Future<void> _playAlarmIfReady() async {
-    if (!_audioAlerts || !_running || !mounted) {
-      return;
-    }
-    await _ensureAlarmPlayer();
+  Future<void> _silenceAlarm() async {
     final AudioPlayer? player = _alarmPlayer;
     if (player == null) {
       return;
     }
     try {
-      await player.seek(Duration.zero);
-      await player.play();
+      await player.stop();
     } on Object {
-      unawaited(SystemSound.play(SystemSoundType.alert));
+      // ignore
+    }
+    try {
+      await player.seek(Duration.zero);
+    } on Object {
+      // ignore
     }
   }
 
   Future<void> _pauseAlarm() async {
-    try {
-      await _alarmPlayer?.pause();
-    } on Object {
-      // ignore
-    }
+    await _silenceAlarm();
   }
 
   Future<void> _stopAlarm() async {
-    try {
-      await _alarmPlayer?.stop();
-    } on Object {
-      // ignore
-    }
+    await _silenceAlarm();
   }
 
   Future<void> _prepareTorch() async {
@@ -180,17 +147,108 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     await _setTorch(on);
   }
 
+  /// Torch + screen + (optional) tone + vibration for one Morse “mark”, length [onMs].
+  Future<void> _morsePulse(int onMs) async {
+    if (!mounted || !_running) {
+      return;
+    }
+    setState(() => _surfaceLit = true);
+    await _setTorch(true);
+    try {
+      await Future.wait<void>(<Future<void>>[
+        Future<void>.delayed(Duration(milliseconds: onMs)),
+        _morseAudioFor(onMs),
+        _morseVibrationFor(onMs),
+      ]);
+    } on Object {
+      // ignore
+    } finally {
+      await _silenceAlarm();
+    }
+    try {
+      await Vibration.cancel();
+    } on Object {
+      // ignore
+    }
+    if (!mounted || !_running) {
+      return;
+    }
+    setState(() => _surfaceLit = false);
+    await _setTorch(false);
+  }
+
+  Future<void> _morseAudioFor(int onMs) async {
+    if (!_audioAlerts || !_running || !mounted || onMs <= 0) {
+      return;
+    }
+    await _ensureAlarmPlayer();
+    final AudioPlayer? player = _alarmPlayer;
+    if (player == null) {
+      unawaited(SystemSound.play(SystemSoundType.alert));
+      return;
+    }
+    try {
+      await player.setLoopMode(LoopMode.off);
+      await player.seek(Duration.zero);
+      await player.play();
+      await Future<void>.delayed(Duration(milliseconds: onMs));
+    } on Object {
+      if (mounted) {
+        unawaited(SystemSound.play(SystemSoundType.alert));
+      }
+    } finally {
+      try {
+        await player.stop();
+        await player.seek(Duration.zero);
+      } on Object {
+        // ignore
+      }
+    }
+  }
+
+  Future<void> _morseVibrationFor(int onMs) async {
+    if (!_vibrationAlerts || !_running || !mounted || onMs <= 0) {
+      return;
+    }
+    try {
+      final bool has = await Vibration.hasVibrator();
+      if (!has) {
+        await _hapticMorseWindow(onMs);
+        return;
+      }
+      final bool custom = await Vibration.hasCustomVibrationsSupport();
+      if (custom) {
+        await Vibration.vibrate(duration: onMs);
+        await Future<void>.delayed(Duration(milliseconds: onMs));
+      } else {
+        await _hapticMorseWindow(onMs);
+      }
+    } on Object {
+      await _hapticMorseWindow(onMs);
+    }
+  }
+
+  Future<void> _hapticMorseWindow(int onMs) async {
+    if (!_vibrationAlerts || !_running || !mounted || onMs <= 0) {
+      return;
+    }
+    final int end = DateTime.now().millisecondsSinceEpoch + onMs;
+    while (mounted &&
+        _running &&
+        _vibrationAlerts &&
+        DateTime.now().millisecondsSinceEpoch < end) {
+      await HapticFeedback.heavyImpact();
+      await Future<void>.delayed(const Duration(milliseconds: 42));
+    }
+  }
+
   Future<void> _dit() async {
-    await _pulseVisualAndTorch(true);
-    await Future<void>.delayed(const Duration(milliseconds: _unitMs));
-    await _pulseVisualAndTorch(false);
+    await _morsePulse(_unitMs);
     await Future<void>.delayed(const Duration(milliseconds: _unitMs));
   }
 
   Future<void> _dah() async {
-    await _pulseVisualAndTorch(true);
-    await Future<void>.delayed(const Duration(milliseconds: _unitMs * 3));
-    await _pulseVisualAndTorch(false);
+    await _morsePulse(_unitMs * 3);
     await Future<void>.delayed(const Duration(milliseconds: _unitMs));
   }
 
@@ -223,50 +281,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     }
   }
 
-  Future<void> _startSosVibration() async {
-    if (!_vibrationAlerts || !mounted || !_running) {
-      return;
-    }
-    try {
-      final bool has = await Vibration.hasVibrator();
-      if (!has) {
-        _startHapticBurstTimer();
-        return;
-      }
-      final bool custom = await Vibration.hasCustomVibrationsSupport();
-      if (_isAndroid && custom) {
-        await Vibration.vibrate(pattern: _kSosVibrationPattern, repeat: 1);
-      } else {
-        _startHapticBurstTimer();
-      }
-    } on Object {
-      _startHapticBurstTimer();
-    }
-  }
-
-  void _startHapticBurstTimer() {
-    _hapticBurstTimer?.cancel();
-    _hapticBurstTimer = Timer.periodic(const Duration(milliseconds: 360), (_) {
-      if (!_running || !_vibrationAlerts || !mounted) {
-        return;
-      }
-      unawaited(_fireHapticBurst());
-    });
-  }
-
-  Future<void> _fireHapticBurst() async {
-    for (int i = 0; i < 5; i++) {
-      if (!_running || !_vibrationAlerts || !mounted) {
-        return;
-      }
-      await HapticFeedback.heavyImpact();
-      await Future<void>.delayed(const Duration(milliseconds: 36));
-    }
-  }
-
   Future<void> _stopSosVibration() async {
-    _hapticBurstTimer?.cancel();
-    _hapticBurstTimer = null;
     try {
       await Vibration.cancel();
     } on Object {
@@ -288,10 +303,10 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   String _sosModalitiesDescription() {
     final List<String> parts = <String>['Screen flash', 'torch Morse'];
     if (_audioAlerts) {
-      parts.add('looping alarm tone');
+      parts.add('Morse-sync alarm');
     }
     if (_vibrationAlerts) {
-      parts.add('repeating vibration');
+      parts.add('Morse-sync vibration');
     }
     final String core = parts.join(' + ');
     final List<String> off = <String>[];
@@ -320,13 +335,23 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   @override
   void dispose() {
     _running = false;
-    _hapticBurstTimer?.cancel();
     unawaited(_setTorch(false));
     unawaited(_stopSosVibration());
     final AudioPlayer? player = _alarmPlayer;
     _alarmPlayer = null;
     if (player != null) {
-      unawaited(player.dispose());
+      unawaited(() async {
+        try {
+          await player.stop();
+        } on Object {
+          // ignore
+        }
+        try {
+          await player.dispose();
+        } on Object {
+          // ignore
+        }
+      }());
     }
     super.dispose();
   }
@@ -425,7 +450,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                         onChanged: (bool v) {
                           setState(() => _audioAlerts = v);
                           if (v) {
-                            unawaited(_playAlarmIfReady());
+                            unawaited(_ensureAlarmPlayer());
                           } else {
                             unawaited(_pauseAlarm());
                           }
@@ -440,7 +465,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                         ),
                         subtitle: Text(
                           _audioAlerts
-                              ? 'Looping alarm tone (default)'
+                              ? 'Alarm follows Morse flashes (default)'
                               : 'Alarm tone off',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
@@ -453,9 +478,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                         value: _vibrationAlerts,
                         onChanged: (bool v) {
                           setState(() => _vibrationAlerts = v);
-                          if (v) {
-                            unawaited(_startSosVibration());
-                          } else {
+                          if (!v) {
                             unawaited(_stopSosVibration());
                           }
                         },
@@ -469,7 +492,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                         ),
                         subtitle: Text(
                           _vibrationAlerts
-                              ? 'Repeating burst pattern (default)'
+                              ? 'Vibration follows Morse flashes (default)'
                               : 'Vibration off',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),

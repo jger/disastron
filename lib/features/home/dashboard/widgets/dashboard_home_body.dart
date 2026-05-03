@@ -7,6 +7,8 @@ import 'package:disastron/features/home/dashboard/dashboard_weather_provider.dar
 import 'package:disastron/features/home/dashboard/sos_overlay.dart';
 import 'package:disastron/features/home/dashboard/widgets/dashboard_action_card.dart';
 import 'package:disastron/features/home/dashboard/widgets/dashboard_weather_card.dart';
+import 'package:disastron/features/home/model/huggingface_token_prompt_dialog.dart';
+import 'package:disastron/features/home/model/huggingface_token_provider.dart';
 import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
 import 'package:disastron/features/home/model/model_network_install.dart';
 import 'package:disastron/features/home/model/predefined_models.dart';
@@ -165,6 +167,21 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                   ),
                   FilledButton(
                     onPressed: () async {
+                      if (!context.mounted) {
+                        return;
+                      }
+                      final String? existing =
+                          await ref.read(huggingfaceTokenProvider.future);
+                      if (existing == null || existing.trim().isEmpty) {
+                        final String? pasted =
+                            await showHuggingFaceTokenPasteDialog(context);
+                        if (pasted == null || pasted.trim().isEmpty) {
+                          return;
+                        }
+                        await ref
+                            .read(huggingfaceTokenProvider.notifier)
+                            .save(pasted.trim());
+                      }
                       if (!context.mounted) {
                         return;
                       }
