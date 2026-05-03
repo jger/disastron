@@ -18,7 +18,7 @@
 library;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:disastron/features/home/dashboard/widgets/download_widget.dart';
+import 'package:disastron/features/home/dashboard/widgets/model_setup_widget.dart';
 import 'package:flutter/material.dart';
 
 @RoutePage()
@@ -29,7 +29,7 @@ class DashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO(jge): implement build
     return const Center(
-      child: DownloadWidget(),
+      child: ModelSetupWidget(),
     );
   }
 }

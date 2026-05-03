@@ -4,7 +4,6 @@ class Assets {
 
   static const String assetsImagesLaunch = 'assets/images/launch.svg';
   static const String assetsImagesSplash = 'assets/images/splash.svg';
-  static const String assetsModel = 'assets/model.bin';
   static const String imagesLaunch = 'assets/images/launch.png';
   static const String imagesLogo = 'assets/images/logo.svg';
   static const String imagesSplash = 'assets/images/splash.png';

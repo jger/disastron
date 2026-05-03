@@ -13,6 +13,19 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
+subprojects { subproject ->
+    def bumpCompileSdk = {
+        if (subproject.plugins.hasPlugin("com.android.library")) {
+            subproject.android.compileSdk = 36
+        }
+    }
+    if (subproject.state.executed) {
+        bumpCompileSdk()
+    } else {
+        subproject.afterEvaluate(bumpCompileSdk)
+    }
+}
+
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }

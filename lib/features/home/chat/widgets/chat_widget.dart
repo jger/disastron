@@ -1,3 +1,4 @@
+import 'package:disastron/features/home/chat/service/gemma_service.dart';
 import 'package:disastron/features/home/chat/widgets/chat_input_field.dart';
 import 'package:disastron/features/home/chat/widgets/chat_message.dart';
 import 'package:disastron/features/home/chat/widgets/gemma_input_field.dart';
@@ -9,10 +10,12 @@ class ChatListWidget extends StatelessWidget {
     required this.messages,
     required this.gemmaHandler,
     required this.humanHandler,
+    required this.gemmaService,
     super.key,
   });
 
   final List<Message> messages;
+  final GemmaLocalService gemmaService;
   final ValueChanged<Message> gemmaHandler;
   final ValueChanged<String> humanHandler;
 
@@ -22,11 +25,12 @@ class ChatListWidget extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       reverse: true,
       itemCount: messages.length + 2,
-      itemBuilder: (context, index) {
+      itemBuilder: (BuildContext context, int index) {
         if (index == 0) {
           if (messages.isNotEmpty && messages.last.isUser) {
             return GemmaInputField(
-              messages: messages,
+              userMessage: messages.last,
+              gemmaService: gemmaService,
               streamHandled: gemmaHandler,
             );
           }
@@ -36,12 +40,12 @@ class ChatListWidget extends StatelessWidget {
         } else if (index == 1) {
           return const Divider(height: 1);
         } else {
-          final message = messages.reversed.toList()[index - 2];
+          final Message message = messages.reversed.toList()[index - 2];
           return ChatMessageWidget(
             message: message,
           );
         }
-        return null;
+        return const SizedBox.shrink();
       },
     );
   }

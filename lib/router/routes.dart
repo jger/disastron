@@ -22,7 +22,6 @@ import 'package:disastron/router/auth_guard.dart';
 import 'package:disastron/router/routes.gr.dart';
 
 @AutoRouterConfig(
-  generateForDir: ['lib'],
   replaceInRouteName: 'Page,Route',
 )
 class AppRouter extends RootStackRouter {

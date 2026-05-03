@@ -19,8 +19,12 @@ library;
 
 import 'package:disastron/router/providers/app_router_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-void main() async {
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterGemma.initialize();
   runApp(
     const ProviderScope(
       child: MyApp(),

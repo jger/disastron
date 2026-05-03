@@ -1,0 +1,6 @@
+- android-gradle: Gradle 8.13, AGP 8.13.1, Kotlin 2.3.20; app JVM 17; app `compileSdk 36`; subprojects library `compileSdk 36` (androidx.core 1.17 / background_downloader)
+- flutter_gemma: ^0.14.1; main `FlutterGemma.initialize()`; no bundled `model.bin` (assets/images only)
+- local-model: `local_gemma_model_provider` (keepAlive) install `.fromFile` / `.fromNetwork` + `ModelSetupWidget` + `FilePicker.pickFiles`
+- chat: `GemmaLocalService` + `InferenceChat` / `ModelResponse` streaming; disaster systemInstruction
+- deps: file_picker; riverpod 2.6 stable; melos→dev; removed dio; sdk >=3.5
+- ios: Podfile platform 16, `use_frameworks! :linkage => :static`; Info.plist file sharing keys; display name Disastron

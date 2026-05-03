@@ -7,12 +7,14 @@ import 'package:flutter_gemma/flutter_gemma.dart';
 
 class GemmaInputField extends StatefulWidget {
   const GemmaInputField({
-    required this.messages,
+    required this.userMessage,
     required this.streamHandled,
+    required this.gemmaService,
     super.key,
   });
 
-  final List<Message> messages;
+  final Message userMessage;
+  final GemmaLocalService gemmaService;
   final ValueChanged<Message> streamHandled;
 
   @override
@@ -20,9 +22,8 @@ class GemmaInputField extends StatefulWidget {
 }
 
 class GemmaInputFieldState extends State<GemmaInputField> {
-  final _gemma = GemmaLocalService();
-  StreamSubscription<String?>? _subscription;
-  var _message = const Message(text: '');
+  StreamSubscription<ModelResponse>? _subscription;
+  Message _message = Message.text(text: '');
 
   @override
   void initState() {
@@ -31,20 +32,38 @@ class GemmaInputFieldState extends State<GemmaInputField> {
   }
 
   void _processMessages() {
-    _subscription = _gemma.processMessageAsync(widget.messages).listen((String? token) {
-      if (token == null) {
+    _subscription = widget.gemmaService
+        .processMessageAsync(widget.userMessage)
+        .listen(
+      (ModelResponse response) {
+        if (response is TextResponse) {
+          setState(() {
+            _message = Message.text(
+              text: '${_message.text}${response.token}',
+            );
+          });
+        }
+      },
+      onDone: () {
         widget.streamHandled(_message);
-      } else {
+      },
+      onError: (Object e, StackTrace st) {
         setState(() {
-          _message = Message(text: '${_message.text}$token');
+          _message = Message.text(
+            text: '${_message.text}\n[Error: $e]',
+          );
         });
-      }
-    });
+        widget.streamHandled(_message);
+      },
+    );
   }
 
   @override
   void dispose() {
-    _subscription?.cancel();
+    final Future<void>? cancelFuture = _subscription?.cancel();
+    if (cancelFuture != null) {
+      unawaited(cancelFuture);
+    }
     super.dispose();
   }
 
