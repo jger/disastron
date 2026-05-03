@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:disastron/features/home/chat/first_chat_accident_provider.dart';
 import 'package:disastron/features/home/chat/service/gemma_service.dart';
+import 'package:disastron/features/home/chat/service/todo_action_parser.dart';
+import 'package:disastron/features/home/chat/widgets/accident_chips_panel.dart';
 import 'package:disastron/features/home/chat/widgets/chat_widget.dart';
 import 'package:disastron/features/home/chat/widgets/loading_widget.dart';
 import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
@@ -58,6 +61,43 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  Future<void> _onAssistantMessage(Message message) async {
+    final TodoApplyResult result = await stripTodosAndApply(ref, message.text);
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _messages.add(Message.text(text: result.displayText));
+      if (result.appliedCount > 0) {
+        _messages.add(
+          Message(
+            text:
+                'Checklist updated (${result.appliedCount} action(s)). Open the Todos tab to review.',
+            type: MessageType.systemInfo,
+          ),
+        );
+      }
+    });
+  }
+
+  void _onHumanMessage(String text) {
+    final String trimmed = text.trim();
+    if (trimmed.isEmpty) {
+      return;
+    }
+    unawaited(ref.read(firstChatAccidentPromptProvider.notifier).markDone());
+    setState(() {
+      _messages.add(Message.text(text: trimmed, isUser: true));
+    });
+  }
+
+  void _onAccidentChip(AccidentChipOption option) {
+    unawaited(ref.read(firstChatAccidentPromptProvider.notifier).markDone());
+    setState(() {
+      _messages.add(Message.text(text: option.prompt, isUser: true));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen<LocalGemmaModelUi>(localGemmaModelProvider, (LocalGemmaModelUi? previous, LocalGemmaModelUi next) {
@@ -77,12 +117,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
 
     final LocalGemmaModelUi modelUi = ref.watch(localGemmaModelProvider);
+    final AsyncValue<bool> accidentDone = ref.watch(firstChatAccidentPromptProvider);
+    final bool showAccidentChips = modelUi.isReady &&
+        _chatReady &&
+        accidentDone.hasValue &&
+        accidentDone.requireValue == false &&
+        _messages.isEmpty;
+
+    final ColorScheme cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primary,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primaryFixedDim,
-        title: const Text('Messages'),
+        backgroundColor: cs.surfaceContainerHigh,
+        title: const Text('Chat'),
       ),
       body: Stack(
         children: <Widget>[
@@ -107,16 +155,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           else
             ChatListWidget(
               gemmaService: _gemma,
-              gemmaHandler: (Message message) {
-                setState(() {
-                  _messages.add(message);
-                });
-              },
-              humanHandler: (String text) {
-                setState(() {
-                  _messages.add(Message.text(text: text, isUser: true));
-                });
-              },
+              showAccidentChips: showAccidentChips,
+              onAccidentChip: _onAccidentChip,
+              gemmaHandler: _onAssistantMessage,
+              humanHandler: _onHumanMessage,
               messages: _messages,
             ),
         ],

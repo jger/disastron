@@ -1,3 +1,5 @@
+import 'package:disastron/features/home/model/huggingface_token_provider.dart';
+import 'package:disastron/features/home/model/predefined_models.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -20,14 +22,7 @@ class LocalGemmaModelUi {
 }
 
 ModelFileType modelFileTypeForPath(String path) {
-  final lower = path.toLowerCase();
-  if (lower.endsWith('.bin') || lower.endsWith('.tflite')) {
-    return ModelFileType.binary;
-  }
-  if (lower.endsWith('.litertlm')) {
-    return ModelFileType.litertlm;
-  }
-  return ModelFileType.task;
+  return modelFileTypeForUrl(Uri.file(path).toString());
 }
 
 @Riverpod(keepAlive: true)
@@ -52,7 +47,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   Future<void> installFromFile(String path) async {
     state = const LocalGemmaModelUi(phase: LocalGemmaPhase.installing);
     try {
-      final fileType = modelFileTypeForPath(path);
+      final ModelFileType fileType = modelFileTypeForPath(path);
       await FlutterGemma.installModel(
         modelType: ModelType.gemmaIt,
         fileType: fileType,
@@ -71,16 +66,26 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     }
   }
 
-  Future<void> installFromNetwork(String url) async {
+  /// [token] overrides saved store; otherwise uses [huggingfaceTokenProvider].
+  Future<void> installFromNetwork(
+    String url, {
+    String? token,
+    ModelType? modelType,
+    ModelFileType? fileType,
+  }) async {
     state = const LocalGemmaModelUi(phase: LocalGemmaPhase.installing);
     try {
-      final path = Uri.parse(url).path.toLowerCase();
-      final fileType = modelFileTypeForPath(path);
+      final String? trimmed = token?.trim();
+      final String? effectiveToken = (trimmed != null && trimmed.isNotEmpty)
+          ? trimmed
+          : await ref.read(huggingfaceTokenProvider.future);
+      final ModelFileType resolvedFileType = fileType ?? modelFileTypeForUrl(url);
+      final ModelType resolvedModelType = modelType ?? ModelType.gemmaIt;
       await FlutterGemma.installModel(
-        modelType: ModelType.gemmaIt,
-        fileType: fileType,
+        modelType: resolvedModelType,
+        fileType: resolvedFileType,
       )
-          .fromNetwork(url)
+          .fromNetwork(url, token: effectiveToken)
           .withProgress((int p) {
             state = LocalGemmaModelUi(phase: LocalGemmaPhase.installing, progress: p);
           })

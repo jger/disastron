@@ -26,8 +26,8 @@ if (flutterVersionName == null) {
 android {
     namespace = "dev.zardoz.disastron"
     compileSdk = 36
-//    ndkVersion = flutter.ndkVersion
-    ndkVersion = "27.0.12077973"
+    // NDK r28+ recommended for 16 KB page-size toolchain; flutter_gemma .so alignment still upstream.
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -54,6 +54,10 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.debug
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 }

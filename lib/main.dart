@@ -17,6 +17,9 @@
 
 library;
 
+import 'package:disastron/app/app_appearance.dart';
+import 'package:disastron/app/appearance_provider.dart';
+import 'package:disastron/features/home/model/huggingface_token_store.dart';
 import 'package:disastron/router/providers/app_router_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
@@ -24,7 +27,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FlutterGemma.initialize();
+  final String? hfToken = await HuggingfaceTokenStore().read();
+  await FlutterGemma.initialize(huggingFaceToken: hfToken);
   runApp(
     const ProviderScope(
       child: MyApp(),
@@ -39,30 +43,32 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
-    return MaterialApp.router(
-      themeMode: ThemeMode.light,
-      debugShowCheckedModeBanner: false,
-      routeInformationParser: router.defaultRouteParser(),
-      routeInformationProvider: router.routeInfoProvider(),
-      routerDelegate: router.delegate(),
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
+    final AsyncValue<AppAppearanceMode> appearance = ref.watch(appAppearanceProvider);
+    return appearance.when(
+      data: (AppAppearanceMode mode) {
+        return MaterialApp.router(
+          themeMode: mode.isDark ? ThemeMode.dark : ThemeMode.light,
+          debugShowCheckedModeBanner: false,
+          routeInformationParser: router.defaultRouteParser(),
+          routeInformationProvider: router.routeInfoProvider(),
+          routerDelegate: router.delegate(),
+          theme: buildLightTheme(highContrast: mode == AppAppearanceMode.lightHighContrast),
+          darkTheme: buildDarkTheme(highContrast: mode == AppAppearanceMode.darkHighContrast),
+        );
+      },
+      loading: () => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: buildLightTheme(highContrast: false),
+        darkTheme: buildDarkTheme(highContrast: true),
+        themeMode: ThemeMode.dark,
+        home: const SizedBox.shrink(),
+      ),
+      error: (Object _, StackTrace __) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: buildLightTheme(highContrast: false),
+        darkTheme: buildDarkTheme(highContrast: true),
+        themeMode: ThemeMode.dark,
+        home: const SizedBox.shrink(),
       ),
     );
   }

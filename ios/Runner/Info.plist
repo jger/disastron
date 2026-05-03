@@ -51,7 +51,10 @@
 		<true/>
 		<key>LSSupportsOpeningDocumentsInPlace</key>
 		<true/>
+		<key>NSCameraUsageDescription</key>
+		<string>The camera flash is used for SOS signaling.</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Location is used to estimate country for emergency numbers and show coordinates on the dashboard.</string>
 		<key>UIStatusBarHidden</key>
 		<false/>
-	</dict>
 </plist>

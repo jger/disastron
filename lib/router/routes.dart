@@ -18,49 +18,45 @@
 library;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:disastron/router/auth_guard.dart';
 import 'package:disastron/router/routes.gr.dart';
 
 @AutoRouterConfig(
   replaceInRouteName: 'Page,Route',
 )
 class AppRouter extends RootStackRouter {
-  AppRouter({required this.authGuard});
-
-  final AuthGuard authGuard;
+  AppRouter();
 
   @override
-  List<AutoRoute> get routes => [
+  List<AutoRoute> get routes => <AutoRoute>[
         AutoRoute(
           page: HomeRoute.page,
           path: '/',
-          guards: [authGuard],
-        ),
-    AutoRoute(
-      page: DashboardRoute.page,
-      path: '/dashboard',
-      guards: [authGuard],
-    ),
-    AutoRoute(
-      page: MessagesRoute.page,
-      path: '/chat',
-      guards: [authGuard],
-    ),
-    AutoRoute(
-      page: TodosRoute.page,
-      path: '/todos',
-      guards: [authGuard],
-    ),
-        AutoRoute(
-          page: LoginRoute.page,
-          path: '/login',
           initial: true,
         ),
         AutoRoute(
-          page: GetPhotoRoute.page,
-          path: '/get-photo',
-          guards: [authGuard],
+          page: DashboardRoute.page,
+          path: '/dashboard',
         ),
-        RedirectRoute(path: '*', redirectTo: '/login'),
+        AutoRoute(
+          page: MessagesRoute.page,
+          path: '/chat',
+        ),
+        AutoRoute(
+          page: TodosRoute.page,
+          path: '/todos',
+        ),
+        AutoRoute(
+          page: WikiRoute.page,
+          path: '/wiki',
+        ),
+        AutoRoute(
+          page: AppearanceSettingsRoute.page,
+          path: '/settings/appearance',
+        ),
+        AutoRoute(
+          page: ModelConfigRoute.page,
+          path: '/settings/model',
+        ),
+        RedirectRoute(path: '*', redirectTo: '/'),
       ];
 }

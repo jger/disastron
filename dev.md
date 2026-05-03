@@ -1,6 +1,14 @@
 - android-gradle: Gradle 8.13, AGP 8.13.1, Kotlin 2.3.20; app JVM 17; app `compileSdk 36`; subprojects library `compileSdk 36` (androidx.core 1.17 / background_downloader)
-- flutter_gemma: ^0.14.1; main `FlutterGemma.initialize()`; no bundled `model.bin` (assets/images only)
-- local-model: `local_gemma_model_provider` (keepAlive) install `.fromFile` / `.fromNetwork` + `ModelSetupWidget` + `FilePicker.pickFiles`
-- chat: `GemmaLocalService` + `InferenceChat` / `ModelResponse` streaming; disaster systemInstruction
-- deps: file_picker; riverpod 2.6 stable; melos→dev; removed dio; sdk >=3.5
+- android-r8: `app/proguard-rules.pro` `-dontwarn` MediaPipe proto stubs (release R8; matches AGP `missing_rules.txt`)
+- android-16kb: `ndkVersion 28.2.13676358`; manifest `android:pageSizeCompat=enabled`; APK check: offending ELF `libLiteRtLm.so` (`max_load_align=0x1000`) from flutter_gemma native assets -> runs in compat mode until upstream 16KB-aligned build
+- flutter_gemma: ^0.14.1; main `FlutterGemma.initialize(huggingFaceToken: prefs)` when saved; no bundled `model.bin` (assets/images only)
+- hf-token: `HuggingfaceTokenStore` (secure + legacy prefs migrate) + `huggingfaceTokenProvider`; `installFromNetwork` + `predefined_models` presets in `ModelSetupWidget`
+- dashboard-model-ui: empty state + **TabBar** (Download preset / This device / From URL); installed shows `readActiveInferenceSummary()` + "Change model" replace flow
+- auth: **no login** — `HomeRoute` `/` initial; no `AuthGuard`/`LoginRoute`; drawer has no logout; drawer header: gradient + centered logo SVG (`svg_flutter`) tinted `onPrimary` srcIn; no duplicate title (wordmark in SVG); **no Get Photo** (`image_picker` removed)
+- ux-home: `appAppearanceProvider` + 4 themes; default **dark high contrast**; `IndexedStack` home tabs; Wiki `wiki_pack.json` (incl. `karpa_cpr` CPR article); todos/chat/wiki as before; dashboard: **Status** `ExpansionTile` (subtitle: device + conditions) → expanded: device rows + **Day / night** (`titleSmall`) + compact **Conditions** `DashboardWeatherCard` (sun up/down one line, Typical temps + Data source; no ~ before °C/km (minus ambiguity); `dashboardWeatherProvider` + `light_state_calculator` + `climate_normals`); pull-to-refresh invalidates device + weather; quick actions: Call help, CPR, SOS, Planning last (`DashboardActionCard` centered icon + tight title spacing); SOS overlay: **Bluetooth** + **Alert sound** + **Vibration** switches (BT default off; audio+vibration default on); BT SnackBar when on; settings: drawer → `AppearanceSettingsRoute` + `ModelConfigRoute` (`ModelSetupWidget`); HC banner (dashboard): dismiss ✕; Row crossAxis center; reappears after switching away from dark HC
+- local-model: `local_gemma_model_provider` (keepAlive) `.fromFile` / `.fromNetwork` + `FilePicker.pickFiles`
+- chat: `GemmaLocalService` + `InferenceChat` / `ModelResponse` streaming; disaster systemInstruction; `clearTfliteXnnpackWeightCaches()` before `getActiveModel` (mitigate TFLite XNNPACK mmap cache append crash; 16k-page AVD may still need upstream fix / 4k emulator)
+- router: `appRouter` `@riverpod` functional ref lint fixed: removed typedef; signature now `appRouter(Ref ref)`
+- deps: file_picker; flutter_secure_storage; riverpod 3.x + hooks; auto_route 11; melos 7; sdk >=3.5 (`flutter pub upgrade --major-versions` May 2026)
 - ios: Podfile platform 16, `use_frameworks! :linkage => :static`; Info.plist file sharing keys; display name Disastron
+- docs: `README.md` includes "Emergency App Feature Comparison (May 2026)" table (features + free/paid/freemium)

@@ -1,0 +1,58 @@
+{
+  "articles": [
+    {
+      "id": "general_safety",
+      "title": "General safety mindset",
+      "summary": "Stay calm, assess, act, reassess.",
+      "bodyMarkdown": "## Priorities\n1. **Protect life** — yourself first when possible, then others.\n2. **Reduce danger** — fire, traffic, electricity, structures.\n3. **Call for help** when networks allow — give location and nature of emergency.\n4. **Document lightly** — photos/notes only when safe.\n\n## If alone\n- Pause 10 seconds to scan for ongoing hazards.\n- Identify **two exits** if indoors.\n- Pack essentials only if evacuation is ordered."
+    },
+    {
+      "id": "evacuation",
+      "title": "Evacuation basics",
+      "summary": "Routes, kits, mobility and dependents.",
+      "bodyMarkdown": "## Before you move\n- Grab **ID, meds, phone/charger**, minimal water.\n- Wear sturdy shoes; carry a light.\n\n## During evacuation\n- Prefer official routes; avoid elevators if fire/smoke suspected.\n- Assist children/elderly only when it does not put you at extreme risk.\n- Meet at the agreed **muster point** if one exists."
+    },
+    {
+      "id": "first_aid_bleeding",
+      "title": "Heavy bleeding",
+      "summary": "Pressure, elevation, tourniquet as last resort.",
+      "bodyMarkdown": "## Steps\n1. **Direct pressure** with clean cloth; keep continuous pressure.\n2. **Elevate** limb if no fracture suspected.\n3. **Tourniquet** only for life-threatening limb bleeding that cannot be controlled — note time applied; loosen only by trained help.\n\nSeek professional care immediately after stabilizing."
+    },
+    {
+      "id": "fire_smoke",
+      "title": "Fire & smoke indoors",
+      "summary": "Stay low, feel doors, don’t waste air.",
+      "bodyMarkdown": "## If smoke\n- **Stay low** — cooler, clearer air near floor.\n- **Test doors** with back of hand; hot door = find another route.\n- Close doors behind you to slow spread.\n\n## If trapped\n- Seal door gaps with cloth; signal from window; minimize shouting to conserve air."
+    },
+    {
+      "id": "earthquake",
+      "title": "Earthquake (initial shake)",
+      "summary": "Drop, Cover, Hold — then assess.",
+      "bodyMarkdown": "## During shaking\n- **Drop, Cover, Hold On** under sturdy furniture or beside interior wall; avoid windows/glass.\n- If outdoors: move away from buildings/facades/power lines.\n\n## After shaking\n- Expect aftershocks; check gas only if trained; prepare to evacuate if structure is unsafe."
+    },
+    {
+      "id": "flood",
+      "title": "Flooding",
+      "summary": "Never drive through flood water.",
+      "bodyMarkdown": "## Rules\n- **Turn around, don’t drown** — ~30 cm moving water can sweep a vehicle.\n- Avoid wading — debris, sewage, electricity hazards.\n- Move vertically if flash flood risk; avoid basements."
+    },
+    {
+      "id": "communication_plan",
+      "title": "Communication plan",
+      "summary": "When networks fail, use agreed rally points.",
+      "bodyMarkdown": "## Offline tips\n- Agree an **out-of-area contact** everyone checks in with.\n- Text often works when voice fails; short messages conserve battery.\n- Conserve power: airplane mode except scheduled checks.\n\nKeep ICE (**In Case of Emergency**) contacts on lock screen when supported."
+    },
+    {
+      "id": "trip_planning",
+      "title": "Trip & home preparedness",
+      "summary": "Before you travel or shelter in place.",
+      "bodyMarkdown": "## Home kit basics\n- **Water** (3-day supply per person when feasible)\n- **Food** that needs no cooking or minimal fuel\n- **Flashlights** + spare batteries / power bank\n- **First aid** kit + needed prescriptions\n- **Warm layers**, blankets, sturdy gloves\n- **Documents** copies (ID, insurance) in waterproof pouch\n- **Cash** small denominations\n\n## Before a trip\n- Share itinerary + check-in schedule with one trusted contact\n- Download offline maps for the route\n- Pack a paper list of emergency numbers for your destinations\n- Move ICE/medical info to lock screen when supported"
+    },
+    {
+      "id": "karpa_cpr",
+      "title": "CPR — essentials",
+      "summary": "Unresponsive person, no normal breathing: call help, compress, AED if available.",
+      "bodyMarkdown": "> **Disclaimer:** This is a short offline reminder, **not** a substitute for certified first-aid training or emergency medical services.\n\n## When to start\n- Person is **unresponsive** and **not breathing normally** (gasping counts as abnormal).\n- **Call emergency services** (or ask someone else to) and fetch an **AED** if nearby.\n\n## Chest compressions (adults)\n- **Hard center of chest**, lower half of sternum.\n- **Depth ~5–6 cm**, rate **100–120/min**, full recoil between compressions.\n- **Minimize pauses**; switch compressor every ~2 minutes if tired.\n\n## Breaths (if trained)\n- 30 compressions : 2 rescue breaths is common; if untrained or unwilling, **compression-only CPR** is acceptable until help arrives.\n\n## AED\n- Turn on, **follow voice prompts**, bare chest, stick pads as shown, **do not touch** the patient during analysis/shock.\n\n## After\n- Continue until professionals take over, an AED says to stop, or you cannot continue safely."
+    }
+  ]
+}

@@ -27,17 +27,6 @@ class MessagesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Disastron',
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white),
-        ),
-      ),
-      themeMode: ThemeMode.dark,
-      home: const SafeArea(child: ChatScreen()),
-    );
+    return const SafeArea(child: ChatScreen());
   }
 }

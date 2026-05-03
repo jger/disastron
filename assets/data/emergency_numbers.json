@@ -1,0 +1,58 @@
+{
+  "default": [
+    { "label": "Emergency (EU / many countries)", "number": "112" },
+    { "label": "Emergency (US / CA)", "number": "911" }
+  ],
+  "US": [
+    { "label": "Emergency", "number": "911" },
+    { "label": "Poison Control", "number": "18002221222" }
+  ],
+  "CA": [
+    { "label": "Emergency", "number": "911" }
+  ],
+  "GB": [
+    { "label": "Emergency", "number": "999" },
+    { "label": "Non-emergency police", "number": "101" }
+  ],
+  "DE": [
+    { "label": "Emergency", "number": "112" },
+    { "label": "Police", "number": "110" }
+  ],
+  "FR": [
+    { "label": "Emergency", "number": "112" },
+    { "label": "Police / gendarmerie", "number": "17" },
+    { "label": "SAMU medical", "number": "15" },
+    { "label": "Fire", "number": "18" }
+  ],
+  "ES": [
+    { "label": "Emergency", "number": "112" }
+  ],
+  "IT": [
+    { "label": "Emergency", "number": "112" },
+    { "label": "Police", "number": "113" }
+  ],
+  "AU": [
+    { "label": "Emergency", "number": "000" }
+  ],
+  "NZ": [
+    { "label": "Emergency", "number": "111" }
+  ],
+  "JP": [
+    { "label": "Police", "number": "110" },
+    { "label": "Ambulance / Fire", "number": "119" }
+  ],
+  "IN": [
+    { "label": "Emergency", "number": "112" },
+    { "label": "Police", "number": "100" },
+    { "label": "Ambulance", "number": "102" },
+    { "label": "Fire", "number": "101" }
+  ],
+  "BR": [
+    { "label": "Emergency", "number": "190" },
+    { "label": "Ambulance", "number": "192" },
+    { "label": "Fire", "number": "193" }
+  ],
+  "MX": [
+    { "label": "Emergency", "number": "911" }
+  ]
+}

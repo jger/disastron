@@ -1,4 +1,6 @@
+import 'package:disastron/shared/widgets/genui_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
@@ -9,27 +11,76 @@ class ChatMessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme cs = Theme.of(context).colorScheme;
+
+    if (message.type == MessageType.systemInfo) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: GenUiCard(
+            title: 'Todos',
+            subtitle: message.text,
+            trailing: Icon(Icons.checklist_rounded, color: cs.primary),
+            child: const SizedBox.shrink(),
+          ),
+        ),
+      );
+    }
+
+    final bool assistantCopy =
+        !message.isUser && message.text.trim().isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
-        mainAxisAlignment: message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment:
+            message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: <Widget>[
           if (message.isUser) const SizedBox() else _buildAvatar(),
           const SizedBox(
             width: 10,
           ),
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.8,
+          Flexible(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.8,
+              ),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  if (assistantCopy)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        tooltip: 'Copy',
+                        icon: const Icon(Icons.copy, size: 18),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () async {
+                          await Clipboard.setData(
+                            ClipboardData(text: message.text),
+                          );
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Copied')),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  if (message.text.isNotEmpty)
+                    MarkdownBody(data: message.text)
+                  else
+                    const Center(child: CircularProgressIndicator()),
+                ],
+              ),
             ),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0x80757575),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: message.text.isNotEmpty
-                ? MarkdownBody(data: message.text)
-                : const Center(child: CircularProgressIndicator()),
           ),
           const SizedBox(
             width: 10,

@@ -1,95 +1,73 @@
 /// ***************************************************************************
 /// Copyright (c) 2024 [Jannis Gerardis]
 ///
-/// All rights reserved. This software and associated documentation files
-/// (the "Software") may not be used, copied, modified, merged, published,
-/// distributed, sublicensed, or sold, without the prior written permission
-/// of the copyright holder.
-///
-/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-/// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-/// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-/// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-/// DEALINGS IN THE SOFTWARE.
+/// All rights reserved.
 /// ***************************************************************************
 
 library;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:disastron/router/providers/login_provider.dart';
 import 'package:disastron/router/routes.gr.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:svg_flutter/svg_flutter.dart';
 
-class AppDrawer extends ConsumerWidget {
+class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final ColorScheme cs = Theme.of(context).colorScheme;
     return Drawer(
       child: ListView(
-        children: [
-          // Drawer header with a user account and logout button
+        children: <Widget>[
           DrawerHeader(
+            margin: EdgeInsets.zero,
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[
+                  cs.primary,
+                  Color.lerp(cs.primary, cs.primaryContainer, 0.22)!,
+                ],
+              ),
             ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.account_circle,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'User Foo',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Logout icon
-                    IconButton(
-                      onPressed: () {
-                        ref
-                            .read(isLoggedInProvider.notifier)
-                            .setLogged(isLoggedIn: false);
-                        AutoRouter.of(context).replace(const LoginRoute());
-                      },
-                      icon: Icon(
-                        Icons.logout,
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
-                    ),
-                  ],
+            child: Center(
+              child: SvgPicture.asset(
+                'assets/images/logo.svg',
+                height: 72,
+                colorFilter: ColorFilter.mode(
+                  cs.onPrimary,
+                  BlendMode.srcIn,
                 ),
-              ],
+                semanticsLabel: 'Disastron',
+              ),
             ),
           ),
-
           ListTile(
+            leading: const Icon(Icons.home_outlined),
             title: const Text('Home'),
             onTap: () {
               AutoRouter.of(context).replace(const HomeRoute());
-              // close drawer
               Navigator.pop(context);
             },
           ),
-
+          const Divider(height: 1),
           ListTile(
-            title: const Text('Get Photo'),
+            leading: const Icon(Icons.palette_outlined),
+            title: const Text('Theme & appearance'),
             onTap: () {
-              AutoRouter.of(context).replace(const GetPhotoRoute());
-              // close drawer
               Navigator.pop(context);
+              context.router.push(const AppearanceSettingsRoute());
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.psychology_outlined),
+            title: const Text('Offline model'),
+            onTap: () {
+              Navigator.pop(context);
+              context.router.push(const ModelConfigRoute());
             },
           ),
         ],

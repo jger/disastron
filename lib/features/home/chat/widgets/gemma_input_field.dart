@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:disastron/features/home/chat/chat_handlers.dart';
 import 'package:disastron/features/home/chat/service/gemma_service.dart';
 import 'package:disastron/features/home/chat/widgets/chat_message.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class GemmaInputField extends StatefulWidget {
 
   final Message userMessage;
   final GemmaLocalService gemmaService;
-  final ValueChanged<Message> streamHandled;
+  final AssistantMessageHandler streamHandled;
 
   @override
   GemmaInputFieldState createState() => GemmaInputFieldState();
@@ -28,10 +29,10 @@ class GemmaInputFieldState extends State<GemmaInputField> {
   @override
   void initState() {
     super.initState();
-    _processMessages();
+    unawaited(_processMessages());
   }
 
-  void _processMessages() {
+  Future<void> _processMessages() async {
     _subscription = widget.gemmaService
         .processMessageAsync(widget.userMessage)
         .listen(
@@ -44,16 +45,16 @@ class GemmaInputFieldState extends State<GemmaInputField> {
           });
         }
       },
-      onDone: () {
-        widget.streamHandled(_message);
+      onDone: () async {
+        await widget.streamHandled(_message);
       },
-      onError: (Object e, StackTrace st) {
+      onError: (Object e, StackTrace st) async {
         setState(() {
           _message = Message.text(
             text: '${_message.text}\n[Error: $e]',
           );
         });
-        widget.streamHandled(_message);
+        await widget.streamHandled(_message);
       },
     );
   }
