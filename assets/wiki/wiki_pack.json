@@ -53,6 +53,12 @@
       "title": "CPR — essentials",
       "summary": "Unresponsive person, no normal breathing: call help, compress, AED if available.",
       "bodyMarkdown": "> **Disclaimer:** This is a short offline reminder, **not** a substitute for certified first-aid training or emergency medical services.\n\n## When to start\n- Person is **unresponsive** and **not breathing normally** (gasping counts as abnormal).\n- **Call emergency services** (or ask someone else to) and fetch an **AED** if nearby.\n\n## Chest compressions (adults)\n- **Hard center of chest**, lower half of sternum.\n- **Depth ~5–6 cm**, rate **100–120/min**, full recoil between compressions.\n- **Minimize pauses**; switch compressor every ~2 minutes if tired.\n\n## Breaths (if trained)\n- 30 compressions : 2 rescue breaths is common; if untrained or unwilling, **compression-only CPR** is acceptable until help arrives.\n\n## AED\n- Turn on, **follow voice prompts**, bare chest, stick pads as shown, **do not touch** the patient during analysis/shock.\n\n## After\n- Continue until professionals take over, an AED says to stop, or you cannot continue safely."
+    },
+    {
+      "id": "morse_code",
+      "title": "Morse code",
+      "summary": "Letters, digits, and SOS — timing rules for light or sound.",
+      "bodyMarkdown": "## Timing\n- **Dot (dit)** — short mark.\n- **Dash (dah)** — ~3× dot length.\n- **Gap within a letter** — ~1 dot.\n- **Gap between letters** — ~3 dots.\n- **Gap between words** — ~7 dots.\n\nPractice slowly; readable beats fast.\n\n## Letters (International Morse)\n\n| Char | Code |\n|------|------|\n| A | .- |\n| B | -... |\n| C | -.-. |\n| D | -.. |\n| E | . |\n| F | ..-. |\n| G | --. |\n| H | .... |\n| I | .. |\n| J | .--- |\n| K | -.- |\n| L | .-.. |\n| M | -- |\n| N | -. |\n| O | --- |\n| P | .--. |\n| Q | --.- |\n| R | .-. |\n| S | ... |\n| T | - |\n| U | ..- |\n| V | ...- |\n| W | .-- |\n| X | -..- |\n| Y | -.-- |\n| Z | --.. |\n\n## Digits\n\n| Digit | Code |\n|-------|------|\n| 0 | ----- |\n| 1 | .---- |\n| 2 | ..--- |\n| 3 | ...-- |\n| 4 | ....- |\n| 5 | ..... |\n| 6 | -.... |\n| 7 | --... |\n| 8 | ---.. |\n| 9 | ----. |\n\n## Distress: SOS\n**S** `...` — **O** `---` — **S** `...` (normal spacing between those three letters).\n\nUse the Dashboard **SOS** tool for synced torch/screen/audio/vibration Morse when signaling."
     }
   ]
 }
