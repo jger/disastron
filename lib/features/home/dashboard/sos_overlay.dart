@@ -15,6 +15,9 @@ const String _kBluetoothSosMessage =
 
 const String _kSosAlarmAsset = 'assets/sounds/sos_alarm_loop.wav';
 
+/// Dit tone: only first few ms of the asset (dash uses full mark length).
+const int _kDitAudioChirpMs = 18;
+
 /// ITU Morse patterns (dot/dash).
 const Map<String, String> _kMorsePattern = <String, String>{
   'A': '.-',
@@ -63,6 +66,11 @@ class _MorseToken {
   final _TokenType type;
   final int charIndex;
   final int? ditDahIndex;
+}
+
+/// Isolate entry for [compute]; [AudioPlayer] cannot run off the root isolate.
+List<_MorseToken> _sosBuildSequenceForCompute(String raw) {
+  return _SosOverlayPageState.buildSequence(raw);
 }
 
 /// Full-screen SOS / Morse: torch + screen + optional tone/vibration; editable message.
@@ -132,6 +140,9 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
 
   AudioPlayer? _alarmPlayer;
 
+  /// Invalidates in-flight [compute] results after dispose or rapid edits.
+  int _sequenceBuildTicket = 0;
+
   static List<_MorseToken> buildSequence(String raw) {
     final List<_MorseToken> tokens = <_MorseToken>[];
     final String msg = raw.toUpperCase().trim();
@@ -185,6 +196,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
 
   @override
   void dispose() {
+    _sequenceBuildTicket++;
     _transmitting = false;
     _paused = false;
     _msgController.dispose();
@@ -247,13 +259,14 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     }
   }
 
-  Future<void> _silenceAlarm() async {
+  /// Pause between marks — keeps ExoPlayer loaded, no re-init on next seek/play.
+  Future<void> _pauseAlarm() async {
     final AudioPlayer? player = _alarmPlayer;
     if (player == null) {
       return;
     }
     try {
-      await player.stop();
+      await player.pause();
     } on Object {
       // ignore
     }
@@ -264,12 +277,22 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     }
   }
 
-  Future<void> _pauseAlarm() async {
-    await _silenceAlarm();
+  /// Full stop — called when SOS is stopped/closed/disposed.
+  Future<void> _stopAlarm() async {
+    final AudioPlayer? player = _alarmPlayer;
+    if (player == null) {
+      return;
+    }
+    try {
+      await player.stop();
+    } on Object {
+      // ignore
+    }
   }
 
-  Future<void> _stopAlarm() async {
-    await _silenceAlarm();
+  /// Alias kept for safety nets (e.g. _morsePulse finally).
+  Future<void> _silenceAlarm() async {
+    await _pauseAlarm();
   }
 
   Future<void> _prepareTorch() async {
@@ -321,8 +344,8 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     }
   }
 
-  /// Torch + screen + (optional) tone + vibration for one Morse “mark”, length [onMs].
-  Future<void> _morsePulse(int onMs) async {
+  /// Torch/vibration for [markMs]; audio plays only [audioMs] (dits: short chirp only).
+  Future<void> _morsePulse(int markMs, {required int audioMs}) async {
     if (!mounted || !_transmitting) {
       return;
     }
@@ -330,9 +353,9 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     await _setTorch(true);
     try {
       await Future.wait<void>(<Future<void>>[
-        Future<void>.delayed(Duration(milliseconds: onMs)),
-        _morseAudioFor(onMs),
-        _morseVibrationFor(onMs),
+        Future<void>.delayed(Duration(milliseconds: markMs)),
+        _morseAudioFor(audioMs),
+        _morseVibrationFor(markMs),
       ]);
     } on Object {
       // ignore
@@ -351,6 +374,8 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     await _setTorch(false);
   }
 
+  /// Plays the asset for exactly [onMs] then pauses (keeps ExoPlayer loaded).
+  /// Dits pass _kDitAudioChirpMs; dahs pass the full mark duration.
   Future<void> _morseAudioFor(int onMs) async {
     if (!_audioAlerts || !_transmitting || !mounted || onMs <= 0) {
       return;
@@ -362,7 +387,6 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
       return;
     }
     try {
-      await player.setLoopMode(LoopMode.off);
       await player.seek(Duration.zero);
       await player.play();
       await Future<void>.delayed(Duration(milliseconds: onMs));
@@ -372,7 +396,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
       }
     } finally {
       try {
-        await player.stop();
+        await player.pause();
         await player.seek(Duration.zero);
       } on Object {
         // ignore
@@ -420,9 +444,9 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     final int u = _unitMs;
     switch (t.type) {
       case _TokenType.dit:
-        await _morsePulse(u);
+        await _morsePulse(u, audioMs: _kDitAudioChirpMs);
       case _TokenType.dah:
-        await _morsePulse(u * 3);
+        await _morsePulse(u * 3, audioMs: u * 3);
       case _TokenType.symbolGap:
         await _delayWithPause(Duration(milliseconds: u));
       case _TokenType.letterGap:
@@ -451,9 +475,16 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
       if (!mounted || !_transmitting) {
         break;
       }
+      final int prevIndex = _tokenIndex;
       setState(() {
         _tokenIndex = (_tokenIndex + 1) % _sequence.length;
       });
+      if (_tokenIndex == 0 &&
+          _sequence.isNotEmpty &&
+          prevIndex == _sequence.length - 1) {
+        final int gapMs = (_unitMs * 12).clamp(650, 3200);
+        await _delayWithPause(Duration(milliseconds: gapMs));
+      }
     }
   }
 
@@ -513,8 +544,22 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   }
 
   void _onMessageChanged(String _) {
+    final int ticket = ++_sequenceBuildTicket;
+    unawaited(_applyComputedSequence(ticket));
+  }
+
+  Future<void> _applyComputedSequence(int ticket) async {
+    final String text = _msgController.text;
+    final List<_MorseToken> seq =
+        await compute(_sosBuildSequenceForCompute, text);
+    if (!mounted || ticket != _sequenceBuildTicket) {
+      return;
+    }
+    if (_msgController.text != text) {
+      return;
+    }
     setState(() {
-      _sequence = buildSequence(_msgController.text);
+      _sequence = seq;
       _tokenIndex = 0;
     });
   }
