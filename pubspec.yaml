@@ -80,7 +80,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
-    - assets/sounds/sos_alarm_loop.wav
+    - assets/sounds/morse_dit.wav
+    - assets/sounds/morse_dah.wav
     - assets/wiki/
     - assets/data/emergency_numbers.json
     - assets/data/climate_normals.json
