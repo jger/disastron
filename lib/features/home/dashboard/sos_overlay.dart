@@ -15,7 +15,57 @@ const String _kBluetoothSosMessage =
 
 const String _kSosAlarmAsset = 'assets/sounds/sos_alarm_loop.wav';
 
-/// Full-screen SOS: alternating screen flash + Morse SOS on torch + optional tone/haptics.
+/// ITU Morse patterns (dot/dash).
+const Map<String, String> _kMorsePattern = <String, String>{
+  'A': '.-',
+  'B': '-...',
+  'C': '-.-.',
+  'D': '-..',
+  'E': '.',
+  'F': '..-.',
+  'G': '--.',
+  'H': '....',
+  'I': '..',
+  'J': '.---',
+  'K': '-.-',
+  'L': '.-..',
+  'M': '--',
+  'N': '-.',
+  'O': '---',
+  'P': '.--.',
+  'Q': '--.-',
+  'R': '.-.',
+  'S': '...',
+  'T': '-',
+  'U': '..-',
+  'V': '...-',
+  'W': '.--',
+  'X': '-..-',
+  'Y': '-.--',
+  'Z': '--..',
+  '0': '-----',
+  '1': '.----',
+  '2': '..---',
+  '3': '...--',
+  '4': '....-',
+  '5': '.....',
+  '6': '-....',
+  '7': '--...',
+  '8': '---..',
+  '9': '----.',
+};
+
+enum _TokenType { dit, dah, symbolGap, letterGap, wordGap }
+
+class _MorseToken {
+  const _MorseToken(this.type, this.charIndex, this.ditDahIndex);
+
+  final _TokenType type;
+  final int charIndex;
+  final int? ditDahIndex;
+}
+
+/// Full-screen SOS / Morse: torch + screen + optional tone/vibration; editable message.
 Future<void> openSosOverlay(BuildContext context) {
   return Navigator.of(context).push<void>(
     PageRouteBuilder<void>(
@@ -26,6 +76,33 @@ Future<void> openSosOverlay(BuildContext context) {
   );
 }
 
+class _MorseCapsFormatter extends TextInputFormatter {
+  static const int kMaxLen = 30;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final String upper = newValue.text.toUpperCase();
+    final StringBuffer buf = StringBuffer();
+    for (final int r in upper.runes) {
+      final String ch = String.fromCharCode(r);
+      if (RegExp('[A-Z0-9 ]').hasMatch(ch)) {
+        buf.write(ch);
+      }
+    }
+    String t = buf.toString();
+    if (t.length > kMaxLen) {
+      t = t.substring(0, kMaxLen);
+    }
+    return TextEditingValue(
+      text: t,
+      selection: TextSelection.collapsed(offset: t.length),
+    );
+  }
+}
+
 class _SosOverlayPage extends StatefulWidget {
   const _SosOverlayPage();
 
@@ -34,23 +111,102 @@ class _SosOverlayPage extends StatefulWidget {
 }
 
 class _SosOverlayPageState extends State<_SosOverlayPage> {
-  static const int _unitMs = 160;
+  /// Slider 0 = slow (500 ms unit), 1 = fast (60 ms unit).
+  double _speed = 0.5;
+
+  int get _unitMs => (500 - (_speed * 440)).round();
+
+  late final TextEditingController _msgController;
+
+  List<_MorseToken> _sequence = <_MorseToken>[];
+  int _tokenIndex = 0;
+
+  bool _transmitting = false;
+  bool _paused = false;
 
   bool _surfaceLit = false;
   bool _torchReady = false;
-  bool _running = true;
   bool _bluetoothAlert = false;
   bool _audioAlerts = true;
   bool _vibrationAlerts = true;
 
   AudioPlayer? _alarmPlayer;
 
+  static List<_MorseToken> buildSequence(String raw) {
+    final List<_MorseToken> tokens = <_MorseToken>[];
+    final String msg = raw.toUpperCase().trim();
+    if (msg.isEmpty) {
+      return tokens;
+    }
+
+    bool prevLetter = false;
+    for (int i = 0; i < msg.length; i++) {
+      final String c = msg[i];
+      if (c == ' ') {
+        if (prevLetter) {
+          tokens.add(_MorseToken(_TokenType.wordGap, i, null));
+          prevLetter = false;
+        }
+        continue;
+      }
+      final String? pat = _kMorsePattern[c];
+      if (pat == null) {
+        continue;
+      }
+      if (prevLetter) {
+        tokens.add(_MorseToken(_TokenType.letterGap, i, null));
+      }
+      for (int j = 0; j < pat.length; j++) {
+        final String sym = pat[j];
+        if (sym == '.') {
+          tokens.add(_MorseToken(_TokenType.dit, i, j));
+        } else if (sym == '-') {
+          tokens.add(_MorseToken(_TokenType.dah, i, j));
+        }
+        if (j < pat.length - 1) {
+          tokens.add(_MorseToken(_TokenType.symbolGap, i, null));
+        }
+      }
+      prevLetter = true;
+    }
+    return tokens;
+  }
+
   @override
   void initState() {
     super.initState();
+    _msgController = TextEditingController(text: 'SOS');
+    _sequence = buildSequence(_msgController.text);
     unawaited(_prepareTorch());
     unawaited(_ensureAlarmPlayer());
+    _transmitting = true;
     unawaited(_runLoop());
+  }
+
+  @override
+  void dispose() {
+    _transmitting = false;
+    _paused = false;
+    _msgController.dispose();
+    unawaited(_setTorch(false));
+    unawaited(_stopSosVibration());
+    final AudioPlayer? player = _alarmPlayer;
+    _alarmPlayer = null;
+    if (player != null) {
+      unawaited(() async {
+        try {
+          await player.stop();
+        } on Object {
+          // ignore
+        }
+        try {
+          await player.dispose();
+        } on Object {
+          // ignore
+        }
+      }());
+    }
+    super.dispose();
   }
 
   Future<void> _ensureAlarmPlayer() async {
@@ -147,9 +303,27 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     await _setTorch(on);
   }
 
+  Future<void> _delayWithPause(Duration total) async {
+    int left = total.inMilliseconds;
+    while (left > 0) {
+      if (!mounted || !_transmitting) {
+        return;
+      }
+      while (_paused && _transmitting && mounted) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+      if (!mounted || !_transmitting) {
+        return;
+      }
+      final int step = left > 50 ? 50 : left;
+      await Future<void>.delayed(Duration(milliseconds: step));
+      left -= step;
+    }
+  }
+
   /// Torch + screen + (optional) tone + vibration for one Morse “mark”, length [onMs].
   Future<void> _morsePulse(int onMs) async {
-    if (!mounted || !_running) {
+    if (!mounted || !_transmitting) {
       return;
     }
     setState(() => _surfaceLit = true);
@@ -170,7 +344,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     } on Object {
       // ignore
     }
-    if (!mounted || !_running) {
+    if (!mounted || !_transmitting) {
       return;
     }
     setState(() => _surfaceLit = false);
@@ -178,7 +352,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   }
 
   Future<void> _morseAudioFor(int onMs) async {
-    if (!_audioAlerts || !_running || !mounted || onMs <= 0) {
+    if (!_audioAlerts || !_transmitting || !mounted || onMs <= 0) {
       return;
     }
     await _ensureAlarmPlayer();
@@ -207,7 +381,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   }
 
   Future<void> _morseVibrationFor(int onMs) async {
-    if (!_vibrationAlerts || !_running || !mounted || onMs <= 0) {
+    if (!_vibrationAlerts || !_transmitting || !mounted || onMs <= 0) {
       return;
     }
     try {
@@ -229,12 +403,12 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   }
 
   Future<void> _hapticMorseWindow(int onMs) async {
-    if (!_vibrationAlerts || !_running || !mounted || onMs <= 0) {
+    if (!_vibrationAlerts || !_transmitting || !mounted || onMs <= 0) {
       return;
     }
     final int end = DateTime.now().millisecondsSinceEpoch + onMs;
     while (mounted &&
-        _running &&
+        _transmitting &&
         _vibrationAlerts &&
         DateTime.now().millisecondsSinceEpoch < end) {
       await HapticFeedback.heavyImpact();
@@ -242,42 +416,44 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     }
   }
 
-  Future<void> _dit() async {
-    await _morsePulse(_unitMs);
-    await Future<void>.delayed(const Duration(milliseconds: _unitMs));
-  }
-
-  Future<void> _dah() async {
-    await _morsePulse(_unitMs * 3);
-    await Future<void>.delayed(const Duration(milliseconds: _unitMs));
-  }
-
-  Future<void> _letterGap() async {
-    await Future<void>.delayed(const Duration(milliseconds: _unitMs * 2));
-  }
-
-  Future<void> _wordGap() async {
-    await Future<void>.delayed(const Duration(milliseconds: _unitMs * 4));
-  }
-
-  Future<void> _sendSosOnce() async {
-    await _dit();
-    await _dit();
-    await _dit();
-    await _letterGap();
-    await _dah();
-    await _dah();
-    await _dah();
-    await _letterGap();
-    await _dit();
-    await _dit();
-    await _dit();
-    await _wordGap();
+  Future<void> _executeToken(_MorseToken t) async {
+    final int u = _unitMs;
+    switch (t.type) {
+      case _TokenType.dit:
+        await _morsePulse(u);
+      case _TokenType.dah:
+        await _morsePulse(u * 3);
+      case _TokenType.symbolGap:
+        await _delayWithPause(Duration(milliseconds: u));
+      case _TokenType.letterGap:
+        await _delayWithPause(Duration(milliseconds: u * 3));
+      case _TokenType.wordGap:
+        await _delayWithPause(Duration(milliseconds: u * 7));
+    }
   }
 
   Future<void> _runLoop() async {
-    while (mounted && _running) {
-      await _sendSosOnce();
+    while (mounted && _transmitting) {
+      if (_sequence.isEmpty) {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        continue;
+      }
+      while (_paused && _transmitting && mounted) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+      if (!mounted || !_transmitting) {
+        break;
+      }
+
+      setState(() {});
+      await _executeToken(_sequence[_tokenIndex]);
+
+      if (!mounted || !_transmitting) {
+        break;
+      }
+      setState(() {
+        _tokenIndex = (_tokenIndex + 1) % _sequence.length;
+      });
     }
   }
 
@@ -289,35 +465,134 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     }
   }
 
-  Future<void> _stop() async {
-    _running = false;
+  Future<void> _silenceHardware() async {
     await _stopSosVibration();
     await _stopAlarm();
     await _pulseVisualAndTorch(false);
     await _setTorch(false);
+  }
+
+  void _stopTransmit() {
+    setState(() {
+      _transmitting = false;
+      _paused = false;
+      _tokenIndex = 0;
+    });
+    unawaited(_silenceHardware());
+  }
+
+  void _startTransmit() {
+    if (_sequence.isEmpty) {
+      return;
+    }
+    setState(() {
+      _transmitting = true;
+      _paused = false;
+      _tokenIndex = 0;
+    });
+    unawaited(_runLoop());
+  }
+
+  void _pauseTransmit() {
+    setState(() => _paused = true);
+  }
+
+  void _resumeTransmit() {
+    setState(() => _paused = false);
+  }
+
+  Future<void> _closeOverlay() async {
+    setState(() {
+      _transmitting = false;
+      _paused = false;
+    });
+    await _silenceHardware();
     if (mounted) {
       Navigator.of(context).pop();
     }
   }
 
-  String _sosModalitiesDescription() {
-    final List<String> parts = <String>['Screen flash', 'torch Morse'];
-    if (_audioAlerts) {
-      parts.add('Morse-sync alarm');
+  void _onMessageChanged(String _) {
+    setState(() {
+      _sequence = buildSequence(_msgController.text);
+      _tokenIndex = 0;
+    });
+  }
+
+  bool _isSpanActive(int charIndex, int ditDahIndex) {
+    if (_sequence.isEmpty || _tokenIndex >= _sequence.length) {
+      return false;
     }
-    if (_vibrationAlerts) {
-      parts.add('Morse-sync vibration');
+    final _MorseToken t = _sequence[_tokenIndex];
+    if (t.type != _TokenType.dit && t.type != _TokenType.dah) {
+      return false;
     }
-    final String core = parts.join(' + ');
-    final List<String> off = <String>[];
-    if (!_audioAlerts) {
-      off.add('audio off');
+    return t.charIndex == charIndex && t.ditDahIndex == ditDahIndex;
+  }
+
+  Widget _buildMorseDisplay(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+    final String msg = _msgController.text.toUpperCase();
+    if (msg.isEmpty) {
+      return Text(
+        'Enter A–Z / 0–9',
+        style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+      );
     }
-    if (!_vibrationAlerts) {
-      off.add('vibration off');
+
+    final List<Widget> letterCols = <Widget>[];
+    for (int i = 0; i < msg.length; i++) {
+      final String ch = msg[i];
+      if (ch == ' ') {
+        letterCols.add(const SizedBox(width: 16));
+        continue;
+      }
+      final String? pat = _kMorsePattern[ch];
+      if (pat == null) {
+        continue;
+      }
+      final List<InlineSpan> spans = <InlineSpan>[];
+      for (int j = 0; j < pat.length; j++) {
+        final String sym = pat[j];
+        final bool active = _isSpanActive(i, j);
+        final TextStyle style = TextStyle(
+          fontWeight: active ? FontWeight.w900 : FontWeight.w500,
+          color: active ? scheme.error : scheme.onSurface,
+          fontSize: 18,
+          height: 1.2,
+        );
+        final String visual = sym == '.' ? '·' : '―';
+        spans.add(TextSpan(text: visual, style: style));
+        if (j < pat.length - 1) {
+          spans.add(TextSpan(text: ' ', style: style));
+        }
+      }
+      letterCols.add(
+        Padding(
+          padding: const EdgeInsets.only(right: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                ch,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 4),
+              RichText(text: TextSpan(children: spans)),
+            ],
+          ),
+        ),
+      );
     }
-    final String suffix = off.isEmpty ? '' : ' (${off.join(', ')})';
-    return '$core$suffix. Point lamp away from eyes.';
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: letterCols),
+    );
   }
 
   void _onBluetoothChanged(bool value) {
@@ -333,34 +608,13 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   }
 
   @override
-  void dispose() {
-    _running = false;
-    unawaited(_setTorch(false));
-    unawaited(_stopSosVibration());
-    final AudioPlayer? player = _alarmPlayer;
-    _alarmPlayer = null;
-    if (player != null) {
-      unawaited(() async {
-        try {
-          await player.stop();
-        } on Object {
-          // ignore
-        }
-        try {
-          await player.dispose();
-        } on Object {
-          // ignore
-        }
-      }());
-    }
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
     final Color fg =
         _surfaceLit ? Colors.black : Theme.of(context).colorScheme.surface;
     final Color bg = _surfaceLit ? Colors.white : Colors.black;
+    final int wpm = _unitMs > 0 ? (1200 / _unitMs).round() : 0;
 
     return Material(
       color: Colors.transparent,
@@ -370,136 +624,23 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
           AnimatedContainer(
             duration: const Duration(milliseconds: 60),
             color: bg,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 120, 24, 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Icon(Icons.sos, size: 96, color: fg),
-                    const SizedBox(height: 16),
-                    Text(
-                      'SOS — tap Stop',
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                color: fg,
-                                fontWeight: FontWeight.bold,
-                              ),
-                      textAlign: TextAlign.center,
+            alignment: Alignment.center,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 48, 24, 280),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Icon(Icons.sos, size: 72, color: fg),
+                  const SizedBox(height: 12),
+                  Text(
+                    'SOS / Morse',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: fg,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _sosModalitiesDescription(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(color: fg),
-                      textAlign: TextAlign.center,
-                    ),
-                    if (_bluetoothAlert) ...<Widget>[
-                      const SizedBox(height: 12),
-                      Text(
-                        _kBluetoothSosMessage,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: fg),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: Material(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      SwitchListTile.adaptive(
-                        value: _bluetoothAlert,
-                        onChanged: _onBluetoothChanged,
-                        secondary: Icon(
-                          Icons.bluetooth,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        title: Text(
-                          'Bluetooth alert',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        subtitle: Text(
-                          _bluetoothAlert
-                              ? 'Preference on — not transmitting in this build.'
-                              : 'Off (default)',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
-                      Divider(
-                        height: 1,
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                      SwitchListTile.adaptive(
-                        value: _audioAlerts,
-                        onChanged: (bool v) {
-                          setState(() => _audioAlerts = v);
-                          if (v) {
-                            unawaited(_ensureAlarmPlayer());
-                          } else {
-                            unawaited(_pauseAlarm());
-                          }
-                        },
-                        secondary: Icon(
-                          Icons.volume_up_outlined,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        title: Text(
-                          'Alert sound',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        subtitle: Text(
-                          _audioAlerts
-                              ? 'Alarm follows Morse flashes (default)'
-                              : 'Alarm tone off',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
-                      Divider(
-                        height: 1,
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                      SwitchListTile.adaptive(
-                        value: _vibrationAlerts,
-                        onChanged: (bool v) {
-                          setState(() => _vibrationAlerts = v);
-                          if (!v) {
-                            unawaited(_stopSosVibration());
-                          }
-                        },
-                        secondary: Icon(
-                          Icons.vibration,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        title: Text(
-                          'Vibration',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        subtitle: Text(
-                          _vibrationAlerts
-                              ? 'Vibration follows Morse flashes (default)'
-                              : 'Vibration off',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
-                    ],
+                    textAlign: TextAlign.center,
                   ),
-                ),
+                ],
               ),
             ),
           ),
@@ -507,13 +648,153 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
             child: Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: FilledButton(
-                  onPressed: _stop,
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                child: Material(
+                  elevation: 8,
+                  borderRadius: BorderRadius.circular(16),
+                  color: scheme.surfaceContainerHighest,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Text(
+                          'Morse',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 56,
+                          child: _buildMorseDisplay(context),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _msgController,
+                          maxLength: _MorseCapsFormatter.kMaxLen,
+                          inputFormatters: <TextInputFormatter>[
+                            _MorseCapsFormatter(),
+                          ],
+                          decoration: InputDecoration(
+                            labelText: 'Message (CAPS)',
+                            counterText: '${_msgController.text.length}/${_MorseCapsFormatter.kMaxLen}',
+                            border: const OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.2,
+                          ),
+                          onChanged: _onMessageChanged,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: <Widget>[
+                            Text(
+                              'Speed',
+                              style: theme.textTheme.labelLarge,
+                            ),
+                            Expanded(
+                              child: Slider(
+                                value: _speed,
+                                divisions: 20,
+                                label: '~$wpm WPM',
+                                onChanged: (double v) =>
+                                    setState(() => _speed = v),
+                              ),
+                            ),
+                            Text(
+                              '~$wpm',
+                              style: theme.textTheme.labelMedium,
+                            ),
+                          ],
+                        ),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: <Widget>[
+                            FilterChip(
+                              label: const Text('BT'),
+                              selected: _bluetoothAlert,
+                              onSelected: _onBluetoothChanged,
+                            ),
+                            FilterChip(
+                              label: const Text('Audio'),
+                              selected: _audioAlerts,
+                              onSelected: (bool v) {
+                                setState(() => _audioAlerts = v);
+                                if (v) {
+                                  unawaited(_ensureAlarmPlayer());
+                                } else {
+                                  unawaited(_pauseAlarm());
+                                }
+                              },
+                            ),
+                            FilterChip(
+                              label: const Text('Vibe'),
+                              selected: _vibrationAlerts,
+                              onSelected: (bool v) {
+                                setState(() => _vibrationAlerts = v);
+                                if (!v) {
+                                  unawaited(_stopSosVibration());
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        if (_transmitting && !_paused)
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: _pauseTransmit,
+                                  child: const Text('Pause'),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: FilledButton.tonal(
+                                  onPressed: _stopTransmit,
+                                  child: const Text('Stop'),
+                                ),
+                              ),
+                            ],
+                          )
+                        else if (_transmitting && _paused)
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: FilledButton(
+                                  onPressed: _resumeTransmit,
+                                  child: const Text('Resume'),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: FilledButton.tonal(
+                                  onPressed: _stopTransmit,
+                                  child: const Text('Stop'),
+                                ),
+                              ),
+                            ],
+                          )
+                        else
+                          FilledButton(
+                            onPressed:
+                                _sequence.isEmpty ? null : _startTransmit,
+                            child: const Text('Start'),
+                          ),
+                        TextButton(
+                          onPressed: () => unawaited(_closeOverlay()),
+                          child: const Text('× Close'),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: const Text('Stop SOS'),
                 ),
               ),
             ),
