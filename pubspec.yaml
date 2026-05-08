@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  audio_session: ^0.2.3
   auto_route: ^11.1.0
   battery_plus: ^7.0.0
   connectivity_plus: ^6.1.4
