@@ -101,6 +101,46 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
+  Future<void> _confirmResetChat(BuildContext context) async {
+    final bool? ok = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        title: const Text('Reset chat?'),
+        content: const Text(
+          'All messages in this session will be cleared and the first-run '
+          'quick actions will appear again.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Reset'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) {
+      return;
+    }
+    await _gemma.close();
+    if (!mounted) {
+      return;
+    }
+    await ref.read(firstChatAccidentPromptProvider.notifier).reset();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _messages.clear();
+      _chatReady = false;
+      _initError = null;
+    });
+    await _ensureChatReady();
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen<LocalGemmaModelUi>(localGemmaModelProvider, (LocalGemmaModelUi? previous, LocalGemmaModelUi next) {
@@ -134,6 +174,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       appBar: AppBar(
         backgroundColor: cs.surfaceContainerHigh,
         title: const Text('Chat'),
+        actions: <Widget>[
+          if (modelUi.isReady && _chatReady && _initError == null)
+            IconButton(
+              tooltip: 'Reset chat',
+              icon: const Icon(Icons.restart_alt),
+              onPressed: () => unawaited(_confirmResetChat(context)),
+            ),
+        ],
       ),
       body: Stack(
         children: <Widget>[

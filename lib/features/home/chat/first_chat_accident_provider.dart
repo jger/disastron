@@ -19,4 +19,11 @@ class FirstChatAccidentPrompt extends _$FirstChatAccidentPrompt {
     await prefs.setBool(kFirstChatAccidentPromptDoneKey, true);
     state = const AsyncValue<bool>.data(true);
   }
+
+  /// Clears persisted first-run state so accident chips show again (empty chat).
+  Future<void> reset() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove(kFirstChatAccidentPromptDoneKey);
+    state = const AsyncValue<bool>.data(false);
+  }
 }

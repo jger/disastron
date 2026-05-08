@@ -130,6 +130,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   bool _torchReady = false;
   bool _bluetoothAlert = false;
   bool _audioAlerts = true;
+  bool _lightAlerts = true;
   bool _vibrationAlerts = true;
 
   final SosMorseTone _morseTone = SosMorseTone();
@@ -249,7 +250,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     }
   }
 
-  /// SoLoud sine + torch + screen: one [markMs] hold; tone start before torch (sync plan).
+  /// SoLoud sine + optional torch + screen: one [markMs] hold.
   Future<void> _morsePulse(int markMs, {required bool isDit}) async {
     if (!mounted || !_transmitting) {
       return;
@@ -262,8 +263,10 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
       if (!mounted || !_transmitting) {
         return;
       }
-      setState(() => _surfaceLit = true);
-      await _setTorch(true);
+      if (_lightAlerts) {
+        setState(() => _surfaceLit = true);
+        await _setTorch(true);
+      }
       await Future.wait<void>(<Future<void>>[
         Future<void>.delayed(Duration(milliseconds: markMs)),
         _morseVibrationFor(markMs),
@@ -658,6 +661,21 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                                   unawaited(_morseTone.ensureReady());
                                 } else {
                                   unawaited(_morseTone.stop());
+                                }
+                              },
+                            ),
+                            FilterChip(
+                              label: const Text('Light'),
+                              selected: _lightAlerts,
+                              onSelected: (bool v) {
+                                setState(() {
+                                  _lightAlerts = v;
+                                  if (!v) {
+                                    _surfaceLit = false;
+                                  }
+                                });
+                                if (!v) {
+                                  unawaited(_setTorch(false));
                                 }
                               },
                             ),
