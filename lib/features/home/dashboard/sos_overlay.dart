@@ -12,6 +12,10 @@ const String _kBluetoothSosMessage =
     '(e.g. Aurora-style open signaling). This build only uses flashlight, '
     'screen, tone, and vibration — Bluetooth transmit is not active yet.';
 
+/// Paris-ish dit (one unit) length bounds for the speed slider (ms).
+const int _kMorseUnitMsSlow = 500;
+const int _kMorseUnitMsFastFloor = 72;
+
 /// ITU Morse patterns (dot/dash).
 const Map<String, String> _kMorsePattern = <String, String>{
   'A': '.-',
@@ -113,10 +117,12 @@ class _SosOverlayPage extends StatefulWidget {
 }
 
 class _SosOverlayPageState extends State<_SosOverlayPage> {
-  /// Slider 0 = slow (500 ms unit), 1 = fast (60 ms unit).
+  /// Slider 0 = slow ([_kMorseUnitMsSlow] ms dit), 1 = fast (dit floored).
   double _speed = 0.5;
 
-  int get _unitMs => (500 - (_speed * 440)).round();
+  int get _unitMs => (_kMorseUnitMsSlow -
+          _speed * (_kMorseUnitMsSlow - _kMorseUnitMsFastFloor))
+      .round();
 
   late final TextEditingController _msgController;
 

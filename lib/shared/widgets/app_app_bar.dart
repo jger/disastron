@@ -19,6 +19,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:svg_flutter/svg_flutter.dart';
 
 class AppAppBar extends AppBar {
   AppAppBar({
@@ -32,9 +33,13 @@ class AppAppBar extends AppBar {
               // if (user == null) {
               //   return const SizedBox();
               // }
-              return Text(
-                'Disastron',
-                style: Theme.of(context).textTheme.headlineSmall,
+              final Color fg = Theme.of(context).appBarTheme.foregroundColor ??
+                  Theme.of(context).colorScheme.onSurface;
+              return SvgPicture.asset(
+                'assets/images/logo-top-bw.svg',
+                height: 22,
+                colorFilter: ColorFilter.mode(fg, BlendMode.srcIn),
+                semanticsLabel: 'Disastron',
               );
             },
           ),
