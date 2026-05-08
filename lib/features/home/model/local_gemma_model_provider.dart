@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:disastron/features/home/model/huggingface_token_provider.dart';
 import 'package:disastron/features/home/model/model_install_prefs.dart';
 import 'package:disastron/features/home/model/predefined_models.dart'
-    show modelFileTypeForUrl;
+    show modelFileTypeForUrl, modelTypeForInferenceSource;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:path/path.dart' as p;
@@ -87,6 +87,23 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     );
   }
 
+  /// Sets installing phase at 0% so UI shows progress before network work (dialogs, etc.).
+  void beginInstallFlow() {
+    state = const LocalGemmaModelUi(phase: LocalGemmaPhase.installing);
+  }
+
+  /// Restores UI after user cancels before installFromNetwork returns real progress.
+  void abortInstallAttempt() {
+    if (state.phase != LocalGemmaPhase.installing || state.progress > 0) {
+      return;
+    }
+    state = LocalGemmaModelUi(
+      phase: FlutterGemma.hasActiveModel()
+          ? LocalGemmaPhase.ready
+          : LocalGemmaPhase.notInstalled,
+    );
+  }
+
   Future<void> _tryRestoreModel() async {
     if (kIsWeb) {
       return;
@@ -140,7 +157,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     state = const LocalGemmaModelUi(phase: LocalGemmaPhase.installing);
     try {
       final ModelFileType fileType = modelFileTypeForPath(path);
-      const ModelType modelType = ModelType.gemmaIt;
+      final ModelType modelType = modelTypeForInferenceSource(path);
       await FlutterGemma.installModel(
         modelType: modelType,
         fileType: fileType,

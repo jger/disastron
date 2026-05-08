@@ -82,10 +82,13 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     if (!mounted) {
       return;
     }
+    ref.read(localGemmaModelProvider.notifier).beginInstallFlow();
     if (!await confirmLargeDownloadIfNotLikelyUnmetered(context)) {
+      ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
       return;
     }
     if (!mounted) {
+      ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
       return;
     }
     final ModelFileType fileType = modelFileTypeForUrl(url);
@@ -155,16 +158,21 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     if (!mounted) {
       return;
     }
+    ref.read(localGemmaModelProvider.notifier).beginInstallFlow();
     if (!await _ensureHfTokenBeforeNetworkDownload()) {
+      ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
       return;
     }
     if (!mounted) {
+      ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
       return;
     }
     if (!await confirmLargeDownloadIfNotLikelyUnmetered(context)) {
+      ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
       return;
     }
     if (!mounted) {
+      ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
       return;
     }
     await ref.read(localGemmaModelProvider.notifier).installFromNetwork(

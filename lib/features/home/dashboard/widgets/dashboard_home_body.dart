@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:disastron/app/app_appearance.dart';
 import 'package:disastron/app/appearance_provider.dart';
@@ -86,6 +88,26 @@ class _HcBatteryTipBannerState extends ConsumerState<_HcBatteryTipBanner> {
                           ),
                     ),
                   ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () {
+                      unawaited(
+                        ref
+                            .read(appAppearanceProvider.notifier)
+                            .setMode(AppAppearanceMode.light),
+                      );
+                    },
+                    child: Text(
+                      'Light mode',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: onSec,
+                          ),
+                    ),
+                  ),
                   IconButton(
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
@@ -108,13 +130,64 @@ class _HcBatteryTipBannerState extends ConsumerState<_HcBatteryTipBanner> {
   }
 }
 
-/// Banner when no on-device model is installed; CTA = smallest storage preset.
+/// Banner for offline model: progress while downloading, CTA when none installed.
 class _NoOfflineModelBanner extends ConsumerWidget {
   const _NoOfflineModelBanner();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final LocalGemmaModelUi ui = ref.watch(localGemmaModelProvider);
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+
+    if (ui.phase == LocalGemmaPhase.installing) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Material(
+          color: scheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Icon(Icons.downloading, color: scheme.primary, size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Downloading offline model…',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: scheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                    if (ui.progress > 0)
+                      Text(
+                        '${ui.progress}%',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    minHeight: 6,
+                    value: ui.progress > 0 ? ui.progress / 100.0 : null,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     if (ui.phase != LocalGemmaPhase.notInstalled) {
       return const SizedBox.shrink();
     }
@@ -170,12 +243,16 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                       if (!context.mounted) {
                         return;
                       }
+                      ref.read(localGemmaModelProvider.notifier).beginInstallFlow();
                       final String? existing =
                           await ref.read(huggingfaceTokenProvider.future);
                       if (existing == null || existing.trim().isEmpty) {
                         final String? pasted =
                             await showHuggingFaceTokenPasteDialog(context);
                         if (pasted == null || pasted.trim().isEmpty) {
+                          ref
+                              .read(localGemmaModelProvider.notifier)
+                              .abortInstallAttempt();
                           return;
                         }
                         await ref
@@ -183,14 +260,23 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                             .save(pasted.trim());
                       }
                       if (!context.mounted) {
+                        ref
+                            .read(localGemmaModelProvider.notifier)
+                            .abortInstallAttempt();
                         return;
                       }
                       if (!await confirmLargeDownloadIfNotLikelyUnmetered(
                             context,
                           )) {
+                        ref
+                            .read(localGemmaModelProvider.notifier)
+                            .abortInstallAttempt();
                         return;
                       }
                       if (!context.mounted) {
+                        ref
+                            .read(localGemmaModelProvider.notifier)
+                            .abortInstallAttempt();
                         return;
                       }
                       await ref.read(localGemmaModelProvider.notifier).installFromNetwork(

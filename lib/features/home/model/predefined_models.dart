@@ -11,9 +11,9 @@ ModelFileType modelFileTypeForUrl(String url) {
   return ModelFileType.task;
 }
 
-/// Infer model family from URL when the UI does not ask (URL-only install tab).
-ModelType modelTypeForInferenceUrl(String url) {
-  final String trimmed = url.trim();
+/// Infer model family from a download URL or local file path (URL tab + file import).
+ModelType modelTypeForInferenceSource(String urlOrPath) {
+  final String trimmed = urlOrPath.trim();
   final Uri? parsed = Uri.tryParse(trimmed);
   if (parsed != null && parsed.hasAuthority && parsed.pathSegments.length >= 2) {
     for (final PredefinedInferenceModel m in kPredefinedInferenceModels) {
@@ -40,8 +40,14 @@ ModelType modelTypeForInferenceUrl(String url) {
   if (lower.contains('qwen')) {
     return ModelType.qwen;
   }
+  if (lower.contains('gemma-4') || lower.contains('gemma4')) {
+    return ModelType.gemma4;
+  }
   return ModelType.gemmaIt;
 }
+
+/// Infer model family from URL when the UI does not ask (URL-only install tab).
+ModelType modelTypeForInferenceUrl(String url) => modelTypeForInferenceSource(url);
 
 /// Gemma-family installs may use a Hugging Face token for gated URLs.
 bool inferenceModelTypeUsesHuggingFaceToken(ModelType modelType) {
@@ -109,5 +115,21 @@ const List<PredefinedInferenceModel> kPredefinedInferenceModels = <PredefinedInf
     title: 'Gemma 3n E2B IT (int4)',
     description: 'Multimodal-capable family (larger download).',
     url: 'https://huggingface.co/google/gemma-3n-E2B-it-litert-preview/resolve/main/gemma-3n-E2B-it-int4.task',
+  ),
+  PredefinedInferenceModel(
+    id: 'gemma4_e2b_litertlm',
+    title: 'Gemma 4 E2B IT (LiteRT-LM)',
+    description: 'Multimodal (text, image, audio); large download (~2.4GB).',
+    url:
+        'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm',
+    modelType: ModelType.gemma4,
+  ),
+  PredefinedInferenceModel(
+    id: 'gemma4_e4b_litertlm',
+    title: 'Gemma 4 E4B IT (LiteRT-LM)',
+    description: 'Larger Gemma 4 variant; multimodal; ~4.3GB.',
+    url:
+        'https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it.litertlm',
+    modelType: ModelType.gemma4,
   ),
 ];
