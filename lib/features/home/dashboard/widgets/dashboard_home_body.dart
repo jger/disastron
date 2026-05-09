@@ -181,6 +181,16 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                     value: ui.progress > 0 ? ui.progress / 100.0 : null,
                   ),
                 ),
+                if (ui.progress <= 0) ...<Widget>[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Large models may sit here while copying or validating — '
+                    'this can take several minutes.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -244,20 +254,22 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                         return;
                       }
                       ref.read(localGemmaModelProvider.notifier).beginInstallFlow();
-                      final String? existing =
-                          await ref.read(huggingfaceTokenProvider.future);
-                      if (existing == null || existing.trim().isEmpty) {
-                        final String? pasted =
-                            await showHuggingFaceTokenPasteDialog(context);
-                        if (pasted == null || pasted.trim().isEmpty) {
-                          ref
-                              .read(localGemmaModelProvider.notifier)
-                              .abortInstallAttempt();
-                          return;
+                      if (m.requiresHuggingFaceToken) {
+                        final String? existing =
+                            await ref.read(huggingfaceTokenProvider.future);
+                        if (existing == null || existing.trim().isEmpty) {
+                          final String? pasted =
+                              await showHuggingFaceTokenPasteDialog(context);
+                          if (pasted == null || pasted.trim().isEmpty) {
+                            ref
+                                .read(localGemmaModelProvider.notifier)
+                                .abortInstallAttempt();
+                            return;
+                          }
+                          await ref
+                              .read(huggingfaceTokenProvider.notifier)
+                              .save(pasted.trim());
                         }
-                        await ref
-                            .read(huggingfaceTokenProvider.notifier)
-                            .save(pasted.trim());
                       }
                       if (!context.mounted) {
                         ref

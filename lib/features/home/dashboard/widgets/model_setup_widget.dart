@@ -20,6 +20,19 @@ bool hasPersistedHfToken(AsyncValue<String?> tokenAsync) {
   );
 }
 
+bool _looksLikeInsufficientStorage(String? message) {
+  if (message == null || message.isEmpty) {
+    return false;
+  }
+  final String lower = message.toLowerCase();
+  return lower.contains('enospc') ||
+      lower.contains('no space left') ||
+      lower.contains('not enough space') ||
+      lower.contains('disk full') ||
+      lower.contains('storage full') ||
+      lower.contains('sqlite_full');
+}
+
 class ModelSetupWidget extends ConsumerStatefulWidget {
   const ModelSetupWidget({
     super.key,
@@ -159,9 +172,11 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       return;
     }
     ref.read(localGemmaModelProvider.notifier).beginInstallFlow();
-    if (!await _ensureHfTokenBeforeNetworkDownload()) {
-      ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
-      return;
+    if (model.requiresHuggingFaceToken) {
+      if (!await _ensureHfTokenBeforeNetworkDownload()) {
+        ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
+        return;
+      }
     }
     if (!mounted) {
       ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
@@ -233,7 +248,13 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           children: <Widget>[
             CircularProgressIndicator(value: ui.progress > 0 ? ui.progress / 100 : null),
             const SizedBox(height: 16),
-            Text('Installing… ${ui.progress}%'),
+            Text(
+              ui.progress > 0
+                  ? 'Installing… ${ui.progress}%'
+                  : 'Preparing model (download or copy). Large files can take several minutes — please wait.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ],
         );
       case LocalGemmaPhase.ready:
@@ -290,6 +311,16 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               const SizedBox(height: 12),
             ],
             SelectableText(ui.errorMessage ?? 'Unknown error'),
+            if (_looksLikeInsufficientStorage(ui.errorMessage))
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(
+                  'Low storage often causes install failures. Free disk space and retry.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: () {
@@ -503,19 +534,49 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     BuildContext context,
     AsyncValue<String?> tokenAsync,
   ) {
-    final bool showPresets = hasPersistedHfToken(tokenAsync);
-    final List<PredefinedInferenceModel> qwenModels = kPredefinedInferenceModels
-        .where(
-          (PredefinedInferenceModel m) =>
-              !inferenceModelTypeUsesHuggingFaceToken(m.modelType),
-        )
+    final bool hasToken = hasPersistedHfToken(tokenAsync);
+    final List<PredefinedInferenceModel> publicModels = kPredefinedInferenceModels
+        .where((PredefinedInferenceModel m) => !m.requiresHuggingFaceToken)
         .toList();
-    final List<PredefinedInferenceModel> gemmaModels = kPredefinedInferenceModels
-        .where(
-          (PredefinedInferenceModel m) =>
-              inferenceModelTypeUsesHuggingFaceToken(m.modelType),
-        )
+    final List<PredefinedInferenceModel> gatedModels = kPredefinedInferenceModels
+        .where((PredefinedInferenceModel m) => m.requiresHuggingFaceToken)
         .toList();
+
+    bool isQwenFamily(ModelType t) =>
+        t == ModelType.qwen || t == ModelType.qwen3;
+
+    final List<PredefinedInferenceModel> publicQwen = publicModels
+        .where((PredefinedInferenceModel m) => isQwenFamily(m.modelType))
+        .toList();
+    final List<PredefinedInferenceModel> publicGemma = publicModels
+        .where((PredefinedInferenceModel m) => !isQwenFamily(m.modelType))
+        .toList();
+    final List<PredefinedInferenceModel> gatedQwen = gatedModels
+        .where((PredefinedInferenceModel m) => isQwenFamily(m.modelType))
+        .toList();
+    final List<PredefinedInferenceModel> gatedGemma = gatedModels
+        .where((PredefinedInferenceModel m) => !isQwenFamily(m.modelType))
+        .toList();
+
+    final bool showGatedPresets = hasToken && gatedModels.isNotEmpty;
+
+    Widget presetTiles(Iterable<PredefinedInferenceModel> models) {
+      return Column(
+        children: <Widget>[
+          ...models.map(
+            (PredefinedInferenceModel m) => Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                title: Text(m.title),
+                subtitle: Text(m.description),
+                trailing: const Icon(Icons.download),
+                onTap: () => _installPreset(m),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
 
     return Card(
       child: Padding(
@@ -524,57 +585,70 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Text(
-              showPresets
-                  ? 'Hugging Face read token is saved. Tap a preset to download.'
-                  : 'Save a Hugging Face read token below to see Qwen and Gemma presets.',
+              publicModels.isEmpty
+                  ? 'Save a Hugging Face read token below to download presets.'
+                  : showGatedPresets
+                      ? 'Public presets below need no token. Gated models require a saved token.'
+                      : 'Public presets work without a token. Save a Hugging Face read token for gated models (e.g. Gemma 3n preview).',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
             const SizedBox(height: 12),
             _hfTokenFields(context, tokenAsync),
-            if (showPresets) ...<Widget>[
+            if (publicQwen.isNotEmpty) ...<Widget>[
               const SizedBox(height: 16),
               const Divider(height: 1),
               const SizedBox(height: 12),
               Text(
-                'Qwen',
+                'Qwen (public)',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
               ),
               const SizedBox(height: 8),
-              ...qwenModels.map(
-                (PredefinedInferenceModel m) => Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    title: Text(m.title),
-                    subtitle: Text(m.description),
-                    trailing: const Icon(Icons.download),
-                    onTap: () => _installPreset(m),
-                  ),
-                ),
-              ),
+              presetTiles(publicQwen),
+            ],
+            if (publicGemma.isNotEmpty) ...<Widget>[
               const SizedBox(height: 8),
               const Divider(height: 24),
               Text(
-                'Gemma',
+                'Gemma (public)',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
               ),
               const SizedBox(height: 8),
-              ...gemmaModels.map(
-                (PredefinedInferenceModel m) => Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    title: Text(m.title),
-                    subtitle: Text(m.description),
-                    trailing: const Icon(Icons.download),
-                    onTap: () => _installPreset(m),
-                  ),
-                ),
+              presetTiles(publicGemma),
+            ],
+            if (showGatedPresets) ...<Widget>[
+              const SizedBox(height: 16),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
+              Text(
+                'Gated on Hugging Face (token saved)',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
+              const SizedBox(height: 8),
+              if (gatedQwen.isNotEmpty) ...<Widget>[
+                Text(
+                  'Qwen',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 8),
+                presetTiles(gatedQwen),
+              ],
+              if (gatedGemma.isNotEmpty) ...<Widget>[
+                if (gatedQwen.isNotEmpty) const SizedBox(height: 12),
+                Text(
+                  'Gemma',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 8),
+                presetTiles(gatedGemma),
+              ],
             ],
           ],
         ),

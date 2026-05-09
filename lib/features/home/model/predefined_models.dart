@@ -64,6 +64,7 @@ class PredefinedInferenceModel {
     required this.description,
     required this.url,
     this.modelType = ModelType.gemmaIt,
+    this.requiresToken,
   });
 
   final String id;
@@ -71,6 +72,13 @@ class PredefinedInferenceModel {
   final String description;
   final String url;
   final ModelType modelType;
+
+  /// When non-null, overrides [inferenceModelTypeUsesHuggingFaceToken] for downloads.
+  final bool? requiresToken;
+
+  /// Whether install UI must collect an HF token before network download.
+  bool get requiresHuggingFaceToken =>
+      requiresToken ?? inferenceModelTypeUsesHuggingFaceToken(modelType);
 
   ModelFileType get fileType => modelFileTypeForUrl(url);
 }
@@ -90,6 +98,7 @@ const List<PredefinedInferenceModel> kPredefinedInferenceModels = <PredefinedInf
     description: 'Compact multilingual instruct model.',
     url: 'https://huggingface.co/litert-community/Qwen2.5-0.5B-Instruct/resolve/main/Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task',
     modelType: ModelType.qwen,
+    requiresToken: false,
   ),
   PredefinedInferenceModel(
     id: 'qwen35_08b_litertlm',
@@ -97,18 +106,21 @@ const List<PredefinedInferenceModel> kPredefinedInferenceModels = <PredefinedInf
     description: 'Public LiteRT export; very large download (~1.1GB), multimodal bundle.',
     url: 'https://huggingface.co/LudwigBanach/Qwen3.5-0.8B-LiteRT/resolve/main/qwen35_mm_q8_ekv2048.litertlm',
     modelType: ModelType.qwen3,
+    requiresToken: false,
   ),
   PredefinedInferenceModel(
     id: 'gemma3_270m_q8',
     title: 'Gemma 3 270M IT (q8)',
     description: 'Smallest preset; good for low storage.',
     url: 'https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q8.task',
+    requiresToken: false,
   ),
   PredefinedInferenceModel(
     id: 'gemma3_1b_int4',
     title: 'Gemma 3 1B IT (int4)',
     description: 'Balanced quality vs size (~0.5GB class).',
     url: 'https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task',
+    requiresToken: false,
   ),
   PredefinedInferenceModel(
     id: 'gemma3n_e2b_int4',
@@ -123,6 +135,7 @@ const List<PredefinedInferenceModel> kPredefinedInferenceModels = <PredefinedInf
     url:
         'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm',
     modelType: ModelType.gemma4,
+    requiresToken: false,
   ),
   PredefinedInferenceModel(
     id: 'gemma4_e4b_litertlm',
@@ -131,5 +144,6 @@ const List<PredefinedInferenceModel> kPredefinedInferenceModels = <PredefinedInf
     url:
         'https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it.litertlm',
     modelType: ModelType.gemma4,
+    requiresToken: false,
   ),
 ];
