@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:disastron/features/home/todos/emergency_todos_provider.dart';
+import 'package:disastron/features/home/todos/todo_tab_badge_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final RegExp _todoBlock = RegExp(
@@ -16,6 +17,7 @@ Future<TodoApplyResult> stripTodosAndApply(
   final Match? m = _todoBlock.firstMatch(assistantText);
   String display = assistantText;
   int applied = 0;
+  int addedTodoCount = 0;
 
   if (m != null) {
     display =
@@ -31,8 +33,19 @@ Future<TodoApplyResult> stripTodosAndApply(
             final List<Map<String, dynamic>> maps = ops
                 .map((dynamic e) => Map<String, dynamic>.from(e as Map))
                 .toList();
+            for (final Map<String, dynamic> op in maps) {
+              if ((op['op'] as String?) == 'add' &&
+                  ((op['title'] as String?)?.trim().isNotEmpty ?? false)) {
+                addedTodoCount++;
+              }
+            }
             await ref.read(emergencyTodosProvider.notifier).applyOps(maps);
             applied = maps.length;
+            if (addedTodoCount > 0) {
+              ref
+                  .read(todoTabBadgeProvider.notifier)
+                  .addFromAssistant(addedTodoCount);
+            }
           }
         }
       } on Object {
@@ -41,15 +54,23 @@ Future<TodoApplyResult> stripTodosAndApply(
     }
   }
 
-  return TodoApplyResult(displayText: display.trim(), appliedCount: applied);
+  return TodoApplyResult(
+    displayText: display.trim(),
+    appliedCount: applied,
+    addedTodoCount: addedTodoCount,
+  );
 }
 
 class TodoApplyResult {
   const TodoApplyResult({
     required this.displayText,
     required this.appliedCount,
+    required this.addedTodoCount,
   });
 
   final String displayText;
   final int appliedCount;
+
+  /// `add` ops with non-empty title (drives tab badge).
+  final int addedTodoCount;
 }

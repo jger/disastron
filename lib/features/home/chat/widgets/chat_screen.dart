@@ -72,10 +72,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     setState(() {
       _messages.add(Message.text(text: assistantBody));
       if (result.appliedCount > 0) {
+        final String hint = result.addedTodoCount > 0
+            ? ' ${result.addedTodoCount} new on Todos (tab badge).'
+            : ' Open the Todos tab to review.';
         _messages.add(
           Message(
             text:
-                'Checklist updated (${result.appliedCount} action(s)). Open the Todos tab to review.',
+                'Checklist updated (${result.appliedCount} action(s)).$hint',
             type: MessageType.systemInfo,
           ),
         );

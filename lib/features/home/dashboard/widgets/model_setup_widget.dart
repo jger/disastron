@@ -622,22 +622,6 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
         .where((PredefinedInferenceModel m) => m.requiresHuggingFaceToken)
         .toList();
 
-    bool isQwenFamily(ModelType t) =>
-        t == ModelType.qwen || t == ModelType.qwen3;
-
-    final List<PredefinedInferenceModel> publicQwen = publicModels
-        .where((PredefinedInferenceModel m) => isQwenFamily(m.modelType))
-        .toList();
-    final List<PredefinedInferenceModel> publicGemma = publicModels
-        .where((PredefinedInferenceModel m) => !isQwenFamily(m.modelType))
-        .toList();
-    final List<PredefinedInferenceModel> gatedQwen = gatedModels
-        .where((PredefinedInferenceModel m) => isQwenFamily(m.modelType))
-        .toList();
-    final List<PredefinedInferenceModel> gatedGemma = gatedModels
-        .where((PredefinedInferenceModel m) => !isQwenFamily(m.modelType))
-        .toList();
-
     final bool showGatedPresets = hasToken && gatedModels.isNotEmpty;
 
     Widget presetTiles(Iterable<PredefinedInferenceModel> models) {
@@ -684,30 +668,15 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                   ),
             ),
             const SizedBox(height: 8),
-            if (publicQwen.isNotEmpty) ...<Widget>[
-              const SizedBox(height: 16),
-              const Divider(height: 1),
-              const SizedBox(height: 12),
+            if (publicModels.isNotEmpty) ...<Widget>[
               Text(
-                'Qwen (public)',
+                'Public presets',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
               ),
               const SizedBox(height: 8),
-              presetTiles(publicQwen),
-            ],
-            if (publicGemma.isNotEmpty) ...<Widget>[
-              const SizedBox(height: 8),
-              const Divider(height: 24),
-              Text(
-                'Gemma (public)',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              presetTiles(publicGemma),
+              presetTiles(publicModels),
             ],
             if (showGatedPresets) ...<Widget>[
               const SizedBox(height: 16),
@@ -720,23 +689,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                     ),
               ),
               const SizedBox(height: 8),
-              if (gatedQwen.isNotEmpty) ...<Widget>[
-                Text(
-                  'Qwen',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const SizedBox(height: 8),
-                presetTiles(gatedQwen),
-              ],
-              if (gatedGemma.isNotEmpty) ...<Widget>[
-                if (gatedQwen.isNotEmpty) const SizedBox(height: 12),
-                Text(
-                  'Gemma',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const SizedBox(height: 8),
-                presetTiles(gatedGemma),
-              ],
+              presetTiles(gatedModels),
             ],
           ],
         ),
