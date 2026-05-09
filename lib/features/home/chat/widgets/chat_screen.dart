@@ -34,6 +34,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _chatReady = false;
   String? _initError;
 
+  /// Effective image attach support after init (native engine may refuse vision).
+  bool _runtimeImageSupportEnabled = false;
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +86,35 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _gemma.setDeviceContextForNextUserMessage(situation);
   }
 
+  void _markChatReady({
+    required bool runtimeVisionEnabled,
+    required bool showVisionFallbackSnack,
+  }) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _chatReady = true;
+      _initError = null;
+      _runtimeImageSupportEnabled = runtimeVisionEnabled;
+    });
+    if (showVisionFallbackSnack) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) {
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Image input disabled: vision engine could not start on this '
+              'device. Text chat still works.',
+            ),
+          ),
+        );
+      });
+    }
+  }
+
   Future<void> _ensureChatReady({required bool reloadInferenceWeights}) async {
     if (!FlutterGemma.hasActiveModel()) {
       return;
@@ -92,23 +124,50 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final String system = composeDisasterSystemInstruction(situation);
       final ModelRegistrySnapshot registry =
           await ref.read(modelRegistrySnapshotProvider.future);
-      final bool supportVision = activeRegistryEntrySupportsVision(registry);
+      final bool visionRequested = activeRegistryEntrySupportsVision(registry);
+
+      if (visionRequested) {
+        try {
+          await _gemma.init(
+            systemInstruction: system,
+            reloadInferenceWeights: reloadInferenceWeights,
+            supportImage: true,
+            maxNumImages: 1,
+          );
+          _markChatReady(
+            runtimeVisionEnabled: true,
+            showVisionFallbackSnack: false,
+          );
+          return;
+        } on Object catch (_) {
+          await _gemma.close();
+          if (!mounted) {
+            return;
+          }
+          await _gemma.init(
+            systemInstruction: system,
+          );
+          _markChatReady(
+            runtimeVisionEnabled: false,
+            showVisionFallbackSnack: true,
+          );
+          return;
+        }
+      }
+
       await _gemma.init(
         systemInstruction: system,
         reloadInferenceWeights: reloadInferenceWeights,
-        supportImage: supportVision,
-        maxNumImages: supportVision ? 1 : null,
       );
-      if (mounted) {
-        setState(() {
-          _chatReady = true;
-          _initError = null;
-        });
-      }
+      _markChatReady(
+        runtimeVisionEnabled: false,
+        showVisionFallbackSnack: false,
+      );
     } on Object catch (e) {
       if (mounted) {
         setState(() {
           _chatReady = false;
+          _runtimeImageSupportEnabled = false;
           _initError = e.toString();
         });
       }
@@ -202,6 +261,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     setState(() {
       _messages.clear();
       _chatReady = false;
+      _runtimeImageSupportEnabled = false;
       _initError = null;
     });
     await _ensureChatReady(reloadInferenceWeights: true);
@@ -229,6 +289,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             if (mounted) {
               setState(() {
                 _chatReady = false;
+                _runtimeImageSupportEnabled = false;
                 _messages.clear();
                 _initError = null;
               });
@@ -238,12 +299,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
 
     final LocalGemmaModelUi modelUi = ref.watch(localGemmaModelProvider);
-    final AsyncValue<ModelRegistrySnapshot> registryAsync =
-        ref.watch(modelRegistrySnapshotProvider);
-    final bool isImageSupported = registryAsync.maybeWhen(
-      data: activeRegistryEntrySupportsVision,
-      orElse: () => false,
-    );
     final AsyncValue<bool> accidentDone = ref.watch(firstChatAccidentPromptProvider);
     final bool showAccidentChips = modelUi.isReady &&
         _chatReady &&
@@ -295,7 +350,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               gemmaHandler: _onAssistantMessage,
               humanHandler: _onHumanMessage,
               messages: _messages,
-              isImageSupported: isImageSupported,
+              isImageSupported: _runtimeImageSupportEnabled,
             ),
         ],
       ),

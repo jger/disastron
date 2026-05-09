@@ -1,7 +1,10 @@
 import 'package:disastron/features/home/model/model_registry_store.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 
-/// Preset IDs whose downloads are multimodal (image-capable) in Disastron.
+/// Static hints for which **installed** models *may* support vision.
+///
+/// Chat enables image attach only after native init with `supportImage`
+/// succeeds; otherwise the session falls back to text-only inference.
 const Set<String> kVisionCapablePresetIds = <String>{
   'gemma3n_e2b_int4',
   'gemma4_e2b_litertlm',
