@@ -190,6 +190,21 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                     value: ui.progress > 0 ? ui.progress / 100.0 : null,
                   ),
                 ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      ref
+                          .read(localGemmaModelProvider.notifier)
+                          .requestInstallCancel();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Cancelled')),
+                      );
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                ),
               ],
             ),
           ),

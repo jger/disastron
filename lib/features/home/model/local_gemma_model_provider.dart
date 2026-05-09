@@ -72,8 +72,76 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       ModelInstallOrchestrator(registry: ModelRegistryStore());
   bool _restoreInFlight = false;
 
+  /// Bumps when a new install/preflight starts or user cancels, so stale
+  /// plugin callbacks don't overwrite UI.
+  int _installEpoch = 0;
+
+  CancelToken? _installCancelToken;
+
   void _invalidateRegistry() {
     ref.invalidate(modelRegistrySnapshotProvider);
+  }
+
+  bool _isInstallEpochCurrent(int epoch) => epoch == _installEpoch;
+
+  void _syncUiToEngine() {
+    state = LocalGemmaModelUi(
+      phase: FlutterGemma.hasActiveModel()
+          ? LocalGemmaPhase.ready
+          : LocalGemmaPhase.notInstalled,
+    );
+  }
+
+  /// Cancels in-flight download/install token (if any) and invalidates epoch.
+  void _bumpEpochAndCancelToken([String reason = 'Cancelled']) {
+    _installCancelToken?.cancel(reason);
+    _installCancelToken = null;
+    _installEpoch++;
+  }
+
+  /// Preflight UI only (metered confirm / token). No [CancelToken] yet.
+  void beginInstallFlow(ModelInstallActivityKind kind) {
+    _bumpEpochAndCancelToken('New install flow');
+    state = LocalGemmaModelUi(
+      phase: LocalGemmaPhase.installing,
+      activity: kind,
+    );
+  }
+
+  void abortInstallAttempt() {
+    if (state.phase != LocalGemmaPhase.installing) {
+      return;
+    }
+    _bumpEpochAndCancelToken('Preflight aborted');
+    _syncUiToEngine();
+  }
+
+  /// User-facing cancel: stops network/file install via [CancelToken] and
+  /// leaves UI immediately (late completions ignored).
+  void requestInstallCancel() {
+    if (state.phase != LocalGemmaPhase.installing) {
+      return;
+    }
+    _bumpEpochAndCancelToken('User cancelled');
+    _syncUiToEngine();
+  }
+
+  /// Starts a tracked install session with a fresh [CancelToken].
+  int _beginTrackedInstall(ModelInstallActivityKind activity) {
+    _bumpEpochAndCancelToken('Starting install');
+    final int epoch = _installEpoch;
+    _installCancelToken = CancelToken();
+    state = LocalGemmaModelUi(
+      phase: LocalGemmaPhase.installing,
+      activity: activity,
+    );
+    return epoch;
+  }
+
+  void _clearInstallTokenIfSame(CancelToken? token) {
+    if (token != null && identical(_installCancelToken, token)) {
+      _installCancelToken = null;
+    }
   }
 
   @override
@@ -104,24 +172,6 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     }
   }
 
-  void beginInstallFlow(ModelInstallActivityKind kind) {
-    state = LocalGemmaModelUi(
-      phase: LocalGemmaPhase.installing,
-      activity: kind,
-    );
-  }
-
-  void abortInstallAttempt() {
-    if (state.phase != LocalGemmaPhase.installing || state.progress > 0) {
-      return;
-    }
-    state = LocalGemmaModelUi(
-      phase: FlutterGemma.hasActiveModel()
-          ? LocalGemmaPhase.ready
-          : LocalGemmaPhase.notInstalled,
-    );
-  }
-
   Future<void> _tryRestoreModel() async {
     if (kIsWeb) {
       return;
@@ -137,6 +187,9 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       final ColdStartRestoreResult result =
           await _orchestrator.tryRestoreOnColdStart(
         onProgress: (int progress) {
+          if (state.activity != ModelInstallActivityKind.restoreSaved) {
+            return;
+          }
           state = state.withInstallProgress(progress);
         },
         onRestoreBegins: () {
@@ -147,14 +200,19 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         },
       );
       if (!result.attempted) {
-        state = LocalGemmaModelUi(
-          phase: FlutterGemma.hasActiveModel()
-              ? LocalGemmaPhase.ready
-              : LocalGemmaPhase.notInstalled,
-        );
+        if (state.activity == ModelInstallActivityKind.restoreSaved) {
+          state = LocalGemmaModelUi(
+            phase: FlutterGemma.hasActiveModel()
+                ? LocalGemmaPhase.ready
+                : LocalGemmaPhase.notInstalled,
+          );
+        }
         return;
       }
       if (result.error != null) {
+        if (state.activity != ModelInstallActivityKind.restoreSaved) {
+          return;
+        }
         final ModelInstallDomainError err = result.error!;
         state = LocalGemmaModelUi(
           phase: LocalGemmaPhase.error,
@@ -165,9 +223,11 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         return;
       }
       if (FlutterGemma.hasActiveModel()) {
-        state = const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
-        _invalidateRegistry();
-      } else {
+        if (state.activity == ModelInstallActivityKind.restoreSaved) {
+          state = const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
+          _invalidateRegistry();
+        }
+      } else if (state.activity == ModelInstallActivityKind.restoreSaved) {
         state = const LocalGemmaModelUi(phase: LocalGemmaPhase.notInstalled);
       }
     } finally {
@@ -176,24 +236,40 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   }
 
   Future<void> installFromFile(String path) async {
-    state = const LocalGemmaModelUi(
-      phase: LocalGemmaPhase.installing,
-      activity: ModelInstallActivityKind.importLocalFile,
+    final int epoch = _beginTrackedInstall(
+      ModelInstallActivityKind.importLocalFile,
     );
+    final CancelToken? cancelToken = _installCancelToken;
     try {
       await _orchestrator.installFromFile(
         path,
+        cancelToken: cancelToken,
         onProgress: (int progress) {
+          if (!_isInstallEpochCurrent(epoch)) {
+            return;
+          }
           state = state.withInstallProgress(progress);
         },
       );
+      if (!_isInstallEpochCurrent(epoch)) {
+        return;
+      }
       state = const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
       _invalidateRegistry();
     } on Object catch (e) {
+      if (!_isInstallEpochCurrent(epoch)) {
+        return;
+      }
+      if (CancelToken.isCancel(e)) {
+        _syncUiToEngine();
+        return;
+      }
       state = LocalGemmaModelUi(
         phase: LocalGemmaPhase.error,
         errorMessage: e.toString(),
       );
+    } finally {
+      _clearInstallTokenIfSame(cancelToken);
     }
   }
 
@@ -204,10 +280,10 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     ModelType? modelType,
     ModelFileType? fileType,
   }) async {
-    state = const LocalGemmaModelUi(
-      phase: LocalGemmaPhase.installing,
-      activity: ModelInstallActivityKind.downloadNetwork,
+    final int epoch = _beginTrackedInstall(
+      ModelInstallActivityKind.downloadNetwork,
     );
+    final CancelToken? cancelToken = _installCancelToken;
     try {
       final String? trimmed = token?.trim();
       final ModelFileType resolvedFileType = fileType ?? modelFileTypeForUrl(url);
@@ -221,13 +297,27 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         token: effectiveToken,
         modelType: resolvedModelType,
         fileType: resolvedFileType,
+        cancelToken: cancelToken,
         onProgress: (int progress) {
+          if (!_isInstallEpochCurrent(epoch)) {
+            return;
+          }
           state = state.withInstallProgress(progress);
         },
       );
+      if (!_isInstallEpochCurrent(epoch)) {
+        return;
+      }
       state = const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
       _invalidateRegistry();
     } on Object catch (e) {
+      if (!_isInstallEpochCurrent(epoch)) {
+        return;
+      }
+      if (CancelToken.isCancel(e)) {
+        _syncUiToEngine();
+        return;
+      }
       final ModelInstallDomainError mapped =
           mapModelInstallException(e, downloadUrl: url);
       state = LocalGemmaModelUi(
@@ -237,6 +327,8 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         gatedModelPageUrl: mapped.gatedModelPageUrl,
         lastFailedDownloadUrl: url,
       );
+    } finally {
+      _clearInstallTokenIfSame(cancelToken);
     }
   }
 
@@ -252,10 +344,10 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       );
       return;
     }
-    state = const LocalGemmaModelUi(
-      phase: LocalGemmaPhase.installing,
-      activity: ModelInstallActivityKind.downloadNetwork,
+    final int epoch = _beginTrackedInstall(
+      ModelInstallActivityKind.downloadNetwork,
     );
+    final CancelToken? cancelToken = _installCancelToken;
     try {
       final String? trimmed = token?.trim();
       final String? effectiveToken = (trimmed != null && trimmed.isNotEmpty)
@@ -264,13 +356,27 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       await _orchestrator.installPreset(
         model,
         token: effectiveToken,
+        cancelToken: cancelToken,
         onProgress: (int progress) {
+          if (!_isInstallEpochCurrent(epoch)) {
+            return;
+          }
           state = state.withInstallProgress(progress);
         },
       );
+      if (!_isInstallEpochCurrent(epoch)) {
+        return;
+      }
       state = const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
       _invalidateRegistry();
     } on Object catch (e) {
+      if (!_isInstallEpochCurrent(epoch)) {
+        return;
+      }
+      if (CancelToken.isCancel(e)) {
+        _syncUiToEngine();
+        return;
+      }
       final ModelInstallDomainError mapped =
           mapModelInstallException(e, downloadUrl: model.url);
       state = LocalGemmaModelUi(
@@ -280,22 +386,30 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         gatedModelPageUrl: mapped.gatedModelPageUrl,
         lastFailedDownloadUrl: model.url,
       );
+    } finally {
+      _clearInstallTokenIfSame(cancelToken);
     }
   }
 
   Future<void> switchToRegistryEntry(String entryId) async {
-    state = const LocalGemmaModelUi(
-      phase: LocalGemmaPhase.installing,
-      activity: ModelInstallActivityKind.activateExisting,
+    final int epoch = _beginTrackedInstall(
+      ModelInstallActivityKind.activateExisting,
     );
+    final CancelToken? cancelToken = _installCancelToken;
     try {
-      final ModelInstallDomainError? err =
-          await _orchestrator.activateEntry(
+      final ModelInstallDomainError? err = await _orchestrator.activateEntry(
         entryId,
+        cancelToken: cancelToken,
         onProgress: (int progress) {
+          if (!_isInstallEpochCurrent(epoch)) {
+            return;
+          }
           state = state.withInstallProgress(progress);
         },
       );
+      if (!_isInstallEpochCurrent(epoch)) {
+        return;
+      }
       if (err != null) {
         state = LocalGemmaModelUi(
           phase: LocalGemmaPhase.error,
@@ -308,10 +422,19 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       state = const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
       _invalidateRegistry();
     } on Object catch (e) {
+      if (!_isInstallEpochCurrent(epoch)) {
+        return;
+      }
+      if (CancelToken.isCancel(e)) {
+        _syncUiToEngine();
+        return;
+      }
       state = LocalGemmaModelUi(
         phase: LocalGemmaPhase.error,
         errorMessage: e.toString(),
       );
+    } finally {
+      _clearInstallTokenIfSame(cancelToken);
     }
   }
 

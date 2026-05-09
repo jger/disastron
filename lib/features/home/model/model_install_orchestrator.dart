@@ -77,6 +77,7 @@ class ModelInstallOrchestrator {
   Future<void> installFromFile(
     String path, {
     void Function(int progress)? onProgress,
+    CancelToken? cancelToken,
   }) async {
     final InferenceModelDescriptor d =
         InferenceModelDescriptor.fromUrlOrPath(path);
@@ -88,6 +89,9 @@ class ModelInstallOrchestrator {
     ).fromFile(path);
     if (onProgress != null) {
       builder = builder.withProgress(onProgress);
+    }
+    if (cancelToken != null) {
+      builder = builder.withCancelToken(cancelToken);
     }
     await builder.install();
     await _upsertAfterSuccess(
@@ -109,6 +113,7 @@ class ModelInstallOrchestrator {
     ModelType? modelType,
     ModelFileType? fileType,
     void Function(int progress)? onProgress,
+    CancelToken? cancelToken,
   }) async {
     final InferenceModelDescriptor inferred =
         InferenceModelDescriptor.fromUrlOrPath(url);
@@ -125,6 +130,9 @@ class ModelInstallOrchestrator {
     ).fromNetwork(url, token: token);
     if (onProgress != null) {
       netBuilder = netBuilder.withProgress(onProgress);
+    }
+    if (cancelToken != null) {
+      netBuilder = netBuilder.withCancelToken(cancelToken);
     }
     await netBuilder.install();
 
@@ -144,6 +152,7 @@ class ModelInstallOrchestrator {
     PredefinedInferenceModel model, {
     String? token,
     void Function(int progress)? onProgress,
+    CancelToken? cancelToken,
   }) async {
     await installFromNetwork(
       model.url,
@@ -151,6 +160,7 @@ class ModelInstallOrchestrator {
       modelType: model.modelType,
       fileType: model.fileType,
       onProgress: onProgress,
+      cancelToken: cancelToken,
     );
   }
 
@@ -198,6 +208,7 @@ class ModelInstallOrchestrator {
   Future<ModelInstallDomainError?> activateEntry(
     String entryId, {
     required void Function(int progress) onProgress,
+    CancelToken? cancelToken,
   }) async {
     await _registry.migrateFromLegacyIfNeeded();
     final ModelRegistrySnapshot snap = await _registry.readSnapshot();
@@ -218,13 +229,16 @@ class ModelInstallOrchestrator {
     }
     try {
       final String localPath = await _resolveLocalFilePath(entry);
-      await FlutterGemma.installModel(
+      var builder = FlutterGemma.installModel(
         modelType: entry.modelType,
         fileType: entry.fileType,
       )
           .fromFile(localPath)
-          .withProgress(onProgress)
-          .install();
+          .withProgress(onProgress);
+      if (cancelToken != null) {
+        builder = builder.withCancelToken(cancelToken);
+      }
+      await builder.install();
       final ModelRegistrySnapshot next = ModelRegistrySnapshot(
         entries: snap.entries,
         activeEntryId: entryId,
@@ -232,6 +246,9 @@ class ModelInstallOrchestrator {
       await _registry.writeSnapshot(next);
       return null;
     } on Object catch (e) {
+      if (CancelToken.isCancel(e)) {
+        rethrow;
+      }
       return mapModelInstallException(e);
     }
   }

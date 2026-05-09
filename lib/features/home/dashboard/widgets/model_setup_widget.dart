@@ -204,9 +204,24 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       case LocalGemmaPhase.installing:
         final InstallStatusCopy status = modelInstallStatusCopy(ui);
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            CircularProgressIndicator(value: ui.progress > 0 ? ui.progress / 100 : null),
+            SizedBox(
+              width: double.infinity,
+              child: LinearProgressIndicator(
+                value: ui.progress > 0 ? ui.progress / 100 : null,
+                minHeight: 8,
+              ),
+            ),
+            if (ui.progress > 0) ...<Widget>[
+              const SizedBox(height: 8),
+              Text(
+                '${ui.progress}%',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+            ],
             const SizedBox(height: 16),
             Text(
               status.title,
@@ -223,6 +238,16 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                     ),
               ),
             ],
+            const SizedBox(height: 24),
+            TextButton(
+              onPressed: () {
+                ref.read(localGemmaModelProvider.notifier).requestInstallCancel();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Cancelled')),
+                );
+              },
+              child: const Text('Cancel'),
+            ),
           ],
         );
       case LocalGemmaPhase.ready:
@@ -411,32 +436,49 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     if (!mounted) {
       return;
     }
+    bool dialogVisible = true;
     unawaited(
       showDialog<void>(
         context: context,
-        barrierDismissible: false,
-        builder: (BuildContext ctx) => const PopScope(
-          canPop: false,
-          child: AlertDialog(
-            content: Row(
-              children: <Widget>[
-                SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: CircularProgressIndicator(strokeWidth: 3),
-                ),
-                SizedBox(width: 20),
-                Expanded(child: Text('Preparing save…')),
-              ],
-            ),
+        builder: (BuildContext ctx) => AlertDialog(
+          title: const Text('Save copy'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              LinearProgressIndicator(
+                backgroundColor:
+                    Theme.of(ctx).colorScheme.surfaceContainerHighest,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Preparing file…',
+                style: Theme.of(ctx).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You can close this window; saving continues in the background.',
+                style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ],
           ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Close'),
+            ),
+          ],
         ),
-      ),
+      ).then((_) {
+        dialogVisible = false;
+      }),
     );
     final ModelExportResult result = await ref
         .read(localGemmaModelProvider.notifier)
         .exportRegistryEntryToUserLocation(e.id);
-    if (mounted) {
+    if (mounted && dialogVisible) {
       Navigator.of(context).pop();
     }
     if (!mounted) {
