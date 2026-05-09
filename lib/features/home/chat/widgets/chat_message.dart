@@ -30,6 +30,9 @@ class ChatMessageWidget extends StatelessWidget {
 
     final bool assistantCopy =
         !message.isUser && message.text.trim().isNotEmpty;
+    final bool showAssistantSpinner = !message.isUser &&
+        message.text.trim().isEmpty &&
+        !message.hasImage;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
@@ -74,9 +77,26 @@ class ChatMessageWidget extends StatelessWidget {
                         },
                       ),
                     ),
+                  if (message.hasImage && message.imageBytes != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxHeight: 200,
+                            maxWidth: 280,
+                          ),
+                          child: Image.memory(
+                            message.imageBytes!,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
                   if (message.text.isNotEmpty)
                     MarkdownBody(data: message.text)
-                  else
+                  else if (showAssistantSpinner)
                     const Center(child: CircularProgressIndicator()),
                 ],
               ),

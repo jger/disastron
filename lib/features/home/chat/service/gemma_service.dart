@@ -20,6 +20,7 @@ class GemmaLocalService {
   InferenceModel? _model;
   InferenceChat? _chat;
   final ChatRuntimeGateway _runtime;
+  bool? _lastInitSupportImage;
 
   /// Fresh dashboard snapshot text applied to the **next** user turn only
   /// (avoids recreating [InferenceChat] and desyncing UI vs native history).
@@ -32,22 +33,40 @@ class GemmaLocalService {
     _pendingDeviceContextSituation = t.isEmpty ? 'context_error: empty' : t;
   }
 
-  /// Creates or refreshes the chat session. When [_model] is null, loads the
-  /// active inference model; set [reloadInferenceWeights] on first load only.
+  /// Creates or refreshes the chat session. Loads the active inference model
+  /// when none is loaded; set [reloadInferenceWeights] on first load only.
+  /// [supportImage] must match the active model capabilities (see registry).
   Future<void> init({
     required String systemInstruction,
     bool reloadInferenceWeights = false,
+    bool supportImage = false,
+    int? maxNumImages,
   }) async {
+    final bool visionFlagChanged = _lastInitSupportImage != null &&
+        _lastInitSupportImage != supportImage;
+    if (_model != null && visionFlagChanged) {
+      await _chat?.close();
+      _chat = null;
+      await _model!.close();
+      _model = null;
+    }
+    _lastInitSupportImage = supportImage;
+
     if (_model == null) {
       if (reloadInferenceWeights) {
         await clearTfliteXnnpackWeightCaches();
       }
-      _model = await _runtime.getActiveModel(maxTokens: 2048);
+      _model = await _runtime.getActiveModel(
+        maxTokens: 2048,
+        supportImage: supportImage,
+        maxNumImages: maxNumImages,
+      );
     }
     await _chat?.close();
     _chat = null;
     _chat = await _model!.createChat(
       systemInstruction: systemInstruction,
+      supportImage: supportImage,
     );
   }
 
@@ -57,7 +76,7 @@ class GemmaLocalService {
     final String? pending = _pendingDeviceContextSituation;
     if (pending != null) {
       _pendingDeviceContextSituation = null;
-      toSend = Message.text(
+      toSend = userMessage.copyWith(
         text:
             '[Device context refresh — offline estimates; use for this reply]\n'
             '$pending\n\n---\n\n${userMessage.text}',
@@ -70,6 +89,7 @@ class GemmaLocalService {
 
   Future<void> close() async {
     _pendingDeviceContextSituation = null;
+    _lastInitSupportImage = null;
     await _chat?.close();
     _chat = null;
     await _model?.close();

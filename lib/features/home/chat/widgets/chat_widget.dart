@@ -15,15 +15,17 @@ class ChatListWidget extends StatelessWidget {
     required this.gemmaService,
     required this.showAccidentChips,
     required this.onAccidentChip,
+    required this.isImageSupported,
     super.key,
   });
 
   final List<Message> messages;
   final GemmaLocalService gemmaService;
   final AssistantMessageHandler gemmaHandler;
-  final ValueChanged<String> humanHandler;
+  final HumanMessageHandler humanHandler;
   final bool showAccidentChips;
   final void Function(AccidentChipOption option) onAccidentChip;
+  final bool isImageSupported;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +46,10 @@ class ChatListWidget extends StatelessWidget {
             );
           }
           if (messages.isEmpty || !messages.last.isUser) {
-            return ChatInputField(handleSubmitted: humanHandler);
+            return ChatInputField(
+              isImageSupported: isImageSupported,
+              onSubmitted: humanHandler,
+            );
           }
         } else if (index == 1) {
           return const Divider(height: 1);

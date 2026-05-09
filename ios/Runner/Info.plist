@@ -52,7 +52,9 @@
 		<key>LSSupportsOpeningDocumentsInPlace</key>
 		<true/>
 		<key>NSCameraUsageDescription</key>
-		<string>The camera flash is used for SOS signaling.</string>
+		<string>The camera is used for SOS flash signaling and optional chat photos.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Photos can be attached to the offline assistant when using a multimodal model.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>Location is used to estimate country for emergency numbers and show coordinates on the dashboard.</string>
 		<key>UIStatusBarHidden</key>

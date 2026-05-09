@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:disastron/features/home/chat/chat_dashboard_situation_provider.dart';
+import 'package:disastron/features/home/chat/chat_handlers.dart';
 import 'package:disastron/features/home/chat/first_chat_accident_provider.dart';
 import 'package:disastron/features/home/chat/service/chat_dashboard_context.dart';
 import 'package:disastron/features/home/chat/service/gemma_service.dart';
@@ -11,7 +13,10 @@ import 'package:disastron/features/home/chat/widgets/loading_widget.dart';
 import 'package:disastron/features/home/dashboard/dashboard_device_provider.dart';
 import 'package:disastron/features/home/dashboard/dashboard_weather_provider.dart';
 import 'package:disastron/features/home/home_tab_index_provider.dart';
+import 'package:disastron/features/home/model/inference_model_vision_support.dart';
 import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
+import 'package:disastron/features/home/model/model_registry_provider.dart';
+import 'package:disastron/features/home/model/model_registry_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -85,9 +90,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     try {
       final String situation = await _loadFreshSituationString();
       final String system = composeDisasterSystemInstruction(situation);
+      final ModelRegistrySnapshot registry =
+          await ref.read(modelRegistrySnapshotProvider.future);
+      final bool supportVision = activeRegistryEntrySupportsVision(registry);
       await _gemma.init(
         systemInstruction: system,
         reloadInferenceWeights: reloadInferenceWeights,
+        supportImage: supportVision,
+        maxNumImages: supportVision ? 1 : null,
       );
       if (mounted) {
         setState(() {
@@ -130,14 +140,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
-  void _onHumanMessage(String text) {
-    final String trimmed = text.trim();
-    if (trimmed.isEmpty) {
+  void _onHumanMessage(ChatMessageDraft draft) {
+    if (!draft.isNotEmpty) {
       return;
     }
     unawaited(ref.read(firstChatAccidentPromptProvider.notifier).markDone());
+    final String trimmed = draft.text.trim();
+    final Uint8List? img = draft.imageBytes;
+    final Message userMsg;
+    if (img != null && img.isNotEmpty) {
+      userMsg = trimmed.isEmpty
+          ? Message.imageOnly(imageBytes: img, isUser: true)
+          : Message.withImage(text: trimmed, imageBytes: img, isUser: true);
+    } else {
+      userMsg = Message.text(text: trimmed, isUser: true);
+    }
     setState(() {
-      _messages.add(Message.text(text: trimmed, isUser: true));
+      _messages.add(userMsg);
     });
   }
 
@@ -219,6 +238,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
 
     final LocalGemmaModelUi modelUi = ref.watch(localGemmaModelProvider);
+    final AsyncValue<ModelRegistrySnapshot> registryAsync =
+        ref.watch(modelRegistrySnapshotProvider);
+    final bool isImageSupported = registryAsync.maybeWhen(
+      data: activeRegistryEntrySupportsVision,
+      orElse: () => false,
+    );
     final AsyncValue<bool> accidentDone = ref.watch(firstChatAccidentPromptProvider);
     final bool showAccidentChips = modelUi.isReady &&
         _chatReady &&
@@ -270,6 +295,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               gemmaHandler: _onAssistantMessage,
               humanHandler: _onHumanMessage,
               messages: _messages,
+              isImageSupported: isImageSupported,
             ),
         ],
       ),
