@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:disastron/app/widgets/appearance_dropdown.dart';
 import 'package:disastron/features/home/model/active_inference_model_summary.dart';
-import 'package:disastron/features/home/model/huggingface_token_prompt_dialog.dart';
 import 'package:disastron/features/home/model/huggingface_token_provider.dart';
 import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
-import 'package:disastron/features/home/model/model_network_install.dart';
+import 'package:disastron/features/home/model/model_install_flow_coordinator.dart';
+import 'package:disastron/features/home/model/model_operation_state.dart';
+import 'package:disastron/features/home/model/model_registry_provider.dart';
+import 'package:disastron/features/home/model/model_registry_store.dart';
 import 'package:disastron/features/home/model/predefined_models.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -95,13 +97,11 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     if (!mounted) {
       return;
     }
-    ref.read(localGemmaModelProvider.notifier).beginInstallFlow();
-    if (!await confirmLargeDownloadIfNotLikelyUnmetered(context)) {
-      ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
-      return;
-    }
-    if (!mounted) {
-      ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
+    final bool ok = await coordinateUrlInstallPreflight(
+      context: context,
+      ref: ref,
+    );
+    if (!ok || !mounted) {
       return;
     }
     final ModelFileType fileType = modelFileTypeForUrl(url);
@@ -136,34 +136,6 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     }
   }
 
-  /// Typed token (not yet saved) or stored token.
-  Future<String?> _resolvedHfToken() async {
-    final String typed = _tokenController.text.trim();
-    if (typed.isNotEmpty) {
-      return typed;
-    }
-    return ref.read(huggingfaceTokenProvider.future);
-  }
-
-  Future<bool> _ensureHfTokenBeforeNetworkDownload() async {
-    final String? t = await _resolvedHfToken();
-    if (t != null && t.trim().isNotEmpty) {
-      return true;
-    }
-    if (!mounted) {
-      return false;
-    }
-    final String? pasted = await showHuggingFaceTokenPasteDialog(context);
-    if (pasted == null || pasted.trim().isEmpty) {
-      return false;
-    }
-    await ref.read(huggingfaceTokenProvider.notifier).save(pasted.trim());
-    if (!mounted) {
-      return false;
-    }
-    return true;
-  }
-
   Future<void> _installPreset(PredefinedInferenceModel model) async {
     setState(() {
       _urlController.text = model.url;
@@ -171,30 +143,16 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     if (!mounted) {
       return;
     }
-    ref.read(localGemmaModelProvider.notifier).beginInstallFlow();
-    if (model.requiresHuggingFaceToken) {
-      if (!await _ensureHfTokenBeforeNetworkDownload()) {
-        ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
-        return;
-      }
-    }
-    if (!mounted) {
-      ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
+    final bool ok = await coordinateInferenceNetworkInstallPreflight(
+      context: context,
+      ref: ref,
+      model: model,
+      tokenController: _tokenController,
+    );
+    if (!ok || !mounted) {
       return;
     }
-    if (!await confirmLargeDownloadIfNotLikelyUnmetered(context)) {
-      ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
-      return;
-    }
-    if (!mounted) {
-      ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
-      return;
-    }
-    await ref.read(localGemmaModelProvider.notifier).installFromNetwork(
-          model.url,
-          modelType: model.modelType,
-          fileType: model.fileType,
-        );
+    await ref.read(localGemmaModelProvider.notifier).installPresetById(model.id);
   }
 
   @override
@@ -249,9 +207,11 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             CircularProgressIndicator(value: ui.progress > 0 ? ui.progress / 100 : null),
             const SizedBox(height: 16),
             Text(
-              ui.progress > 0
+              ui.installSurface == ModelInstallSurfacePhase.transferring &&
+                      ui.progress > 0
                   ? 'Installing… ${ui.progress}%'
-                  : 'Preparing model (download or copy). Large files can take several minutes — please wait.',
+                  : 'Preparing (network check, token, or native setup). '
+                      'Large files can take several minutes once transfer starts.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
@@ -322,6 +282,19 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                 ),
               ),
             const SizedBox(height: 24),
+            if (ui.lastFailedDownloadUrl != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: FilledButton.icon(
+                  onPressed: () {
+                    ref.read(localGemmaModelProvider.notifier).installFromNetwork(
+                          ui.lastFailedDownloadUrl!,
+                        );
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry download'),
+                ),
+              ),
             FilledButton(
               onPressed: () {
                 ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
@@ -395,62 +368,169 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     );
   }
 
-  Widget _installedPanel(BuildContext context) {
-    final ActiveInferenceModelSummary? summary = readActiveInferenceSummary();
+  Future<void> _onUseEntry(InstalledModelEntry e) async {
+    await ref.read(localGemmaModelProvider.notifier).switchToRegistryEntry(e.id);
+  }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary, size: 28),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Active model',
-                        style: Theme.of(context).textTheme.titleMedium,
+  Future<void> _confirmRemoveEntry(InstalledModelEntry e) async {
+    final bool? ok = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        title: Text('Remove ${e.displayTitle}?'),
+        content: Text(
+          e.importedFromPicker
+              ? 'Removes this model from the app. The file you picked stays on disk.'
+              : 'Deletes downloaded model data from app storage to free space.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+    if ((ok ?? false) && mounted) {
+      await ref.read(localGemmaModelProvider.notifier).removeRegistryEntry(e.id);
+    }
+  }
+
+  Widget _installedPanel(BuildContext context) {
+    final AsyncValue<ModelRegistrySnapshot> reg =
+        ref.watch(modelRegistrySnapshotProvider);
+
+    return reg.when(
+      loading: () => const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: LinearProgressIndicator(),
+        ),
+      ),
+      error: (Object e, StackTrace _) => Text('Model list error: $e'),
+      data: (ModelRegistrySnapshot snap) {
+        final ActiveInferenceModelSummary? summary =
+            readActiveInferenceSummary(registry: snap);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            if (snap.entries.isNotEmpty) ...<Widget>[
+              Text(
+                'Installed models',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              ...snap.entries.map(
+                (InstalledModelEntry e) => Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    title: Text(e.displayTitle),
+                    subtitle: Text(
+                      '${e.modelType.name} · ${e.fileType.name}'
+                      '${e.presetId != null ? ' · preset' : ''}',
+                    ),
+                    isThreeLine: false,
+                    trailing: SizedBox(
+                      width: 128,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          if (snap.activeEntryId == e.id)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: Text(
+                                'Active',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge
+                                    ?.copyWith(
+                                      color: Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                            )
+                          else
+                            TextButton(
+                              onPressed: () => _onUseEntry(e),
+                              child: const Text('Use'),
+                            ),
+                          IconButton(
+                            tooltip: 'Remove',
+                            icon: const Icon(Icons.delete_outline),
+                            onPressed: () => _confirmRemoveEntry(e),
+                          ),
+                        ],
                       ),
                     ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Icon(
+                          Icons.check_circle,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Active model',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      summary?.label ?? 'Installed',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    if (summary != null) ...<Widget>[
+                      const SizedBox(height: 6),
+                      SelectableText(
+                        summary.detailLine,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ],
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  summary?.label ?? 'Installed',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                if (summary != null) ...<Widget>[
-                  const SizedBox(height: 6),
-                  SelectableText(
-                    summary.detailLine,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
-              ],
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        FilledButton.icon(
-          onPressed: () => setState(() => _showReplaceFlow = true),
-          icon: const Icon(Icons.swap_horiz),
-          label: const Text('Change model'),
-        ),
-        const SizedBox(height: 8),
-        OutlinedButton(
-          onPressed: () {
-            ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
-          },
-          child: const Text('Refresh status'),
-        ),
-      ],
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: () => setState(() => _showReplaceFlow = true),
+              icon: const Icon(Icons.swap_horiz),
+              label: const Text('Add or replace model'),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: () {
+                ref.invalidate(modelRegistrySnapshotProvider);
+                ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
+              },
+              child: const Text('Refresh status'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -596,6 +676,14 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             ),
             const SizedBox(height: 12),
             _hfTokenFields(context, tokenAsync),
+            const SizedBox(height: 16),
+            Text(
+              'Available downloads',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 8),
             if (publicQwen.isNotEmpty) ...<Widget>[
               const SizedBox(height: 16),
               const Divider(height: 1),

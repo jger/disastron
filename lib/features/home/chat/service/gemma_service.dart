@@ -1,3 +1,4 @@
+import 'package:disastron/features/home/chat/service/chat_runtime_gateway.dart';
 import 'package:disastron/features/home/chat/service/xnnpack_cache_cleanup.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 
@@ -13,8 +14,12 @@ Use only ops add / setDone / remove. For setDone/remove you must use todo ids fr
 ''';
 
 class GemmaLocalService {
+  GemmaLocalService({ChatRuntimeGateway? runtime})
+      : _runtime = runtime ?? const FlutterGemmaChatRuntimeGateway();
+
   InferenceModel? _model;
   InferenceChat? _chat;
+  final ChatRuntimeGateway _runtime;
 
   bool get isInitialized => _chat != null;
 
@@ -23,7 +28,7 @@ class GemmaLocalService {
       return;
     }
     await clearTfliteXnnpackWeightCaches();
-    _model = await FlutterGemma.getActiveModel(maxTokens: 2048);
+    _model = await _runtime.getActiveModel(maxTokens: 2048);
     _chat = await _model!.createChat(
       systemInstruction: kDisasterSystemInstruction,
     );

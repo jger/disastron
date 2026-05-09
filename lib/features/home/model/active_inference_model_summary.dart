@@ -1,3 +1,4 @@
+import 'package:disastron/features/home/model/model_registry_store.dart';
 import 'package:disastron/features/home/model/predefined_models.dart';
 import 'package:flutter_gemma/core/domain/model_source.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
@@ -13,7 +14,7 @@ class ActiveInferenceModelSummary {
   final String detailLine;
 }
 
-ActiveInferenceModelSummary? readActiveInferenceSummary() {
+ActiveInferenceModelSummary? _summaryFromPlugin() {
   final ModelSpec? raw = FlutterGemmaPlugin.instance.modelManager.activeInferenceModel;
   if (raw is! InferenceModelSpec) {
     return null;
@@ -36,4 +37,25 @@ ActiveInferenceModelSummary? readActiveInferenceSummary() {
       '${spec.modelType.name} · ${spec.fileType.name}${file.isEmpty ? '' : ' · $file'}';
 
   return ActiveInferenceModelSummary(label: label, detailLine: detail);
+}
+
+/// Prefer registry [displayTitle] when it matches the active plugin model.
+ActiveInferenceModelSummary? readActiveInferenceSummary({
+  ModelRegistrySnapshot? registry,
+}) {
+  final ActiveInferenceModelSummary? plugin = _summaryFromPlugin();
+  if (registry == null || registry.activeEntryId == null) {
+    return plugin;
+  }
+  final InstalledModelEntry? entry =
+      registry.entryById(registry.activeEntryId!);
+  if (entry == null) {
+    return plugin;
+  }
+  final String detail = plugin?.detailLine ??
+      '${entry.modelType.name} · ${entry.fileType.name}';
+  return ActiveInferenceModelSummary(
+    label: entry.displayTitle,
+    detailLine: detail,
+  );
 }

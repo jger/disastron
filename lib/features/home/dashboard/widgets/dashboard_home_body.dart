@@ -9,10 +9,8 @@ import 'package:disastron/features/home/dashboard/dashboard_weather_provider.dar
 import 'package:disastron/features/home/dashboard/sos_overlay.dart';
 import 'package:disastron/features/home/dashboard/widgets/dashboard_action_card.dart';
 import 'package:disastron/features/home/dashboard/widgets/dashboard_weather_card.dart';
-import 'package:disastron/features/home/model/huggingface_token_prompt_dialog.dart';
-import 'package:disastron/features/home/model/huggingface_token_provider.dart';
 import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
-import 'package:disastron/features/home/model/model_network_install.dart';
+import 'package:disastron/features/home/model/model_install_flow_coordinator.dart';
 import 'package:disastron/features/home/model/predefined_models.dart';
 import 'package:disastron/features/home/wiki/wiki_article_sheet.dart';
 import 'package:disastron/features/home/wiki/wiki_models.dart';
@@ -253,49 +251,18 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                       if (!context.mounted) {
                         return;
                       }
-                      ref.read(localGemmaModelProvider.notifier).beginInstallFlow();
-                      if (m.requiresHuggingFaceToken) {
-                        final String? existing =
-                            await ref.read(huggingfaceTokenProvider.future);
-                        if (existing == null || existing.trim().isEmpty) {
-                          final String? pasted =
-                              await showHuggingFaceTokenPasteDialog(context);
-                          if (pasted == null || pasted.trim().isEmpty) {
-                            ref
-                                .read(localGemmaModelProvider.notifier)
-                                .abortInstallAttempt();
-                            return;
-                          }
-                          await ref
-                              .read(huggingfaceTokenProvider.notifier)
-                              .save(pasted.trim());
-                        }
-                      }
-                      if (!context.mounted) {
-                        ref
-                            .read(localGemmaModelProvider.notifier)
-                            .abortInstallAttempt();
+                      final bool ok =
+                          await coordinateInferenceNetworkInstallPreflight(
+                        context: context,
+                        ref: ref,
+                        model: m,
+                      );
+                      if (!ok || !context.mounted) {
                         return;
                       }
-                      if (!await confirmLargeDownloadIfNotLikelyUnmetered(
-                            context,
-                          )) {
-                        ref
-                            .read(localGemmaModelProvider.notifier)
-                            .abortInstallAttempt();
-                        return;
-                      }
-                      if (!context.mounted) {
-                        ref
-                            .read(localGemmaModelProvider.notifier)
-                            .abortInstallAttempt();
-                        return;
-                      }
-                      await ref.read(localGemmaModelProvider.notifier).installFromNetwork(
-                            m.url,
-                            modelType: m.modelType,
-                            fileType: m.fileType,
-                          );
+                      await ref
+                          .read(localGemmaModelProvider.notifier)
+                          .installPresetById(kSmallestStoragePresetId);
                     },
                     child: const Text('Download smallest'),
                   ),

@@ -56,7 +56,7 @@ bool inferenceModelTypeUsesHuggingFaceToken(ModelType modelType) {
       modelType == ModelType.functionGemma;
 }
 
-/// Curated public `.task` / `.litertlm` models (user can still paste any URL).
+/// Curated preset `.task` / `.litertlm` models (user can still paste any URL).
 class PredefinedInferenceModel {
   const PredefinedInferenceModel({
     required this.id,
@@ -91,6 +91,15 @@ PredefinedInferenceModel get kSmallestStorageDownloadPreset =>
       (PredefinedInferenceModel m) => m.id == kSmallestStoragePresetId,
     );
 
+PredefinedInferenceModel? presetInferenceModelById(String id) {
+  for (final PredefinedInferenceModel m in kPredefinedInferenceModels) {
+    if (m.id == id) {
+      return m;
+    }
+  }
+  return null;
+}
+
 const List<PredefinedInferenceModel> kPredefinedInferenceModels = <PredefinedInferenceModel>[
   PredefinedInferenceModel(
     id: 'qwen25_05b',
@@ -113,14 +122,12 @@ const List<PredefinedInferenceModel> kPredefinedInferenceModels = <PredefinedInf
     title: 'Gemma 3 270M IT (q8)',
     description: 'Smallest preset; good for low storage.',
     url: 'https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q8.task',
-    requiresToken: false,
   ),
   PredefinedInferenceModel(
     id: 'gemma3_1b_int4',
     title: 'Gemma 3 1B IT (int4)',
     description: 'Balanced quality vs size (~0.5GB class).',
     url: 'https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task',
-    requiresToken: false,
   ),
   PredefinedInferenceModel(
     id: 'gemma3n_e2b_int4',
@@ -135,7 +142,6 @@ const List<PredefinedInferenceModel> kPredefinedInferenceModels = <PredefinedInf
     url:
         'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm',
     modelType: ModelType.gemma4,
-    requiresToken: false,
   ),
   PredefinedInferenceModel(
     id: 'gemma4_e4b_litertlm',
@@ -144,6 +150,5 @@ const List<PredefinedInferenceModel> kPredefinedInferenceModels = <PredefinedInf
     url:
         'https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it.litertlm',
     modelType: ModelType.gemma4,
-    requiresToken: false,
   ),
 ];
