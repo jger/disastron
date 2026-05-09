@@ -4,6 +4,7 @@ import 'package:disastron/app/widgets/appearance_dropdown.dart';
 import 'package:disastron/features/home/model/active_inference_model_summary.dart';
 import 'package:disastron/features/home/model/huggingface_token_provider.dart';
 import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
+import 'package:disastron/features/home/model/model_file_export.dart';
 import 'package:disastron/features/home/model/model_install_flow_coordinator.dart';
 import 'package:disastron/features/home/model/model_install_status_copy.dart';
 import 'package:disastron/features/home/model/model_registry_provider.dart';
@@ -406,6 +407,56 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     }
   }
 
+  Future<void> _exportEntry(InstalledModelEntry e) async {
+    if (!mounted) {
+      return;
+    }
+    unawaited(
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext ctx) => const PopScope(
+          canPop: false,
+          child: AlertDialog(
+            content: Row(
+              children: <Widget>[
+                SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: CircularProgressIndicator(strokeWidth: 3),
+                ),
+                SizedBox(width: 20),
+                Expanded(child: Text('Preparing save…')),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    final ModelExportResult result = await ref
+        .read(localGemmaModelProvider.notifier)
+        .exportRegistryEntryToUserLocation(e.id);
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+    if (!mounted) {
+      return;
+    }
+    switch (result.kind) {
+      case ModelExportResultKind.success:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Saved copy: ${result.savedPath}')),
+        );
+      case ModelExportResultKind.cancelled:
+        return;
+      case ModelExportResultKind.failure:
+      case ModelExportResultKind.unsupported:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.message ?? 'Could not save copy')),
+        );
+    }
+  }
+
   Widget _installedPanel(BuildContext context) {
     final AsyncValue<ModelRegistrySnapshot> reg =
         ref.watch(modelRegistrySnapshotProvider);
@@ -442,37 +493,39 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                       '${e.presetId != null ? ' · preset' : ''}',
                     ),
                     isThreeLine: false,
-                    trailing: SizedBox(
-                      width: 128,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          if (snap.activeEntryId == e.id)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: Text(
-                                'Active',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelLarge
-                                    ?.copyWith(
-                                      color: Theme.of(context).colorScheme.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                            )
-                          else
-                            TextButton(
-                              onPressed: () => _onUseEntry(e),
-                              child: const Text('Use'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        if (snap.activeEntryId == e.id)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: Text(
+                              'Active',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
-                          IconButton(
-                            tooltip: 'Remove',
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () => _confirmRemoveEntry(e),
+                          )
+                        else
+                          TextButton(
+                            onPressed: () => _onUseEntry(e),
+                            child: const Text('Use'),
                           ),
-                        ],
-                      ),
+                        IconButton(
+                          tooltip: 'Save copy',
+                          icon: const Icon(Icons.save_alt_outlined),
+                          onPressed: () => _exportEntry(e),
+                        ),
+                        IconButton(
+                          tooltip: 'Remove',
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () => _confirmRemoveEntry(e),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -712,7 +765,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Text(
-              'Pick a .task, .bin, .litertlm, or .tflite file you copied to this device.',
+              'Pick a .task, .bin, .litertlm, or .tflite file (e.g. one you saved '
+              'to Downloads from Installed models → Save copy).',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),

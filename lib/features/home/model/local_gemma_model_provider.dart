@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:disastron/features/home/model/huggingface_token_provider.dart';
+import 'package:disastron/features/home/model/model_file_export.dart';
 import 'package:disastron/features/home/model/model_install_activity_kind.dart';
 import 'package:disastron/features/home/model/model_install_domain_error.dart';
 import 'package:disastron/features/home/model/model_install_orchestrator.dart';
@@ -106,7 +107,6 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   void beginInstallFlow(ModelInstallActivityKind kind) {
     state = LocalGemmaModelUi(
       phase: LocalGemmaPhase.installing,
-      progress: 0,
       activity: kind,
     );
   }
@@ -313,6 +313,20 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         errorMessage: e.toString(),
       );
     }
+  }
+
+  Future<ModelExportResult> exportRegistryEntryToUserLocation(
+    String entryId,
+  ) async {
+    if (kIsWeb) {
+      return ModelExportResult.unsupported();
+    }
+    final String? path =
+        await _orchestrator.resolveExportableModelFilePath(entryId);
+    if (path == null) {
+      return ModelExportResult.failure('Model file not found.');
+    }
+    return exportModelFileToUserChosenLocation(absoluteSourcePath: path);
   }
 
   Future<void> removeRegistryEntry(String entryId) async {

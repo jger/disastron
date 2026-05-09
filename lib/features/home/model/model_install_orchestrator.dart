@@ -1,3 +1,5 @@
+import 'dart:io' show File;
+
 import 'package:disastron/features/home/model/inference_model_descriptor.dart';
 import 'package:disastron/features/home/model/model_install_domain_error.dart';
 import 'package:disastron/features/home/model/model_registry_store.dart';
@@ -52,6 +54,24 @@ class ModelInstallOrchestrator {
     }
     final String dir = (await getApplicationDocumentsDirectory()).path;
     return p.join(dir, basenameFromStored(entry.sourceUrlOrPath));
+  }
+
+  /// On-disk path for an installed entry, or null if missing / web.
+  Future<String?> resolveExportableModelFilePath(String entryId) async {
+    if (kIsWeb) {
+      return null;
+    }
+    await _registry.migrateFromLegacyIfNeeded();
+    final ModelRegistrySnapshot snap = await _registry.readSnapshot();
+    final InstalledModelEntry? entry = snap.entryById(entryId);
+    if (entry == null) {
+      return null;
+    }
+    final String path = await _resolveLocalFilePath(entry);
+    if (!File(path).existsSync()) {
+      return null;
+    }
+    return path;
   }
 
   Future<void> installFromFile(
@@ -258,7 +278,7 @@ class ModelInstallOrchestrator {
     await _registry.writeSnapshot(snap);
   }
 
-  /// Sync [activeEntryId] when the plugin already has a model (e.g. after external init).
+  /// Sync registry active entry when the plugin already has a model (e.g. after external init).
   Future<void> reconcileActiveWithPluginIfPossible() async {
     if (!FlutterGemma.hasActiveModel()) {
       return;

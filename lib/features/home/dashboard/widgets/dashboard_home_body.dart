@@ -9,8 +9,9 @@ import 'package:disastron/features/home/dashboard/dashboard_weather_provider.dar
 import 'package:disastron/features/home/dashboard/sos_overlay.dart';
 import 'package:disastron/features/home/dashboard/widgets/dashboard_action_card.dart';
 import 'package:disastron/features/home/dashboard/widgets/dashboard_weather_card.dart';
-import 'package:disastron/features/home/model/model_install_status_copy.dart';
+import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
 import 'package:disastron/features/home/model/model_install_flow_coordinator.dart';
+import 'package:disastron/features/home/model/model_install_status_copy.dart';
 import 'package:disastron/features/home/model/predefined_models.dart';
 import 'package:disastron/features/home/wiki/wiki_article_sheet.dart';
 import 'package:disastron/features/home/wiki/wiki_models.dart';
