@@ -1,4 +1,4 @@
-/// Fine-grained surface phase while [LocalGemmaPhase] is installing.
+/// Fine-grained surface phase while the local model is installing.
 enum ModelInstallSurfacePhase {
   /// Bytes not yet reported (token dialog, metered confirm, or native prep).
   preparing,

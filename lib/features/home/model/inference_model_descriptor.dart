@@ -10,15 +10,6 @@ class InferenceModelDescriptor {
     this.displayTitle,
   });
 
-  final ModelType modelType;
-  final ModelFileType fileType;
-
-  /// Set when source is a curated preset.
-  final String? presetId;
-
-  /// Human label for registry / UI.
-  final String? displayTitle;
-
   /// Build from a preset row.
   factory InferenceModelDescriptor.fromPreset(PredefinedInferenceModel m) {
     return InferenceModelDescriptor(
@@ -54,4 +45,13 @@ class InferenceModelDescriptor {
       fileType: modelFileTypeForUrl(trimmed),
     );
   }
+
+  final ModelType modelType;
+  final ModelFileType fileType;
+
+  /// Set when source is a curated preset.
+  final String? presetId;
+
+  /// Human label for registry / UI.
+  final String? displayTitle;
 }

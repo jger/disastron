@@ -1,11 +1,16 @@
 import 'dart:async';
 
+import 'package:disastron/features/home/chat/chat_dashboard_situation_provider.dart';
 import 'package:disastron/features/home/chat/first_chat_accident_provider.dart';
+import 'package:disastron/features/home/chat/service/chat_dashboard_context.dart';
 import 'package:disastron/features/home/chat/service/gemma_service.dart';
 import 'package:disastron/features/home/chat/service/todo_action_parser.dart';
 import 'package:disastron/features/home/chat/widgets/accident_chips_panel.dart';
 import 'package:disastron/features/home/chat/widgets/chat_widget.dart';
 import 'package:disastron/features/home/chat/widgets/loading_widget.dart';
+import 'package:disastron/features/home/dashboard/dashboard_device_provider.dart';
+import 'package:disastron/features/home/dashboard/dashboard_weather_provider.dart';
+import 'package:disastron/features/home/home_tab_index_provider.dart';
 import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
@@ -29,7 +34,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
-      unawaited(_ensureChatReady());
+      unawaited(_ensureChatReady(reloadInferenceWeights: true));
     });
   }
 
@@ -39,12 +44,51 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.dispose();
   }
 
-  Future<void> _ensureChatReady() async {
+  Future<String> _loadFreshSituationString() async {
+    ref
+      ..invalidate(dashboardDeviceProvider)
+      ..invalidate(dashboardWeatherProvider);
+    try {
+      return await ref.read(chatDashboardSituationProvider.future);
+    } on Object catch (e) {
+      return formatChatDashboardSituationError(e);
+    }
+  }
+
+  /// When user switches back to Chat, refresh dashboard samples and attach
+  /// them to the **next** user message (recreating [InferenceChat] would drop
+  /// native multi-turn history while the UI still shows old bubbles).
+  Future<void> _scheduleDeviceContextInjectIfEnteredChatTab({
+    required int? previousIndex,
+    required int nextIndex,
+  }) async {
+    if (nextIndex != kHomeTabIndexChat) {
+      return;
+    }
+    if (previousIndex == kHomeTabIndexChat) {
+      return;
+    }
+    if (!FlutterGemma.hasActiveModel() || !_chatReady) {
+      return;
+    }
+    final String situation = await _loadFreshSituationString();
+    if (!mounted) {
+      return;
+    }
+    _gemma.setDeviceContextForNextUserMessage(situation);
+  }
+
+  Future<void> _ensureChatReady({required bool reloadInferenceWeights}) async {
     if (!FlutterGemma.hasActiveModel()) {
       return;
     }
     try {
-      await _gemma.init();
+      final String situation = await _loadFreshSituationString();
+      final String system = composeDisasterSystemInstruction(situation);
+      await _gemma.init(
+        systemInstruction: system,
+        reloadInferenceWeights: reloadInferenceWeights,
+      );
       if (mounted) {
         setState(() {
           _chatReady = true;
@@ -141,26 +185,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _chatReady = false;
       _initError = null;
     });
-    await _ensureChatReady();
+    await _ensureChatReady(reloadInferenceWeights: true);
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<LocalGemmaModelUi>(localGemmaModelProvider, (LocalGemmaModelUi? previous, LocalGemmaModelUi next) {
-      if (next.isReady && !_chatReady) {
-        unawaited(_ensureChatReady());
-      }
-      if (!next.isReady && _chatReady) {
-        unawaited(_gemma.close());
-        if (mounted) {
-          setState(() {
-            _chatReady = false;
-            _messages.clear();
-            _initError = null;
-          });
-        }
-      }
-    });
+    ref
+      ..listen<int>(homeBottomNavIndexProvider, (int? previous, int next) {
+        unawaited(
+          _scheduleDeviceContextInjectIfEnteredChatTab(
+            previousIndex: previous,
+            nextIndex: next,
+          ),
+        );
+      })
+      ..listen<LocalGemmaModelUi>(
+        localGemmaModelProvider,
+        (LocalGemmaModelUi? previous, LocalGemmaModelUi next) {
+          if (next.isReady && !_chatReady) {
+            unawaited(_ensureChatReady(reloadInferenceWeights: true));
+          }
+          if (!next.isReady && _chatReady) {
+            unawaited(_gemma.close());
+            if (mounted) {
+              setState(() {
+                _chatReady = false;
+                _messages.clear();
+                _initError = null;
+              });
+            }
+          }
+        },
+      );
 
     final LocalGemmaModelUi modelUi = ref.watch(localGemmaModelProvider);
     final AsyncValue<bool> accidentDone = ref.watch(firstChatAccidentPromptProvider);
@@ -192,7 +248,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             _NoModelBody(
               onRefresh: () {
                 ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
-                unawaited(_ensureChatReady());
+                unawaited(_ensureChatReady(reloadInferenceWeights: true));
               },
             )
           else if (_initError != null)

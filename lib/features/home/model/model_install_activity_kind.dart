@@ -1,4 +1,4 @@
-/// What the user started; combined with [LocalGemmaModelUi.progress] for status copy.
+/// What the user started; combined with install progress for status copy.
 enum ModelInstallActivityKind {
   downloadNetwork,
   importLocalFile,

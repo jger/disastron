@@ -9,6 +9,7 @@ library;
 import 'package:auto_route/auto_route.dart';
 import 'package:disastron/features/home/chat/chat_page.dart';
 import 'package:disastron/features/home/dashboard/dashboard_page.dart';
+import 'package:disastron/features/home/home_tab_index_provider.dart';
 import 'package:disastron/features/home/todos/todo_tab_badge_provider.dart';
 import 'package:disastron/features/home/todos/todos_page.dart';
 import 'package:disastron/features/home/wiki/wiki_page.dart';
@@ -44,6 +45,7 @@ class HomePage extends HookConsumerWidget {
       bottomNavigationBar: NavigationBar(
         elevation: 2,
         onDestinationSelected: (int index) {
+          ref.read(homeBottomNavIndexProvider.notifier).state = index;
           if (index == 1) {
             ref.read(todoTabBadgeProvider.notifier).clear();
           }

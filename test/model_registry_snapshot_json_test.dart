@@ -11,7 +11,6 @@ void main() {
       fileType: ModelFileType.litertlm,
       displayTitle: 'Test',
       presetId: 'test',
-      importedFromPicker: false,
     );
     const ModelRegistrySnapshot snap = ModelRegistrySnapshot(
       entries: <InstalledModelEntry>[entry],

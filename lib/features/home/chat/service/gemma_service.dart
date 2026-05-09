@@ -21,28 +21,58 @@ class GemmaLocalService {
   InferenceChat? _chat;
   final ChatRuntimeGateway _runtime;
 
+  /// Fresh dashboard snapshot text applied to the **next** user turn only
+  /// (avoids recreating [InferenceChat] and desyncing UI vs native history).
+  String? _pendingDeviceContextSituation;
+
   bool get isInitialized => _chat != null;
 
-  Future<void> init() async {
-    if (_chat != null) {
-      return;
+  void setDeviceContextForNextUserMessage(String situationText) {
+    final String t = situationText.trim();
+    _pendingDeviceContextSituation = t.isEmpty ? 'context_error: empty' : t;
+  }
+
+  /// Creates or refreshes the chat session. When [_model] is null, loads the
+  /// active inference model; set [reloadInferenceWeights] on first load only.
+  Future<void> init({
+    required String systemInstruction,
+    bool reloadInferenceWeights = false,
+  }) async {
+    if (_model == null) {
+      if (reloadInferenceWeights) {
+        await clearTfliteXnnpackWeightCaches();
+      }
+      _model = await _runtime.getActiveModel(maxTokens: 2048);
     }
-    await clearTfliteXnnpackWeightCaches();
-    _model = await _runtime.getActiveModel(maxTokens: 2048);
+    await _chat?.close();
+    _chat = null;
     _chat = await _model!.createChat(
-      systemInstruction: kDisasterSystemInstruction,
+      systemInstruction: systemInstruction,
     );
   }
 
   Stream<ModelResponse> processMessageAsync(Message userMessage) async* {
     final InferenceChat chat = _chat!;
-    await chat.addQuery(userMessage);
+    Message toSend = userMessage;
+    final String? pending = _pendingDeviceContextSituation;
+    if (pending != null) {
+      _pendingDeviceContextSituation = null;
+      toSend = Message.text(
+        text:
+            '[Device context refresh — offline estimates; use for this reply]\n'
+            '$pending\n\n---\n\n${userMessage.text}',
+        isUser: true,
+      );
+    }
+    await chat.addQuery(toSend);
     yield* chat.generateChatResponseAsync();
   }
 
   Future<void> close() async {
+    _pendingDeviceContextSituation = null;
+    await _chat?.close();
+    _chat = null;
     await _model?.close();
     _model = null;
-    _chat = null;
   }
 }

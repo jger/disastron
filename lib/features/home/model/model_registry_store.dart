@@ -18,6 +18,20 @@ class InstalledModelEntry {
     this.importedFromPicker = false,
   });
 
+  factory InstalledModelEntry.fromJson(Map<String, dynamic> j) {
+    return InstalledModelEntry(
+      id: j['id']! as String,
+      sourceUrlOrPath: j['sourceUrlOrPath']! as String,
+      modelType: ModelType.values
+          .firstWhere((ModelType e) => e.name == j['modelType']! as String),
+      fileType: ModelFileType.values
+          .firstWhere((ModelFileType e) => e.name == j['fileType']! as String),
+      displayTitle: j['displayTitle']! as String,
+      presetId: j['presetId'] as String?,
+      importedFromPicker: j['importedFromPicker'] as bool? ?? false,
+    );
+  }
+
   final String id;
   final String sourceUrlOrPath;
   final ModelType modelType;
@@ -35,20 +49,6 @@ class InstalledModelEntry {
         if (presetId != null) 'presetId': presetId,
         'importedFromPicker': importedFromPicker,
       };
-
-  factory InstalledModelEntry.fromJson(Map<String, dynamic> j) {
-    return InstalledModelEntry(
-      id: j['id']! as String,
-      sourceUrlOrPath: j['sourceUrlOrPath']! as String,
-      modelType: ModelType.values
-          .firstWhere((ModelType e) => e.name == j['modelType']! as String),
-      fileType: ModelFileType.values
-          .firstWhere((ModelFileType e) => e.name == j['fileType']! as String),
-      displayTitle: j['displayTitle']! as String,
-      presetId: j['presetId'] as String?,
-      importedFromPicker: j['importedFromPicker'] as bool? ?? false,
-    );
-  }
 }
 
 class ModelRegistrySnapshot {
@@ -56,6 +56,19 @@ class ModelRegistrySnapshot {
     required this.entries,
     this.activeEntryId,
   });
+
+  factory ModelRegistrySnapshot.fromJson(Map<String, dynamic> j) {
+    final List<dynamic> raw = j['entries'] as List<dynamic>? ?? <dynamic>[];
+    return ModelRegistrySnapshot(
+      entries: raw
+          .map(
+            (dynamic x) =>
+                InstalledModelEntry.fromJson(x as Map<String, dynamic>),
+          )
+          .toList(),
+      activeEntryId: j['activeEntryId'] as String?,
+    );
+  }
 
   final List<InstalledModelEntry> entries;
   final String? activeEntryId;
@@ -74,19 +87,6 @@ class ModelRegistrySnapshot {
         'entries': entries.map((InstalledModelEntry e) => e.toJson()).toList(),
         if (activeEntryId != null) 'activeEntryId': activeEntryId,
       };
-
-  factory ModelRegistrySnapshot.fromJson(Map<String, dynamic> j) {
-    final List<dynamic> raw = j['entries'] as List<dynamic>? ?? <dynamic>[];
-    return ModelRegistrySnapshot(
-      entries: raw
-          .map(
-            (dynamic x) =>
-                InstalledModelEntry.fromJson(x as Map<String, dynamic>),
-          )
-          .toList(),
-      activeEntryId: j['activeEntryId'] as String?,
-    );
-  }
 }
 
 class ModelRegistryStore {

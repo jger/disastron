@@ -39,7 +39,7 @@ ActiveInferenceModelSummary? _summaryFromPlugin() {
   return ActiveInferenceModelSummary(label: label, detailLine: detail);
 }
 
-/// Prefer registry [displayTitle] when it matches the active plugin model.
+/// Prefer registry entry display title when it matches the active plugin model.
 ActiveInferenceModelSummary? readActiveInferenceSummary({
   ModelRegistrySnapshot? registry,
 }) {
