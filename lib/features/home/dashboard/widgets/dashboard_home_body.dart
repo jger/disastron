@@ -9,7 +9,7 @@ import 'package:disastron/features/home/dashboard/dashboard_weather_provider.dar
 import 'package:disastron/features/home/dashboard/sos_overlay.dart';
 import 'package:disastron/features/home/dashboard/widgets/dashboard_action_card.dart';
 import 'package:disastron/features/home/dashboard/widgets/dashboard_weather_card.dart';
-import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
+import 'package:disastron/features/home/model/model_install_status_copy.dart';
 import 'package:disastron/features/home/model/model_install_flow_coordinator.dart';
 import 'package:disastron/features/home/model/predefined_models.dart';
 import 'package:disastron/features/home/wiki/wiki_article_sheet.dart';
@@ -138,6 +138,7 @@ class _NoOfflineModelBanner extends ConsumerWidget {
     final ColorScheme scheme = Theme.of(context).colorScheme;
 
     if (ui.phase == LocalGemmaPhase.installing) {
+      final InstallStatusCopy status = modelInstallStatusCopy(ui);
       return Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Material(
@@ -155,14 +156,14 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Downloading offline model…',
+                        status.title,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               color: scheme.onSurface,
                               fontWeight: FontWeight.w600,
                             ),
                       ),
                     ),
-                    if (ui.progress > 0)
+                    if (ui.progress > 0 && ui.progress < 100)
                       Text(
                         '${ui.progress}%',
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
@@ -171,6 +172,15 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                       ),
                   ],
                 ),
+                if (status.subtitle != null) ...<Widget>[
+                  const SizedBox(height: 6),
+                  Text(
+                    status.subtitle!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                  ),
+                ],
                 const SizedBox(height: 10),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
@@ -179,16 +189,6 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                     value: ui.progress > 0 ? ui.progress / 100.0 : null,
                   ),
                 ),
-                if (ui.progress <= 0) ...<Widget>[
-                  const SizedBox(height: 8),
-                  Text(
-                    'Large models may sit here while copying or validating — '
-                    'this can take several minutes.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
               ],
             ),
           ),

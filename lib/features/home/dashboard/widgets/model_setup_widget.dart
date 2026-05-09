@@ -5,7 +5,7 @@ import 'package:disastron/features/home/model/active_inference_model_summary.dar
 import 'package:disastron/features/home/model/huggingface_token_provider.dart';
 import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
 import 'package:disastron/features/home/model/model_install_flow_coordinator.dart';
-import 'package:disastron/features/home/model/model_operation_state.dart';
+import 'package:disastron/features/home/model/model_install_status_copy.dart';
 import 'package:disastron/features/home/model/model_registry_provider.dart';
 import 'package:disastron/features/home/model/model_registry_store.dart';
 import 'package:disastron/features/home/model/predefined_models.dart';
@@ -201,20 +201,27 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
   ) {
     switch (ui.phase) {
       case LocalGemmaPhase.installing:
+        final InstallStatusCopy status = modelInstallStatusCopy(ui);
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             CircularProgressIndicator(value: ui.progress > 0 ? ui.progress / 100 : null),
             const SizedBox(height: 16),
             Text(
-              ui.installSurface == ModelInstallSurfacePhase.transferring &&
-                      ui.progress > 0
-                  ? 'Installing… ${ui.progress}%'
-                  : 'Preparing (network check, token, or native setup). '
-                      'Large files can take several minutes once transfer starts.',
+              status.title,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme.of(context).textTheme.titleSmall,
             ),
+            if (status.subtitle != null) ...<Widget>[
+              const SizedBox(height: 8),
+              Text(
+                status.subtitle!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ],
           ],
         );
       case LocalGemmaPhase.ready:

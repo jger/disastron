@@ -1,6 +1,7 @@
 import 'package:disastron/features/home/model/huggingface_token_prompt_dialog.dart';
 import 'package:disastron/features/home/model/huggingface_token_provider.dart';
 import 'package:disastron/features/home/model/local_gemma_model_provider.dart';
+import 'package:disastron/features/home/model/model_install_activity_kind.dart';
 import 'package:disastron/features/home/model/model_network_install.dart';
 import 'package:disastron/features/home/model/predefined_models.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,9 @@ Future<bool> coordinateInferenceNetworkInstallPreflight({
   required PredefinedInferenceModel model,
   TextEditingController? tokenController,
 }) async {
-  ref.read(localGemmaModelProvider.notifier).beginInstallFlow();
+  ref
+      .read(localGemmaModelProvider.notifier)
+      .beginInstallFlow(ModelInstallActivityKind.downloadNetwork);
   if (model.requiresHuggingFaceToken) {
     final bool ok = await ensureHuggingFaceReadToken(
       context: context,
@@ -68,7 +71,9 @@ Future<bool> coordinateUrlInstallPreflight({
   required BuildContext context,
   required WidgetRef ref,
 }) async {
-  ref.read(localGemmaModelProvider.notifier).beginInstallFlow();
+  ref
+      .read(localGemmaModelProvider.notifier)
+      .beginInstallFlow(ModelInstallActivityKind.downloadNetwork);
   if (!await confirmLargeDownloadIfNotLikelyUnmetered(context)) {
     ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
     return false;
