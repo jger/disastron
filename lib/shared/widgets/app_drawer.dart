@@ -12,6 +12,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:disastron/router/routes.gr.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:svg_flutter/svg_flutter.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -24,6 +25,7 @@ class AppDrawer extends StatefulWidget {
 class _AppDrawerState extends State<AppDrawer>
     with SingleTickerProviderStateMixin {
   late final AnimationController _starsController;
+  String? _versionLabel;
 
   @override
   void initState() {
@@ -32,6 +34,14 @@ class _AppDrawerState extends State<AppDrawer>
       vsync: this,
       duration: const Duration(seconds: 5),
     )..repeat();
+    PackageInfo.fromPlatform().then((PackageInfo info) {
+      if (!mounted) return;
+      setState(() {
+        _versionLabel = info.buildNumber.isEmpty
+            ? info.version
+            : '${info.version}+${info.buildNumber}';
+      });
+    });
   }
 
   @override
@@ -113,6 +123,22 @@ class _AppDrawerState extends State<AppDrawer>
               context.router.push(const ModelConfigRoute());
             },
           ),
+          if (_versionLabel != null) ...<Widget>[
+            const SizedBox(height: 24),
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Text(
+                  _versionLabel!,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
