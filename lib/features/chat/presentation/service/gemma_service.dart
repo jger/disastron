@@ -42,8 +42,8 @@ class GemmaLocalService {
     bool supportImage = false,
     int? maxNumImages,
   }) async {
-    final bool visionFlagChanged = _lastInitSupportImage != null &&
-        _lastInitSupportImage != supportImage;
+    final bool visionFlagChanged =
+        _lastInitSupportImage != null && _lastInitSupportImage != supportImage;
     if (_model != null && visionFlagChanged) {
       await _chat?.close();
       _chat = null;

@@ -40,8 +40,7 @@ class AppLocale extends _$AppLocale {
         AppLocales.codes.contains(code) ? code : AppLocales.codes.first;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(PrefsKeys.localeCode, safe);
-    final AppLocaleState cur =
-        state.value ?? await future;
+    final AppLocaleState cur = state.value ?? await future;
     state = AsyncValue<AppLocaleState>.data(
       AppLocaleState(
         localeCode: safe,

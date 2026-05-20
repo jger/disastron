@@ -3,7 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 part 'first_chat_accident_provider.g.dart';
 
-const String kFirstChatAccidentPromptDoneKey = 'first_chat_accident_prompt_done_v1';
+const String kFirstChatAccidentPromptDoneKey =
+    'first_chat_accident_prompt_done_v1';
 
 /// Persisted flag: when `true`, the first-run accident chip prompt was shown/completed.
 @Riverpod(keepAlive: true)

@@ -190,8 +190,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             : ' Open the Todos tab to review.';
         _messages.add(
           Message(
-            text:
-                'Checklist updated (${result.appliedCount} action(s)).$hint',
+            text: 'Checklist updated (${result.appliedCount} action(s)).$hint',
             type: MessageType.systemInfo,
           ),
         );
@@ -299,7 +298,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
 
     final LocalGemmaModelUi modelUi = ref.watch(localGemmaModelProvider);
-    final AsyncValue<bool> accidentDone = ref.watch(firstChatAccidentPromptProvider);
+    final AsyncValue<bool> accidentDone =
+        ref.watch(firstChatAccidentPromptProvider);
     final bool showAccidentChips = modelUi.isReady &&
         _chatReady &&
         accidentDone.hasValue &&

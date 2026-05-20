@@ -26,13 +26,15 @@ abstract final class PredefinedInferenceModelsLoader {
   static PredefinedInferenceModelsCatalog parseYaml(String raw) {
     final Object? decoded = loadYaml(raw);
     if (decoded is! YamlMap) {
-      throw const FormatException('Expected YAML map at $kInferenceModelsAssetPath');
+      throw const FormatException(
+          'Expected YAML map at $kInferenceModelsAssetPath');
     }
 
     final String defaultId = _requiredString(decoded, 'default_preset_id');
     final Object? modelsNode = decoded['models'];
     if (modelsNode is! YamlList) {
-      throw const FormatException('Expected "models" list at $kInferenceModelsAssetPath');
+      throw const FormatException(
+          'Expected "models" list at $kInferenceModelsAssetPath');
     }
 
     final List<PredefinedInferenceModel> models = <PredefinedInferenceModel>[];
@@ -43,7 +45,8 @@ abstract final class PredefinedInferenceModelsLoader {
       models.add(_modelFromYaml(entry));
     }
     if (models.isEmpty) {
-      throw const FormatException('At least one model required in $kInferenceModelsAssetPath');
+      throw const FormatException(
+          'At least one model required in $kInferenceModelsAssetPath');
     }
     final PredefinedInferenceModel defaultPreset = models.firstWhere(
       (PredefinedInferenceModel m) => m.id == defaultId,
@@ -94,7 +97,8 @@ abstract final class PredefinedInferenceModelsLoader {
       return ModelType.gemmaIt;
     }
     if (raw is! String || raw.trim().isEmpty) {
-      throw const FormatException('model_type must be a non-empty string when set');
+      throw const FormatException(
+          'model_type must be a non-empty string when set');
     }
     final String name = raw.trim();
     for (final ModelType type in ModelType.values) {

@@ -97,8 +97,7 @@ class ModelRegistryStore {
       return const ModelRegistrySnapshot(entries: <InstalledModelEntry>[]);
     }
     try {
-      final Map<String, dynamic> j =
-          jsonDecode(raw) as Map<String, dynamic>;
+      final Map<String, dynamic> j = jsonDecode(raw) as Map<String, dynamic>;
       return ModelRegistrySnapshot.fromJson(j);
     } on Object {
       return const ModelRegistrySnapshot(entries: <InstalledModelEntry>[]);
@@ -119,8 +118,7 @@ class ModelRegistryStore {
     if (current.entries.isNotEmpty) {
       return;
     }
-    final ModelInstallRecord? legacy =
-        await ModelInstallPrefs().read();
+    final ModelInstallRecord? legacy = await ModelInstallPrefs().read();
     if (legacy == null) {
       return;
     }

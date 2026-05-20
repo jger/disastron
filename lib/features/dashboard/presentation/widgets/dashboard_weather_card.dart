@@ -25,9 +25,9 @@ class DashboardWeatherCard extends ConsumerWidget {
       data: (DashboardWeatherSnapshot s) {
         final ThemeData theme = Theme.of(context);
         final ColorScheme cs = theme.colorScheme;
-        final TextStyle small = (theme.textTheme.bodySmall ??
-                theme.textTheme.bodyMedium!)
-            .copyWith(color: cs.onSurfaceVariant);
+        final TextStyle small =
+            (theme.textTheme.bodySmall ?? theme.textTheme.bodyMedium!)
+                .copyWith(color: cs.onSurfaceVariant);
 
         if (!s.hasFix) {
           return Card(
@@ -39,7 +39,8 @@ class DashboardWeatherCard extends ConsumerWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      Icon(Icons.wb_cloudy_outlined, size: 20, color: cs.primary),
+                      Icon(Icons.wb_cloudy_outlined,
+                          size: 20, color: cs.primary),
                       const SizedBox(width: 8),
                       Text(
                         'Conditions',
@@ -51,7 +52,8 @@ class DashboardWeatherCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    s.locationError ?? DashboardLocationErrors.unavailableFallback,
+                    s.locationError ??
+                        DashboardLocationErrors.unavailableFallback,
                     style: theme.textTheme.bodySmall?.copyWith(color: cs.error),
                   ),
                   const SizedBox(height: 4),
@@ -78,10 +80,9 @@ class DashboardWeatherCard extends ConsumerWidget {
                     ? 'Day'
                     : 'Night';
 
-        final IconData phaseIcon =
-            polarDay || (!polarNight && isDay)
-                ? Icons.wb_sunny_outlined
-                : Icons.nights_stay_outlined;
+        final IconData phaseIcon = polarDay || (!polarNight && isDay)
+            ? Icons.wb_sunny_outlined
+            : Icons.nights_stay_outlined;
 
         final Color phaseColor =
             polarDay || (!polarNight && isDay) ? cs.primary : cs.tertiary;

@@ -57,7 +57,8 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
-    final AsyncValue<AppAppearanceMode> appearance = ref.watch(appAppearanceProvider);
+    final AsyncValue<AppAppearanceMode> appearance =
+        ref.watch(appAppearanceProvider);
     final ThemeData lightFallback = themeForAppearance(AppAppearanceMode.light);
     final ThemeData darkFallback = themeForAppearance(AppAppearanceMode.dark);
     return appearance.when(

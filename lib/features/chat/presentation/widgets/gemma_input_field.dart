@@ -33,9 +33,8 @@ class GemmaInputFieldState extends State<GemmaInputField> {
   }
 
   Future<void> _processMessages() async {
-    _subscription = widget.gemmaService
-        .processMessageAsync(widget.userMessage)
-        .listen(
+    _subscription =
+        widget.gemmaService.processMessageAsync(widget.userMessage).listen(
       (ModelResponse response) {
         if (response is TextResponse) {
           setState(() {

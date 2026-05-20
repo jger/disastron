@@ -26,7 +26,8 @@ class WikiPage extends ConsumerWidget {
       data: (WikiPack pack) => ListView(
         padding: const EdgeInsets.all(16),
         children: <Widget>[
-          Text('wiki_title'.tr(), style: Theme.of(context).textTheme.headlineSmall),
+          Text('wiki_title'.tr(),
+              style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 8),
           Text(
             'wiki_subtitle'.tr(),

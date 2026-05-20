@@ -30,9 +30,8 @@ class ChatMessageWidget extends StatelessWidget {
 
     final bool assistantCopy =
         !message.isUser && message.text.trim().isNotEmpty;
-    final bool showAssistantSpinner = !message.isUser &&
-        message.text.trim().isEmpty &&
-        !message.hasImage;
+    final bool showAssistantSpinner =
+        !message.isUser && message.text.trim().isEmpty && !message.hasImage;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
@@ -112,9 +111,11 @@ class ChatMessageWidget extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    return message.isUser ? const Icon(Icons.person) : _circled('assets/images/icon.png');
+    return message.isUser
+        ? const Icon(Icons.person)
+        : _circled('assets/images/icon.png');
   }
 
-  Widget _circled(String image) =>
-      CircleAvatar(backgroundColor: Colors.transparent, foregroundImage: AssetImage(image));
+  Widget _circled(String image) => CircleAvatar(
+      backgroundColor: Colors.transparent, foregroundImage: AssetImage(image));
 }

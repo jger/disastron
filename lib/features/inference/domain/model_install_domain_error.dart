@@ -42,10 +42,12 @@ ModelInstallDomainError mapModelInstallException(
 }) {
   final String msg = error.toString();
   final String lower = msg.toLowerCase();
-  final bool is403 =
-      msg.contains('403') || lower.contains('forbidden') || lower.contains('401');
-  final String? page =
-      is403 && downloadUrl != null ? hfModelPageFromDownloadUrl(downloadUrl) : null;
+  final bool is403 = msg.contains('403') ||
+      lower.contains('forbidden') ||
+      lower.contains('401');
+  final String? page = is403 && downloadUrl != null
+      ? hfModelPageFromDownloadUrl(downloadUrl)
+      : null;
 
   if (is403) {
     return ModelInstallDomainError(

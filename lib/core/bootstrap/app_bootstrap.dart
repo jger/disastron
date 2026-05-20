@@ -42,9 +42,7 @@ abstract final class AppBootstrap {
     final bool initialDone =
         prefs.getBool(PrefsKeys.languageInitialDone) ?? false;
     final String? saved = prefs.getString(PrefsKeys.localeCode);
-    if (initialDone &&
-        saved != null &&
-        AppLocales.codes.contains(saved)) {
+    if (initialDone && saved != null && AppLocales.codes.contains(saved)) {
       return saved;
     }
     return AppLocales.codes.first;

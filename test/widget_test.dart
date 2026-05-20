@@ -16,7 +16,8 @@ void main() {
     await PredefinedInferenceModelsLoader.ensureLoaded();
   });
 
-  testWidgets('app builds with ProviderScope and EasyLocalization', (WidgetTester tester) async {
+  testWidgets('app builds with ProviderScope and EasyLocalization',
+      (WidgetTester tester) async {
     await tester.pumpWidget(
       EasyLocalization(
         supportedLocales: AppLocales.supported,

@@ -19,23 +19,28 @@ const List<AccidentChipOption> kAccidentChipOptions = <AccidentChipOption>[
   ),
   AccidentChipOption(
     label: 'Fire / burn',
-    prompt: 'Fire or burn emergency. What to do first for safety and first aid.',
+    prompt:
+        'Fire or burn emergency. What to do first for safety and first aid.',
   ),
   AccidentChipOption(
     label: 'Cut / bleeding',
-    prompt: 'Serious cut or bleeding. How to slow bleeding and when to seek emergency care.',
+    prompt:
+        'Serious cut or bleeding. How to slow bleeding and when to seek emergency care.',
   ),
   AccidentChipOption(
     label: 'Fall / impact',
-    prompt: 'Fall or strong impact. Check for head/spine injury and what to monitor.',
+    prompt:
+        'Fall or strong impact. Check for head/spine injury and what to monitor.',
   ),
   AccidentChipOption(
     label: 'Poisoning',
-    prompt: 'Possible poisoning or harmful substance. Practical steps while offline.',
+    prompt:
+        'Possible poisoning or harmful substance. Practical steps while offline.',
   ),
   AccidentChipOption(
     label: 'Natural disaster',
-    prompt: 'Natural disaster situation (storm, flood, earthquake). Shelter and evacuation priorities.',
+    prompt:
+        'Natural disaster situation (storm, flood, earthquake). Shelter and evacuation priorities.',
   ),
 ];
 

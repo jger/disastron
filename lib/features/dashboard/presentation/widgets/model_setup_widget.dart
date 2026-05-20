@@ -154,12 +154,15 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     if (!ok || !mounted) {
       return;
     }
-    await ref.read(localGemmaModelProvider.notifier).installPresetById(model.id);
+    await ref
+        .read(localGemmaModelProvider.notifier)
+        .installPresetById(model.id);
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<LocalGemmaModelUi>(localGemmaModelProvider, (LocalGemmaModelUi? previous, LocalGemmaModelUi next) {
+    ref.listen<LocalGemmaModelUi>(localGemmaModelProvider,
+        (LocalGemmaModelUi? previous, LocalGemmaModelUi next) {
       if (next.phase == LocalGemmaPhase.ready &&
           (previous == null || previous.phase != LocalGemmaPhase.ready)) {
         if (mounted) {
@@ -276,7 +279,9 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                 padding: const EdgeInsets.only(bottom: 12),
                 child: FilledButton.icon(
                   onPressed: () {
-                    ref.read(localGemmaModelProvider.notifier).installFromNetwork(
+                    ref
+                        .read(localGemmaModelProvider.notifier)
+                        .installFromNetwork(
                           ui.lastFailedDownloadUrl!,
                         );
                   },
@@ -316,7 +321,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Icon(Icons.cloud_off_outlined, size: 40, color: Theme.of(context).colorScheme.primary),
+            Icon(Icons.cloud_off_outlined,
+                size: 40, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 12),
             Text(
               'No offline model installed',
@@ -343,7 +349,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Icon(Icons.info_outline, color: Theme.of(context).colorScheme.primary),
+            Icon(Icons.info_outline,
+                color: Theme.of(context).colorScheme.primary),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -358,7 +365,9 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
   }
 
   Future<void> _onUseEntry(InstalledModelEntry e) async {
-    await ref.read(localGemmaModelProvider.notifier).switchToRegistryEntry(e.id);
+    await ref
+        .read(localGemmaModelProvider.notifier)
+        .switchToRegistryEntry(e.id);
   }
 
   Future<void> _confirmRemoveEntry(InstalledModelEntry e) async {
@@ -384,7 +393,9 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       ),
     );
     if ((ok ?? false) && mounted) {
-      await ref.read(localGemmaModelProvider.notifier).removeRegistryEntry(e.id);
+      await ref
+          .read(localGemmaModelProvider.notifier)
+          .removeRegistryEntry(e.id);
     }
   }
 
@@ -503,7 +514,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                                   .textTheme
                                   .labelLarge
                                   ?.copyWith(
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                     fontWeight: FontWeight.w600,
                                   ),
                             ),
@@ -663,12 +675,14 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     AsyncValue<String?> tokenAsync,
   ) {
     final bool hasToken = hasPersistedHfToken(tokenAsync);
-    final List<PredefinedInferenceModel> publicModels = kPredefinedInferenceModels
-        .where((PredefinedInferenceModel m) => !m.requiresHuggingFaceToken)
-        .toList();
-    final List<PredefinedInferenceModel> gatedModels = kPredefinedInferenceModels
-        .where((PredefinedInferenceModel m) => m.requiresHuggingFaceToken)
-        .toList();
+    final List<PredefinedInferenceModel> publicModels =
+        kPredefinedInferenceModels
+            .where((PredefinedInferenceModel m) => !m.requiresHuggingFaceToken)
+            .toList();
+    final List<PredefinedInferenceModel> gatedModels =
+        kPredefinedInferenceModels
+            .where((PredefinedInferenceModel m) => m.requiresHuggingFaceToken)
+            .toList();
 
     final bool showGatedPresets = hasToken && gatedModels.isNotEmpty;
 

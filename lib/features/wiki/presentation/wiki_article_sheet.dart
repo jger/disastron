@@ -27,7 +27,7 @@ Future<void> openWikiArticleSheet(
           sizedImageBuilder: (MarkdownImageConfig config) {
             final uriString = config.uri.toString();
             final isSvg = uriString.toLowerCase().endsWith('.svg');
-            
+
             if (isSvg) {
               return FutureBuilder<String>(
                 future: rootBundle.loadString(uriString),
@@ -39,7 +39,7 @@ Future<void> openWikiArticleSheet(
                       final key = match.group(1);
                       return key != null ? tr(key) : '';
                     });
-                    
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: ClipRRect(
@@ -50,7 +50,9 @@ Future<void> openWikiArticleSheet(
                   }
                   return const Padding(
                     padding: EdgeInsets.symmetric(vertical: 8),
-                    child: SizedBox(height: 100, child: Center(child: CircularProgressIndicator())),
+                    child: SizedBox(
+                        height: 100,
+                        child: Center(child: CircularProgressIndicator())),
                   );
                 },
               );

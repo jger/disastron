@@ -17,14 +17,16 @@ class TodosPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<EmergencyTodo>> async = ref.watch(emergencyTodosProvider);
+    final AsyncValue<List<EmergencyTodo>> async =
+        ref.watch(emergencyTodosProvider);
 
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Text('Emergency checklist', style: Theme.of(context).textTheme.headlineSmall),
+          Text('Emergency checklist',
+              style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 8),
           Text(
             'Items can be added here or by the assistant in Messages (via structured replies).',
@@ -51,17 +53,21 @@ class TodosPage extends ConsumerWidget {
                     final EmergencyTodo t = list[i];
                     return CheckboxListTile(
                       title: Text(t.title),
-                      subtitle: Text('id: ${t.id}', style: Theme.of(context).textTheme.bodySmall),
+                      subtitle: Text('id: ${t.id}',
+                          style: Theme.of(context).textTheme.bodySmall),
                       value: t.done,
                       onChanged: (bool? v) {
                         if (v != null) {
-                          ref.read(emergencyTodosProvider.notifier).setDone(t.id, done: v);
+                          ref
+                              .read(emergencyTodosProvider.notifier)
+                              .setDone(t.id, done: v);
                         }
                       },
                       secondary: IconButton(
                         icon: const Icon(Icons.delete_outline),
-                        onPressed: () =>
-                            ref.read(emergencyTodosProvider.notifier).remove(t.id),
+                        onPressed: () => ref
+                            .read(emergencyTodosProvider.notifier)
+                            .remove(t.id),
                       ),
                     );
                   },
@@ -92,12 +98,17 @@ class TodosPage extends ConsumerWidget {
           content: TextField(
             controller: c,
             autofocus: true,
-            decoration: const InputDecoration(hintText: 'Short actionable step'),
+            decoration:
+                const InputDecoration(hintText: 'Short actionable step'),
             onSubmitted: (String s) => Navigator.pop(ctx, s),
           ),
           actions: <Widget>[
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, c.text), child: const Text('Add')),
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel')),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, c.text),
+                child: const Text('Add')),
           ],
         );
       },

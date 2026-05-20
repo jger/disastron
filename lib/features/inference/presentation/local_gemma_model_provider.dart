@@ -288,7 +288,8 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     final CancelToken? cancelToken = _installCancelToken;
     try {
       final String? trimmed = token?.trim();
-      final ModelFileType resolvedFileType = fileType ?? modelFileTypeForUrl(url);
+      final ModelFileType resolvedFileType =
+          fileType ?? modelFileTypeForUrl(url);
       final ModelType resolvedModelType =
           modelType ?? modelTypeForInferenceSource(url);
       final String? effectiveToken = (trimmed != null && trimmed.isNotEmpty)

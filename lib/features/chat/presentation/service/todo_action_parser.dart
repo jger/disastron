@@ -20,8 +20,7 @@ Future<TodoApplyResult> stripTodosAndApply(
   int addedTodoCount = 0;
 
   if (m != null) {
-    display =
-        assistantText.replaceRange(m.start, m.end, '').trimRight();
+    display = assistantText.replaceRange(m.start, m.end, '').trimRight();
     final String rawJson = m.group(1)?.trim() ?? '';
     if (rawJson.isNotEmpty) {
       try {

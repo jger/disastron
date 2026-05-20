@@ -19,7 +19,8 @@ class EmergencyTodo {
       id: json['id'] as String,
       title: json['title'] as String,
       done: json['done'] as bool? ?? false,
-      createdAtMs: json['createdAtMs'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      createdAtMs:
+          json['createdAtMs'] as int? ?? DateTime.now().millisecondsSinceEpoch,
     );
   }
 

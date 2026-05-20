@@ -73,7 +73,8 @@ String formatChatDashboardSituation({
     b
       ..writeln('climate_normals_month: ${fc.month1to12}')
       ..writeln('climate_normals_day_avg_c: ${fc.dayAvgC.toStringAsFixed(1)}')
-      ..writeln('climate_normals_night_avg_c: ${fc.nightAvgC.toStringAsFixed(1)}')
+      ..writeln(
+          'climate_normals_night_avg_c: ${fc.nightAvgC.toStringAsFixed(1)}')
       ..writeln('climate_normals_method: ${fc.methodLabel}')
       ..writeln(
         'climate_nearest_station_km: ${fc.nearestStationKm.toStringAsFixed(0)}',

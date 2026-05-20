@@ -15,7 +15,8 @@ class ActiveInferenceModelSummary {
 }
 
 ActiveInferenceModelSummary? _summaryFromPlugin() {
-  final ModelSpec? raw = FlutterGemmaPlugin.instance.modelManager.activeInferenceModel;
+  final ModelSpec? raw =
+      FlutterGemmaPlugin.instance.modelManager.activeInferenceModel;
   if (raw is! InferenceModelSpec) {
     return null;
   }
@@ -52,8 +53,8 @@ ActiveInferenceModelSummary? readActiveInferenceSummary({
   if (entry == null) {
     return plugin;
   }
-  final String detail = plugin?.detailLine ??
-      '${entry.modelType.name} · ${entry.fileType.name}';
+  final String detail =
+      plugin?.detailLine ?? '${entry.modelType.name} · ${entry.fileType.name}';
   return ActiveInferenceModelSummary(
     label: entry.displayTitle,
     detailLine: detail,

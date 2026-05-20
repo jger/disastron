@@ -12,8 +12,7 @@ class ChatMessageDraft {
   final Uint8List? imageBytes;
 
   bool get isNotEmpty =>
-      text.trim().isNotEmpty ||
-      (imageBytes != null && imageBytes!.isNotEmpty);
+      text.trim().isNotEmpty || (imageBytes != null && imageBytes!.isNotEmpty);
 }
 
 typedef HumanMessageHandler = void Function(ChatMessageDraft draft);

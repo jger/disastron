@@ -52,7 +52,8 @@ class AsyncValueCard<T> extends StatelessWidget {
             children: <Widget>[
               Text(title, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: AppSpacing.gapSm),
-              Text('$e', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              Text('$e',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
             ],
           ),
         ),

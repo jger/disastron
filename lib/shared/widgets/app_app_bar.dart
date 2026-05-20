@@ -43,7 +43,6 @@ class AppAppBar extends AppBar {
               );
             },
           ),
-          actions: const [
-          ],
+          actions: const [],
         );
 }

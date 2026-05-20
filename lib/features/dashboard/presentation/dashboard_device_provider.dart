@@ -90,9 +90,8 @@ Future<DashboardDeviceSnapshot> dashboardDevice(Ref ref) async {
         if (marks.isNotEmpty) {
           final Placemark p = marks.first;
           iso = p.isoCountryCode;
-          locality = p.locality ??
-              p.subAdministrativeArea ??
-              p.administrativeArea;
+          locality =
+              p.locality ?? p.subAdministrativeArea ?? p.administrativeArea;
         }
       }
     } on Object catch (e) {

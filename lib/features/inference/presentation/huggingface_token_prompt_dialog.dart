@@ -7,7 +7,8 @@ Future<String?> showHuggingFaceTokenPasteDialog(BuildContext context) {
   return showDialog<String>(
     context: context,
     barrierDismissible: false,
-    builder: (BuildContext dialogContext) => const _HuggingFaceTokenPasteDialog(),
+    builder: (BuildContext dialogContext) =>
+        const _HuggingFaceTokenPasteDialog(),
   );
 }
 
@@ -19,7 +20,8 @@ class _HuggingFaceTokenPasteDialog extends StatefulWidget {
       _HuggingFaceTokenPasteDialogState();
 }
 
-class _HuggingFaceTokenPasteDialogState extends State<_HuggingFaceTokenPasteDialog> {
+class _HuggingFaceTokenPasteDialogState
+    extends State<_HuggingFaceTokenPasteDialog> {
   late final TextEditingController _controller;
 
   @override

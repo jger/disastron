@@ -40,8 +40,10 @@ class _HcBatteryTipBannerState extends ConsumerState<_HcBatteryTipBanner> {
   Widget build(BuildContext context) {
     ref.listen(
       appAppearanceProvider,
-      (AsyncValue<AppAppearanceMode>? previous,
-          AsyncValue<AppAppearanceMode> next,) {
+      (
+        AsyncValue<AppAppearanceMode>? previous,
+        AsyncValue<AppAppearanceMode> next,
+      ) {
         next.whenData((AppAppearanceMode m) {
           if (m != AppAppearanceMode.darkHighContrast && mounted) {
             setState(() => _dismissed = false);
@@ -58,8 +60,7 @@ class _HcBatteryTipBannerState extends ConsumerState<_HcBatteryTipBanner> {
         if (m != AppAppearanceMode.darkHighContrast || _dismissed) {
           return const SizedBox.shrink();
         }
-        final Color onSec =
-            Theme.of(context).colorScheme.onSecondaryContainer;
+        final Color onSec = Theme.of(context).colorScheme.onSecondaryContainer;
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Material(
@@ -188,7 +189,8 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                 alignment: WrapAlignment.end,
                 children: <Widget>[
                   TextButton(
-                    onPressed: () => context.router.push(const ModelConfigRoute()),
+                    onPressed: () =>
+                        context.router.push(const ModelConfigRoute()),
                     child: Text('offline_model_settings'.tr()),
                   ),
                   FilledButton(
@@ -281,7 +283,8 @@ class DashboardHomeBody extends ConsumerWidget {
                     icon: Icons.luggage_outlined,
                     title: 'dashboard_planning_title'.tr(),
                     subtitle: 'dashboard_planning_subtitle'.tr(),
-                    onTap: () => _openWikiArticle(context, ref, 'trip_planning'),
+                    onTap: () =>
+                        _openWikiArticle(context, ref, 'trip_planning'),
                   ),
                 ];
                 return GridView.count(
@@ -428,18 +431,15 @@ class _StatusExpansionTile extends StatelessWidget {
   final DashboardDeviceSnapshot snapshot;
 
   String _shortSummary(BuildContext context) {
-    final String bat = snapshot.batteryPercent != null
-        ? '${snapshot.batteryPercent}%'
-        : '—';
+    final String bat =
+        snapshot.batteryPercent != null ? '${snapshot.batteryPercent}%' : '—';
     final String place = <String?>[
       snapshot.locality,
       snapshot.isoCountryCode,
-    ]
-        .whereType<String>()
-        .where((String x) => x.isNotEmpty)
-        .join(', ');
-    final String placeShort =
-        place.isEmpty ? '—' : (place.length > 28 ? '${place.substring(0, 25)}…' : place);
+    ].whereType<String>().where((String x) => x.isNotEmpty).join(', ');
+    final String placeShort = place.isEmpty
+        ? '—'
+        : (place.length > 28 ? '${place.substring(0, 25)}…' : place);
     final MaterialLocalizations loc = MaterialLocalizations.of(context);
     final String time = loc.formatTimeOfDay(
       TimeOfDay.fromDateTime(snapshot.sampledAt),
@@ -452,10 +452,7 @@ class _StatusExpansionTile extends StatelessWidget {
     final String placeLong = <String?>[
       snapshot.locality,
       snapshot.isoCountryCode,
-    ]
-        .whereType<String>()
-        .where((String x) => x.isNotEmpty)
-        .join(', ');
+    ].whereType<String>().where((String x) => x.isNotEmpty).join(', ');
 
     return Card(
       clipBehavior: Clip.antiAlias,

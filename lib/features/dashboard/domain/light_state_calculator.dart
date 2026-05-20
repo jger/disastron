@@ -48,10 +48,8 @@ LightStateResult computeLightState({
       utcNoon.difference(DateTime.utc(utcNoon.year)).inDays + 1;
   final double utcHour =
       utcNoon.hour + utcNoon.minute / 60 + utcNoon.second / 3600;
-  final double gamma = 2 *
-      math.pi /
-      365 *
-      (dayOfYearUtc - 1 + (utcHour - 12) / 24);
+  final double gamma =
+      2 * math.pi / 365 * (dayOfYearUtc - 1 + (utcHour - 12) / 24);
 
   final double eqtime = 229.18 *
       (0.000075 +
@@ -72,9 +70,8 @@ LightStateResult computeLightState({
   final double cosZen =
       math.cos(zenithOfficialDeg * math.pi / 180); // ≈ -0.01454 with refraction
 
-  final double cosH =
-      (cosZen - math.sin(latRad) * math.sin(declRad)) /
-          (math.cos(latRad) * math.cos(declRad));
+  final double cosH = (cosZen - math.sin(latRad) * math.sin(declRad)) /
+      (math.cos(latRad) * math.cos(declRad));
 
   if (cosH > 1) {
     return LightStateResult(

@@ -196,10 +196,7 @@ class ModelInstallOrchestrator {
       await FlutterGemma.installModel(
         modelType: entry.modelType,
         fileType: entry.fileType,
-      )
-          .fromFile(localPath)
-          .withProgress(onProgress)
-          .install();
+      ).fromFile(localPath).withProgress(onProgress).install();
       return const ColdStartRestoreResult.success();
     } on Object catch (e) {
       return ColdStartRestoreResult.failure(mapModelInstallException(e));
@@ -233,9 +230,7 @@ class ModelInstallOrchestrator {
       var builder = FlutterGemma.installModel(
         modelType: entry.modelType,
         fileType: entry.fileType,
-      )
-          .fromFile(localPath)
-          .withProgress(onProgress);
+      ).fromFile(localPath).withProgress(onProgress);
       if (cancelToken != null) {
         builder = builder.withCancelToken(cancelToken);
       }
@@ -270,14 +265,14 @@ class ModelInstallOrchestrator {
     } on Object catch (e) {
       return mapModelInstallException(e);
     }
-    final List<InstalledModelEntry> nextEntries = snap.entries
-        .where((InstalledModelEntry e) => e.id != entryId)
-        .toList();
+    final List<InstalledModelEntry> nextEntries =
+        snap.entries.where((InstalledModelEntry e) => e.id != entryId).toList();
     String? nextActive = snap.activeEntryId;
     if (nextActive == entryId) {
       nextActive = null;
     }
-    snap = ModelRegistrySnapshot(entries: nextEntries, activeEntryId: nextActive);
+    snap =
+        ModelRegistrySnapshot(entries: nextEntries, activeEntryId: nextActive);
     await _registry.writeSnapshot(snap);
     return null;
   }
@@ -303,9 +298,8 @@ class ModelInstallOrchestrator {
     }
     await _registry.migrateFromLegacyIfNeeded();
     final ModelRegistrySnapshot snap = await _registry.readSnapshot();
-    final InferenceModelSpec? spec =
-        FlutterGemmaPlugin.instance.modelManager.activeInferenceModel
-            as InferenceModelSpec?;
+    final InferenceModelSpec? spec = FlutterGemmaPlugin
+        .instance.modelManager.activeInferenceModel as InferenceModelSpec?;
     if (spec == null) {
       return;
     }

@@ -451,7 +451,8 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                           ],
                           decoration: InputDecoration(
                             labelText: 'Message (CAPS)',
-                            counterText: '${_msgController.text.length}/${_MorseCapsFormatter.kMaxLen}',
+                            counterText:
+                                '${_msgController.text.length}/${_MorseCapsFormatter.kMaxLen}',
                             border: const OutlineInputBorder(),
                             isDense: true,
                           ),
