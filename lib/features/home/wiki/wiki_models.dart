@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:disastron/app/app_locales.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class WikiArticle {
@@ -48,9 +49,22 @@ class WikiPack {
     return null;
   }
 
-  static Future<WikiPack> loadBundled() async {
-    final String data =
-        await rootBundle.loadString('assets/wiki/wiki_pack.json');
-    return WikiPack.fromJson(jsonDecode(data) as Map<String, dynamic>);
+  /// Loads bundled wiki for [localeCode]; falls back to English asset.
+  static Future<WikiPack> loadForLocale(String localeCode) async {
+    final String safe = AppLocales.codes.contains(localeCode)
+        ? localeCode
+        : AppLocales.codes.first;
+    try {
+      final String data =
+          await rootBundle.loadString('assets/wiki/wiki_pack_$safe.json');
+      return WikiPack.fromJson(jsonDecode(data) as Map<String, dynamic>);
+    } catch (_) {
+      final String data =
+          await rootBundle.loadString('assets/wiki/wiki_pack_en.json');
+      return WikiPack.fromJson(jsonDecode(data) as Map<String, dynamic>);
+    }
   }
+
+  /// Legacy entry point (English).
+  static Future<WikiPack> loadBundled() => loadForLocale('en');
 }

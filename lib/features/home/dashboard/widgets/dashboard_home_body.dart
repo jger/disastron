@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:disastron/app/app_appearance.dart';
 import 'package:disastron/app/appearance_provider.dart';
+import 'package:disastron/app/locale_provider.dart';
 import 'package:disastron/features/emergency/emergency_numbers.dart';
 import 'package:disastron/features/home/dashboard/dashboard_device_provider.dart';
 import 'package:disastron/features/home/dashboard/dashboard_weather_provider.dart';
@@ -15,13 +16,12 @@ import 'package:disastron/features/home/model/model_install_status_copy.dart';
 import 'package:disastron/features/home/model/predefined_models.dart';
 import 'package:disastron/features/home/wiki/wiki_article_sheet.dart';
 import 'package:disastron/features/home/wiki/wiki_models.dart';
+import 'package:disastron/features/home/wiki/wiki_pack_provider.dart';
 import 'package:disastron/router/routes.gr.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-final FutureProvider<WikiPack> wikiPackProvider =
-    FutureProvider<WikiPack>((Ref ref) => WikiPack.loadBundled());
 
 final FutureProvider<EmergencyNumbersPack> emergencyNumbersPackProvider =
     FutureProvider<EmergencyNumbersPack>(
@@ -80,8 +80,7 @@ class _HcBatteryTipBannerState extends ConsumerState<_HcBatteryTipBanner> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Battery-saving high contrast is the default. '
-                      'Change theme under Theme & appearance in the menu.',
+                      'battery_tip_body'.tr(),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: onSec,
                           ),
@@ -101,7 +100,7 @@ class _HcBatteryTipBannerState extends ConsumerState<_HcBatteryTipBanner> {
                       );
                     },
                     child: Text(
-                      'Light mode',
+                      'light_mode'.tr(),
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
                             color: onSec,
                           ),
@@ -114,7 +113,7 @@ class _HcBatteryTipBannerState extends ConsumerState<_HcBatteryTipBanner> {
                       minHeight: 40,
                     ),
                     icon: Icon(Icons.close, color: onSec, size: 22),
-                    tooltip: 'Dismiss',
+                    tooltip: 'dismiss'.tr(),
                     onPressed: () => setState(() => _dismissed = true),
                   ),
                 ],
@@ -199,10 +198,10 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                           .read(localGemmaModelProvider.notifier)
                           .requestInstallCancel();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Cancelled')),
+                        SnackBar(content: Text('snack_cancelled'.tr())),
                       );
                     },
-                    child: const Text('Cancel'),
+                    child: Text('cancel'.tr()),
                   ),
                 ),
               ],
@@ -235,7 +234,7 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'No offline model',
+                      'no_offline_model_title'.tr(),
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             color: onC,
                             fontWeight: FontWeight.w600,
@@ -246,8 +245,11 @@ class _NoOfflineModelBanner extends ConsumerWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Chat needs a downloaded model. Install the smallest preset '
-                '(${m.title}) or choose another under Settings → Offline model.',
+                'no_offline_model_body'.tr(
+                  namedArgs: <String, String>{
+                    'preset': m.title,
+                  },
+                ),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: onC,
                     ),
@@ -260,7 +262,7 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                 children: <Widget>[
                   TextButton(
                     onPressed: () => context.router.push(const ModelConfigRoute()),
-                    child: const Text('Offline model settings'),
+                    child: Text('offline_model_settings'.tr()),
                   ),
                   FilledButton(
                     onPressed: () async {
@@ -280,7 +282,7 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                           .read(localGemmaModelProvider.notifier)
                           .installPresetById(kSmallestStoragePresetId);
                     },
-                    child: const Text('Download smallest'),
+                    child: Text('download_smallest'.tr()),
                   ),
                 ],
               ),
@@ -298,6 +300,15 @@ class DashboardHomeBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Rebuild when locale changes (IndexedStack + const children can skip subtree otherwise).
+    ref.watch(
+      appLocaleProvider.select(
+        (AsyncValue<AppLocaleState> a) => a.maybeWhen(
+          data: (AppLocaleState s) => s.localeCode,
+          orElse: () => '',
+        ),
+      ),
+    );
     return RefreshIndicator(
       onRefresh: () async {
         ref
@@ -323,26 +334,26 @@ class DashboardHomeBody extends ConsumerWidget {
                 final List<Widget> cards = <Widget>[
                   DashboardActionCard(
                     icon: Icons.emergency_share_outlined,
-                    title: 'Call help',
-                    subtitle: 'Major numbers by detected country + GPS',
+                    title: 'dashboard_call_help_title'.tr(),
+                    subtitle: 'dashboard_call_help_subtitle'.tr(),
                     onTap: () => _openCallHelp(context, ref),
                   ),
                   DashboardActionCard(
                     icon: Icons.favorite_border,
-                    title: 'CPR',
-                    subtitle: 'Essentials (offline)',
+                    title: 'dashboard_cpr_title'.tr(),
+                    subtitle: 'dashboard_cpr_subtitle'.tr(),
                     onTap: () => _openWikiArticle(context, ref, 'karpa_cpr'),
                   ),
                   DashboardActionCard(
                     icon: Icons.sos,
-                    title: 'SOS signal',
-                    subtitle: 'Flash + Morse + tone',
+                    title: 'dashboard_sos_title'.tr(),
+                    subtitle: 'dashboard_sos_subtitle'.tr(),
                     onTap: () => openSosOverlay(context),
                   ),
                   DashboardActionCard(
                     icon: Icons.luggage_outlined,
-                    title: 'Planning',
-                    subtitle: 'Home kit & trip prep wiki',
+                    title: 'dashboard_planning_title'.tr(),
+                    subtitle: 'dashboard_planning_subtitle'.tr(),
                     onTap: () => _openWikiArticle(context, ref, 'trip_planning'),
                   ),
                 ];
@@ -375,7 +386,7 @@ class DashboardHomeBody extends ConsumerWidget {
     }
     if (a == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Wiki article missing: $id')),
+        SnackBar(content: Text('wiki_article_missing'.tr(args: <String>[id]))),
       );
       return;
     }

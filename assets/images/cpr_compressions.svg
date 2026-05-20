@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <rect width="1024" height="1024" fill="#f4f6f9" />
+
+  <text x="512" y="80" font-family="sans-serif" font-size="38px" font-weight="bold" fill="#111827" text-anchor="middle" id="text_title">{{cpr_img_title}}</text>
+
+  <g transform="translate(0, 30)">
+    <path fill="none" stroke="#1f2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" d="M 150 700 Q 150 400 300 350 Q 400 300 400 200 L 624 200 Q 624 300 724 350 Q 874 400 874 700" />
+    <path fill="none" stroke="#1f2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" d="M 400 200 Q 400 150 512 150 Q 624 150 624 200" />
+
+    <g fill="none" stroke="#9ca3af" stroke-width="4" stroke-linecap="round">
+        <path d="M 470 330 Q 350 330 320 400" />
+        <path d="M 470 380 Q 320 380 300 460" />
+        <path d="M 470 430 Q 300 430 290 520" />
+        <path d="M 470 480 Q 290 480 290 580" />
+        <path d="M 470 530 Q 310 530 320 640" />
+
+        <path d="M 554 330 Q 674 330 704 400" />
+        <path d="M 554 380 Q 704 380 724 460" />
+        <path d="M 554 430 Q 724 430 734 520" />
+        <path d="M 554 480 Q 734 480 734 580" />
+        <path d="M 554 530 Q 714 530 704 640" />
+    </g>
+
+    <path fill="#e5e7eb" stroke="#9ca3af" stroke-width="3" d="M 480 320 L 544 320 L 530 550 L 494 550 Z" />
+
+    <g transform="translate(512, 530)">
+        <circle cx="0" cy="0" r="50" fill="#ffffff" stroke="#0ea5e9" stroke-width="12" />
+        <circle cx="0" cy="0" r="25" fill="#0ea5e9" />
+    </g>
+
+    <g fill="#fde68a" stroke="#1f2937" stroke-width="4" stroke-linejoin="round">
+        <path d="M 380 150 L 460 480 L 530 480 L 490 150 Z" />
+        <path stroke-linecap="round" d="M 525 460 Q 560 430 580 430 Q 590 440 570 470 L 530 490" />
+        <path stroke-linecap="round" d="M 460 480 L 450 560 Q 450 580 470 580 L 485 500" />
+        <path stroke-linecap="round" d="M 480 480 L 475 580 Q 480 600 500 590 L 505 500" />
+        <path stroke-linecap="round" d="M 500 480 L 500 580 Q 510 600 530 590 L 525 500" />
+    </g>
+
+    <g fill="#fcd34d" stroke="#1f2937" stroke-width="4" stroke-linejoin="round">
+        <path d="M 640 150 L 550 460 L 470 460 L 530 150 Z" />
+        <path stroke-linecap="round" d="M 480 450 Q 430 430 410 440 Q 400 460 430 480 L 470 470" />
+        <path stroke-linecap="round" d="M 470 460 L 460 550 Q 460 570 480 570 L 495 480" />
+        <path stroke-linecap="round" d="M 490 460 L 485 570 Q 490 590 510 580 L 515 480" />
+        <path stroke-linecap="round" d="M 510 460 L 510 570 Q 520 590 540 580 L 535 480" />
+        <path stroke-linecap="round" d="M 530 460 L 535 550 Q 545 560 560 550 L 550 470" />
+    </g>
+
+    <path fill="none" stroke="#1f2937" stroke-width="3" d="M 280 230 L 400 320" />
+    <circle cx="400" cy="320" r="4" fill="#1f2937" />
+    <text x="270" y="225" font-family="sans-serif" font-size="26px" font-weight="bold" fill="#111827" text-anchor="end" id="text_victim">{{cpr_img_victim}}</text>
+
+    <path fill="none" stroke="#1f2937" stroke-width="3" d="M 750 250 L 530 490" />
+    <circle cx="530" cy="490" r="4" fill="#1f2937" />
+    <text x="760" y="245" font-family="sans-serif" font-size="26px" font-weight="bold" fill="#111827" text-anchor="start" id="text_heel_of_hand">{{cpr_img_heel_of_hand}}</text>
+
+    <path fill="none" stroke="#1f2937" stroke-width="3" d="M 750 400 L 540 400" />
+    <circle cx="540" cy="400" r="4" fill="#1f2937" />
+    <text x="760" y="408" font-family="sans-serif" font-size="26px" font-weight="bold" fill="#111827" text-anchor="start" id="text_sternum">{{cpr_img_sternum}}</text>
+
+    <path stroke="#1f2937" stroke-width="2" stroke-dasharray="5,5" fill="none" d="M 512 600 L 512 650" />
+    <text x="512" y="680" font-family="sans-serif" font-size="26px" font-weight="bold" fill="#111827" text-anchor="middle" id="text_correct_compression_1">{{cpr_img_correct_compression_1}}</text>
+    <text x="512" y="710" font-family="sans-serif" font-size="26px" font-weight="bold" fill="#111827" text-anchor="middle" id="text_correct_compression_2">{{cpr_img_correct_compression_2}}</text>
+    <text x="512" y="740" font-family="sans-serif" font-size="26px" font-weight="bold" fill="#111827" text-anchor="middle" id="text_correct_compression_3">{{cpr_img_correct_compression_3}}</text>
+  </g>
+
+  <g transform="translate(80, 840)">
+    <text x="0" y="0" font-family="sans-serif" font-size="32px" font-weight="bold" fill="#111827" id="text_inst_1">{{cpr_img_inst_1}}</text>
+    <text x="35" y="40" font-family="sans-serif" font-size="32px" font-weight="normal" fill="#111827" id="text_inst_1_sub">{{cpr_img_inst_1_sub}}</text>
+    <text x="0" y="90" font-family="sans-serif" font-size="32px" font-weight="bold" fill="#111827" id="text_inst_2">{{cpr_img_inst_2}}</text>
+    <text x="0" y="140" font-family="sans-serif" font-size="32px" font-weight="bold" fill="#111827" id="text_inst_3">{{cpr_img_inst_3}}</text>
+  </g>
+</svg>

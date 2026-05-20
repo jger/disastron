@@ -18,20 +18,42 @@
 library;
 
 import 'package:disastron/app/app_appearance.dart';
+import 'package:disastron/app/app_locales.dart';
 import 'package:disastron/app/appearance_provider.dart';
+import 'package:disastron/app/locale_easy_bridge.dart';
+import 'package:disastron/app/locale_provider.dart';
 import 'package:disastron/features/home/model/huggingface_token_store.dart';
 import 'package:disastron/router/providers/app_router_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
   final String? hfToken = await HuggingfaceTokenStore().read();
   await FlutterGemma.initialize(huggingFaceToken: hfToken);
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final bool initialDone = prefs.getBool(kLanguageInitialDoneKey) ?? false;
+  final String? saved = prefs.getString(kLocaleCodePrefsKey);
+  final String startCode = initialDone &&
+          saved != null &&
+          AppLocales.codes.contains(saved)
+      ? saved
+      : AppLocales.codes.first;
   runApp(
-    const ProviderScope(
-      child: MyApp(),
+    EasyLocalization(
+      supportedLocales: AppLocales.supported,
+      path: 'assets/translations',
+      fallbackLocale: AppLocales.localeFromCode(AppLocales.codes.first),
+      startLocale: AppLocales.localeFromCode(startCode),
+      child: const ProviderScope(
+        child: LocaleEasyBridge(
+          child: MyApp(),
+        ),
+      ),
     ),
   );
 }
@@ -49,6 +71,9 @@ class MyApp extends ConsumerWidget {
         return MaterialApp.router(
           themeMode: mode.isDark ? ThemeMode.dark : ThemeMode.light,
           debugShowCheckedModeBanner: false,
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          locale: context.locale,
           routeInformationParser: router.defaultRouteParser(),
           routeInformationProvider: router.routeInfoProvider(),
           routerDelegate: router.delegate(),
@@ -58,6 +83,9 @@ class MyApp extends ConsumerWidget {
       },
       loading: () => MaterialApp(
         debugShowCheckedModeBanner: false,
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
         theme: buildLightTheme(highContrast: false),
         darkTheme: buildDarkTheme(highContrast: true),
         themeMode: ThemeMode.dark,
@@ -65,6 +93,9 @@ class MyApp extends ConsumerWidget {
       ),
       error: (Object _, StackTrace __) => MaterialApp(
         debugShowCheckedModeBanner: false,
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
         theme: buildLightTheme(highContrast: false),
         darkTheme: buildDarkTheme(highContrast: true),
         themeMode: ThemeMode.dark,

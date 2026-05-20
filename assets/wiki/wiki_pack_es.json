@@ -1,0 +1,64 @@
+{
+  "articles": [
+    {
+      "id": "general_safety",
+      "title": "Actitud general de seguridad",
+      "summary": "Mantén la calma, evalúa, actúa, vuelve a evaluar.",
+      "bodyMarkdown": "## Prioridades\n1. **Proteger la vida** — primero tú si puedes, luego otros.\n2. **Reducir el peligro** — fuego, tráfico, electricidad, estructuras.\n3. **Pedir ayuda** si hay red — di ubicación y tipo de emergencia.\n4. **Documentar poco** — fotos/notas solo si es seguro.\n\n## Si estás solo\n- Pausa 10 s para ver peligros activos.\n- Identifica **dos salidas** en interiores.\n- Solo lo esencial si ordenan evacuar."
+    },
+    {
+      "id": "evacuation",
+      "title": "Evacuación — lo básico",
+      "summary": "Rutas, kits, movilidad y dependientes.",
+      "bodyMarkdown": "## Antes de moverte\n- Lleva **ID, medicinas, teléfono/cargador**, poca agua.\n- Calzado firme; linterna.\n\n## Durante la evacuación\n- Rutas oficiales; evita ascensores si hay fuego/humo.\n- Ayuda a niños/mayores solo sin riesgo extremo.\n- Reúnete en el **punto de encuentro** acordado si existe."
+    },
+    {
+      "id": "first_aid_bleeding",
+      "title": "Sangrado abundante",
+      "summary": "Presión, elevación, torniquete solo al final.",
+      "bodyMarkdown": "## Pasos\n1. **Presión directa** con paño limpio; mantener.\n2. **Elevar** el miembro si no hay sospecha de fractura.\n3. **Torniquete** solo si el sangrado del miembro es mortal — anota hora; aflojar solo personal formado.\n\nBusca atención profesional tras estabilizar."
+    },
+    {
+      "id": "fire_smoke",
+      "title": "Fuego y humo en interiores",
+      "summary": "Agáchate, tantea puertas, no desperdicies aire.",
+      "bodyMarkdown": "## Con humo\n- **Agáchate** — aire más fresco abajo.\n- **Tantea puertas** con el dorso; puerta caliente = otra ruta.\n- Cierra puertas detrás para frenar propagación.\n\n## Atrapado\n- Tapa huecos de la puerta; señal desde ventana; grita poco para ahorrar aire."
+    },
+    {
+      "id": "earthquake",
+      "title": "Terremoto (primer sacudón)",
+      "summary": "Agáchate, cúbrete, agárrate — luego evalúa.",
+      "bodyMarkdown": "## Durante la sacudida\n- **Agáchate, cúbrete, agárrate** bajo mueble firme o junto a muro interior; evita cristales.\n- En exterior: aléjate de edificios/fachadas/líneas eléctricas.\n\n## Después\n- Posibles réplicas; gas solo si sabes; evacúa si la estructura es insegura."
+    },
+    {
+      "id": "flood",
+      "title": "Inundación",
+      "summary": "No conduzcas por agua cubriendo la calzada.",
+      "bodyMarkdown": "## Reglas\n- **Da la vuelta** — ~30 cm de corriente pueden arrastrar un coche.\n- Evita vadear — escombros, aguas residuales, electricidad.\n- Sube si hay riesgo de riada; evita sótanos."
+    },
+    {
+      "id": "communication_plan",
+      "title": "Plan de comunicación",
+      "summary": "Sin red: puntos de encuentro acordados.",
+      "bodyMarkdown": "## Sin conexión\n- **Contacto fuera de la zona** para confirmaciones.\n- SMS suele funcionar cuando falla la voz; mensajes cortos ahorran batería.\n- Ahorra energía: modo avión salvo chequeos programados.\n\nICE (**In Case of Emergency**) en pantalla de bloqueo si el sistema lo permite."
+    },
+    {
+      "id": "trip_planning",
+      "title": "Viaje y preparación en casa",
+      "summary": "Antes de viajar o quedarte en casa.",
+      "bodyMarkdown": "## Kit en casa\n- **Agua** (3 días/persona si es posible)\n- **Comida** sin cocinar o con poco combustible\n- **Linternas** + pilas / banco de energía\n- **Botiquín** + recetas necesarias\n- **Capas abrigadas**, mantas, guantes resistentes\n- **Copias de documentos** (ID, seguro) en bolsa estanca\n- **Efectivo** en billetes pequeños\n\n## Antes de viajar\n- Comparte itinerario + horarios de contacto\n- Descarga mapas sin conexión\n- Lista en papel de emergencias del destino\n- ICE/salud en pantalla de bloqueo si puedes"
+    },
+    {
+      "id": "karpa_cpr",
+      "title": "RCP — esencial",
+      "summary": "Sin respuesta, respiración anormal: llama, comprime, DESA si hay.",
+      "bodyMarkdown": "> **Aviso:** Recordatorio offline breve, **no** sustituye curso homologado ni servicios de emergencia.\n\n## Cuándo empezar\n- Persona **no responde** y **no respira normal** (jadeo = anormal).\n- **Llamar emergencias** (u otro) y buscar **DESA** cercano.\n\n## Compresiones torácicas (adultos)\n![CPR Compressions](assets/images/cpr_compressions.svg)\n- **Centro del pecho**, mitad inferior del esternón.\n- **Profundidad ~5–6 cm**, **100–120/min**, descompresión completa entre compresiones.\n- **Minimiza pausas**; cambia cada ~2 min si cansancio.\n\n## Ventilaciones (si estás formado)\n- 30 : 2 habitual; sin formación **solo compresiones** hasta ayuda.\n\n## DESA\n![AED Placement](assets/images/cpr_aed.png)\n- Enciende, **sigue la voz**, pecho descubierto, parches como imagen, **no toques** durante análisis/descarga.\n\n## Después\n- Continúa hasta profesionales, DESA indique parar, o no puedas con seguridad."
+    },
+    {
+      "id": "morse_code",
+      "title": "Código Morse",
+      "summary": "Letras, dígitos y SOS — tiempos para luz o sonido.",
+      "bodyMarkdown": "## Tiempos\n- **Punto (dit)** — corto.\n- **Raya (dah)** — ~3× punto.\n- **Hueco intra-letra** — ~1 punto.\n- **Entre letras** — ~3 puntos.\n- **Entre palabras** — ~7 puntos.\n\nPractica lento; legible gana a rápido.\n\n## Letras (Morse internacional)\n\n| Car | Código |\n|------|------|\n| A | .- |\n| B | -... |\n| C | -.-. |\n| D | -.. |\n| E | . |\n| F | ..-. |\n| G | --. |\n| H | .... |\n| I | .. |\n| J | .--- |\n| K | -.- |\n| L | .-.. |\n| M | -- |\n| N | -. |\n| O | --- |\n| P | .--. |\n| Q | --.- |\n| R | .-. |\n| S | ... |\n| T | - |\n| U | ..- |\n| V | ...- |\n| W | .-- |\n| X | -..- |\n| Y | -.-- |\n| Z | --.. |\n\n## Dígitos\n\n| Dígito | Código |\n|-------|------|\n| 0 | ----- |\n| 1 | .---- |\n| 2 | ..--- |\n| 3 | ...-- |\n| 4 | ....- |\n| 5 | ..... |\n| 6 | -.... |\n| 7 | --... |\n| 8 | ---.. |\n| 9 | ----. |\n\n## Socorro: SOS\n**S** `...` — **O** `---` — **S** `...` (espaciado normal entre esas tres letras).\n\nUsa la herramienta **SOS** del panel para linterna/pantalla/audio/vibración sincronizados."
+    }
+  ]
+}

@@ -1,5 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:svg_flutter/svg_flutter.dart';
 
 /// Offline wiki article modal — GenUI-style readable sheet.
 Future<void> openWikiArticleSheet(
@@ -19,7 +22,49 @@ Future<void> openWikiArticleSheet(
       builder: (_, ScrollController sc) => SingleChildScrollView(
         controller: sc,
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-        child: MarkdownBody(data: '# $title\n\n$bodyMarkdown'),
+        child: MarkdownBody(
+          data: '# $title\n\n$bodyMarkdown',
+          sizedImageBuilder: (MarkdownImageConfig config) {
+            final uriString = config.uri.toString();
+            final isSvg = uriString.toLowerCase().endsWith('.svg');
+            
+            if (isSvg) {
+              return FutureBuilder<String>(
+                future: rootBundle.loadString(uriString),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    var svgString = snapshot.data!;
+                    final RegExp slugRegex = RegExp(r'\{\{([\w_]+)\}\}');
+                    svgString = svgString.replaceAllMapped(slugRegex, (match) {
+                      final key = match.group(1);
+                      return key != null ? tr(key) : '';
+                    });
+                    
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: SvgPicture.string(svgString),
+                      ),
+                    );
+                  }
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: SizedBox(height: 100, child: Center(child: CircularProgressIndicator())),
+                  );
+                },
+              );
+            }
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(uriString),
+              ),
+            );
+          },
+        ),
       ),
     ),
   );

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:disastron/app/app_appearance.dart';
 import 'package:disastron/app/appearance_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,9 +15,9 @@ class AppearanceDropdown extends ConsumerWidget {
         ref.watch(appAppearanceProvider);
     return appearanceAsync.when(
       data: (AppAppearanceMode mode) => InputDecorator(
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-          labelText: 'Theme',
+        decoration: InputDecoration(
+          border: const OutlineInputBorder(),
+          labelText: 'theme_label'.tr(),
         ),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<AppAppearanceMode>(
@@ -46,9 +47,9 @@ class AppearanceDropdown extends ConsumerWidget {
 
 String appearanceLabel(AppAppearanceMode m) {
   return switch (m) {
-    AppAppearanceMode.light => 'Light',
-    AppAppearanceMode.dark => 'Dark',
-    AppAppearanceMode.lightHighContrast => 'Light high contrast',
-    AppAppearanceMode.darkHighContrast => 'Dark high contrast',
+    AppAppearanceMode.light => 'theme_light'.tr(),
+    AppAppearanceMode.dark => 'theme_dark'.tr(),
+    AppAppearanceMode.lightHighContrast => 'theme_light_hc'.tr(),
+    AppAppearanceMode.darkHighContrast => 'theme_dark_hc'.tr(),
   };
 }

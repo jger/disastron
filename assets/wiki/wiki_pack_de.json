@@ -1,0 +1,64 @@
+{
+  "articles": [
+    {
+      "id": "general_safety",
+      "title": "Grundhaltung Sicherheit",
+      "summary": "Ruhe bewahren, einschätzen, handeln, neu bewerten.",
+      "bodyMarkdown": "## Prioritäten\n1. **Leben schützen** — wenn möglich zuerst du, dann andere.\n2. **Gefahr mindern** — Feuer, Verkehr, Strom, Gebäude.\n3. **Hilfe rufen**, wenn Netze verfügbar — Ort und Art des Notfalls nennen.\n4. **Leicht dokumentieren** — Fotos/Notizen nur bei Sicherheit.\n\n## Wenn allein\n- 10 Sekunden pausieren und laufende Gefahren scannen.\n- Drinnen **zwei Fluchtwege** finden.\n- Nur das Nötigste packen, wenn Evakuierung angeordnet ist."
+    },
+    {
+      "id": "evacuation",
+      "title": "Evakuierung — Grundlagen",
+      "summary": "Routen, Kits, Mobilität und Betreuungsbedarf.",
+      "bodyMarkdown": "## Vor der Bewegung\n- **Ausweis, Medikamente, Telefon/Ladegerät**, wenig Wasser.\n- Festes Schuhwerk; Licht mitnehmen.\n\n## Während der Evakuierung\n- Offizielle Routen bevorzugen; Aufzüge bei Feuer/Rauch meiden.\n- Kinder/Senioren nur helfen, wenn du dich nicht extrem gefährdest.\n- Am vereinbarten **Sammelpunkt** treffen, falls vorhanden."
+    },
+    {
+      "id": "first_aid_bleeding",
+      "title": "Starke Blutung",
+      "summary": "Druck, Hochlagern, Stauschlinge nur im Notfall.",
+      "bodyMarkdown": "## Schritte\n1. **Direkter Druck** mit sauberem Tuch; Druck halten.\n2. **Glied hochlagern**, wenn kein Bruchverdacht.\n3. **Stauschlinge** nur bei lebensbedrohlicher Extremitätenblutung ohne Kontrolle — Zeit notieren; lösen nur durch Helfende mit Training.\n\nNach Stabilisierung **sofort professionelle Hilfe** suchen."
+    },
+    {
+      "id": "fire_smoke",
+      "title": "Feuer & Rauch in Gebäuden",
+      "summary": "Unten bleiben, Türen prüfen, Luft schonen.",
+      "bodyMarkdown": "## Bei Rauch\n- **Unten bleiben** — kühlere, klarere Luft am Boden.\n- **Türen mit Handrücken prüfen**; heiße Tür = andere Route.\n- Türen hinter dir schließen, um Ausbreitung zu bremsen.\n\n## Eingeschlossen\n- Türspalten mit Stoff abdichten; aus dem Fenster signalisieren; wenig schreien, Luft schonen."
+    },
+    {
+      "id": "earthquake",
+      "title": "Erdbeben (erste Erschütterung)",
+      "summary": "Hinlegen, Deckung, Festhalten — dann bewerten.",
+      "bodyMarkdown": "## Während des Bebens\n- **Hinlegen, Deckung, Festhalten** unter stabiler Möbelkante oder neben Innenwand; Fenster/Glas meiden.\n- Draußen: Abstand zu Gebäuden/Fassaden/Stromleitungen.\n\n## Nach dem Beben\n- Nachbeben möglich; Gas nur prüfen mit Training; bei unsicherem Bau zur Evakuierung bereit sein."
+    },
+    {
+      "id": "flood",
+      "title": "Hochwasser",
+      "summary": "Niemals durch Überflutung fahren.",
+      "bodyMarkdown": "## Regeln\n- **Kehrt um, ertrink nicht** — schon ~30 cm Strömung können ein Fahrzeug mitreißen.\n- Waten vermeiden — Trümmer, Abwasser, Stromgefahr.\n- Bei Flutsturzgefahr nach oben gehen; Keller meiden."
+    },
+    {
+      "id": "communication_plan",
+      "title": "Kommunikationsplan",
+      "summary": "Wenn Netze ausfallen: vereinbarte Treffpunkte.",
+      "bodyMarkdown": "## Offline-Tipps\n- **Kontakt außerhalb der Region** festlegen, bei dem sich alle melden.\n- SMS funktioniert oft, wenn Sprache nicht geht; kurze Texte schonen Akku.\n- Strom sparen: Flugmodus außer bei festen Check-ins.\n\nICE (**In Case of Emergency**) auf dem Sperrbildschirm, wenn unterstützt."
+    },
+    {
+      "id": "trip_planning",
+      "title": "Reise & Haushaltsvorsorge",
+      "summary": "Vor Reise oder Aufenthalt zu Hause.",
+      "bodyMarkdown": "## Basis-Ausrüstung Zuhause\n- **Wasser** (3 Tage/Person wenn möglich)\n- **Essen** ohne oder mit wenig Kochen/Kraftstoff\n- **Taschenlampen** + Batterien / Powerbank\n- **Erste Hilfe** + benötigte Medikamente\n- **Warme Schichten**, Decken, robuste Handschuhe\n- **Dokumentkopien** (Ausweis, Versicherung) wasserdicht\n- **Bargeld** kleine Scheine\n\n## Vor der Reise\n- Route + Check-in-Zeiten mit einer Vertrauensperson teilen\n- Offline-Karten für die Strecke laden\n- Papierliste mit Notrufen für Ziele einpacken\n- ICE/Medizininfos auf Sperrbildschirm, wenn möglich"
+    },
+    {
+      "id": "karpa_cpr",
+      "title": "CPR — Grundlagen",
+      "summary": "Person reagiert nicht, keine normale Atmung: Hilfe rufen, komprimieren, AED wenn vorhanden.",
+      "bodyMarkdown": "> **Hinweis:** Kurze Offline-Erinnerung, **kein** Ersatz für zertifizierte Erste-Hilfe-Schulung oder Rettungsdienst.\n\n## Wann beginnen\n- Person **reagiert nicht** und **atmet nicht normal** (Air Hunger/Gasping ist abnormal).\n- **Notruf** (oder andere beauftragen) und **AED** holen, wenn in der Nähe.\n\n## Thoraxkompressionen (Erwachsene)\n![CPR Compressions](assets/images/cpr_compressions.svg)\n- **Mitte Brustkorb**, unteres Sternum-Halbdrittel.\n- **Tiefe ~5–6 cm**, Frequenz **100–120/min**, volle Entlastung zwischen Drücken.\n- **Pausen minimieren**; alle ~2 Minuten wechseln wenn erschöpft.\n\n## Beatmung (wenn geschult)\n- 30 Kompressionen : 2 Beatmungen üblich; ohne Schulung nur **Kompressions-CPR** bis Hilfe da ist.\n\n## AED\n![AED Placement](assets/images/cpr_aed.png)\n- Einschalten, **Sprachanweisungen folgen**, Brust frei, Pads wie gezeigt kleben, bei Analyse/Schock **nicht berühren**.\n\n## Danach\n- Fortsetzen bis Profis übernehmen, AED stoppt sagt, oder du nicht mehr sicher kannst."
+    },
+    {
+      "id": "morse_code",
+      "title": "Morsezeichen",
+      "summary": "Buchstaben, Ziffern, SOS — Zeitregeln für Licht oder Ton.",
+      "bodyMarkdown": "## Zeit\n- **Punkt (dit)** — kurzes Zeichen.\n- **Strich (dah)** — ~3× Punktlänge.\n- **Abstand innerhalb Buchstabe** — ~1 Punkt.\n- **Abstand zwischen Buchstaben** — ~3 Punkte.\n- **Abstand zwischen Wörtern** — ~7 Punkte.\n\nLangsam üben; lesbar schlägt schnell.\n\n## Buchstaben (International Morse)\n\n| Zeichen | Code |\n|------|------|\n| A | .- |\n| B | -... |\n| C | -.-. |\n| D | -.. |\n| E | . |\n| F | ..-. |\n| G | --. |\n| H | .... |\n| I | .. |\n| J | .--- |\n| K | -.- |\n| L | .-.. |\n| M | -- |\n| N | -. |\n| O | --- |\n| P | .--. |\n| Q | --.- |\n| R | .-. |\n| S | ... |\n| T | - |\n| U | ..- |\n| V | ...- |\n| W | .-- |\n| X | -..- |\n| Y | -.-- |\n| Z | --.. |\n\n## Ziffern\n\n| Ziffer | Code |\n|-------|------|\n| 0 | ----- |\n| 1 | .---- |\n| 2 | ..--- |\n| 3 | ...-- |\n| 4 | ....- |\n| 5 | ..... |\n| 6 | -.... |\n| 7 | --... |\n| 8 | ---.. |\n| 9 | ----. |\n\n## Not: SOS\n**S** `...` — **O** `---` — **S** `...` (normale Abstände zwischen diesen drei Buchstaben).\n\nNutze das Dashboard-**SOS**-Werkzeug für synchronisierte Lampe/Bildschirm/Ton/Vibration zum Signalisieren."
+    }
+  ]
+}
