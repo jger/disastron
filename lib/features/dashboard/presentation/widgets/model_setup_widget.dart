@@ -321,8 +321,11 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Icon(Icons.cloud_off_outlined,
-                size: 40, color: Theme.of(context).colorScheme.primary),
+            Icon(
+              Icons.cloud_off_outlined,
+              size: 40,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             const SizedBox(height: 12),
             Text(
               'No offline model installed',
@@ -349,8 +352,10 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Icon(Icons.info_outline,
-                color: Theme.of(context).colorScheme.primary),
+            Icon(
+              Icons.info_outline,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

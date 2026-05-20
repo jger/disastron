@@ -25,8 +25,10 @@ class TodosPage extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Text('Emergency checklist',
-              style: Theme.of(context).textTheme.headlineSmall),
+          Text(
+            'Emergency checklist',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
           const SizedBox(height: 8),
           Text(
             'Items can be added here or by the assistant in Messages (via structured replies).',
@@ -53,8 +55,10 @@ class TodosPage extends ConsumerWidget {
                     final EmergencyTodo t = list[i];
                     return CheckboxListTile(
                       title: Text(t.title),
-                      subtitle: Text('id: ${t.id}',
-                          style: Theme.of(context).textTheme.bodySmall),
+                      subtitle: Text(
+                        'id: ${t.id}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                       value: t.done,
                       onChanged: (bool? v) {
                         if (v != null) {
@@ -104,11 +108,13 @@ class TodosPage extends ConsumerWidget {
           ),
           actions: <Widget>[
             TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
             FilledButton(
-                onPressed: () => Navigator.pop(ctx, c.text),
-                child: const Text('Add')),
+              onPressed: () => Navigator.pop(ctx, c.text),
+              child: const Text('Add'),
+            ),
           ],
         );
       },

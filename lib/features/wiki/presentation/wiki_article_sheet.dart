@@ -51,8 +51,9 @@ Future<void> openWikiArticleSheet(
                   return const Padding(
                     padding: EdgeInsets.symmetric(vertical: 8),
                     child: SizedBox(
-                        height: 100,
-                        child: Center(child: CircularProgressIndicator())),
+                      height: 100,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
                   );
                 },
               );

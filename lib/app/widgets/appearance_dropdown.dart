@@ -34,7 +34,8 @@ class AppearanceDropdown extends ConsumerWidget {
             onChanged: (AppAppearanceMode? next) {
               if (next != null) {
                 unawaited(
-                    ref.read(appAppearanceProvider.notifier).setMode(next));
+                  ref.read(appAppearanceProvider.notifier).setMode(next),
+                );
               }
             },
           ),

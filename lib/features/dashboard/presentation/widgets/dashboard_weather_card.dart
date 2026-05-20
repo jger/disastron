@@ -39,8 +39,11 @@ class DashboardWeatherCard extends ConsumerWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      Icon(Icons.wb_cloudy_outlined,
-                          size: 20, color: cs.primary),
+                      Icon(
+                        Icons.wb_cloudy_outlined,
+                        size: 20,
+                        color: cs.primary,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'Conditions',

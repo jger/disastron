@@ -117,5 +117,7 @@ class ChatMessageWidget extends StatelessWidget {
   }
 
   Widget _circled(String image) => CircleAvatar(
-      backgroundColor: Colors.transparent, foregroundImage: AssetImage(image));
+        backgroundColor: Colors.transparent,
+        foregroundImage: AssetImage(image),
+      );
 }
