@@ -1,0 +1,18 @@
+/// ***************************************************************************
+/// Copyright (c) 2024 [Jannis Gerardis]
+///
+/// All rights reserved.
+/// ***************************************************************************
+
+library;
+
+import 'package:disastron/features/emergency/emergency_numbers.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'emergency_numbers_pack_provider.g.dart';
+
+/// Bundled ISO-country emergency numbers (offline).
+@Riverpod(keepAlive: true)
+Future<EmergencyNumbersPack> emergencyNumbersPack(Ref ref) {
+  return EmergencyNumbersPack.loadBundled();
+}

@@ -47,6 +47,9 @@ app.*.map.json
 **/*.g.dart
 **/*.gr.dart
 
+# Node (semantic-release)
+node_modules/
+
 # FVM Version Cache
 .fvm/
 

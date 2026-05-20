@@ -17,8 +17,6 @@ extension AppAppearanceModeX on AppAppearanceMode {
       this == AppAppearanceMode.darkHighContrast;
 }
 
-const String kAppearancePrefsKey = 'app_appearance_mode_v1';
-
 ThemeData buildLightTheme({required bool highContrast}) {
   if (highContrast) {
     return ThemeData(

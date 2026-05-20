@@ -1,3 +1,4 @@
+import 'package:disastron/core/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 
 /// Lightweight GenUI-style surfaced card for structured prompts (chat + wiki).
@@ -20,7 +21,7 @@ class GenUiCard extends StatelessWidget {
     final ColorScheme cs = Theme.of(context).colorScheme;
     return Material(
       elevation: 1,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
       color: cs.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(12),

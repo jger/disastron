@@ -1,12 +1,10 @@
 import 'package:disastron/app/app_locales.dart';
+import 'package:disastron/core/preferences/prefs_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 part 'locale_provider.g.dart';
-
-const String kLocaleCodePrefsKey = 'app_locale_code';
-const String kLanguageInitialDoneKey = 'app_language_initial_done';
 
 class AppLocaleState {
   const AppLocaleState({
@@ -26,9 +24,9 @@ class AppLocale extends _$AppLocale {
   Future<AppLocaleState> build() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool initialChoiceDone =
-        prefs.getBool(kLanguageInitialDoneKey) ?? false;
+        prefs.getBool(PrefsKeys.languageInitialDone) ?? false;
     final String code =
-        prefs.getString(kLocaleCodePrefsKey) ?? AppLocales.codes.first;
+        prefs.getString(PrefsKeys.localeCode) ?? AppLocales.codes.first;
     final String safe =
         AppLocales.codes.contains(code) ? code : AppLocales.codes.first;
     return AppLocaleState(
@@ -41,7 +39,7 @@ class AppLocale extends _$AppLocale {
     final String safe =
         AppLocales.codes.contains(code) ? code : AppLocales.codes.first;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(kLocaleCodePrefsKey, safe);
+    await prefs.setString(PrefsKeys.localeCode, safe);
     final AppLocaleState cur =
         state.value ?? await future;
     state = AsyncValue<AppLocaleState>.data(
@@ -56,8 +54,8 @@ class AppLocale extends _$AppLocale {
     final String safe =
         AppLocales.codes.contains(code) ? code : AppLocales.codes.first;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(kLocaleCodePrefsKey, safe);
-    await prefs.setBool(kLanguageInitialDoneKey, true);
+    await prefs.setString(PrefsKeys.localeCode, safe);
+    await prefs.setBool(PrefsKeys.languageInitialDone, true);
     state = AsyncValue<AppLocaleState>.data(
       AppLocaleState(localeCode: safe, initialChoiceDone: true),
     );

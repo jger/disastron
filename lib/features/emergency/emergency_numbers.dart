@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:disastron/core/assets/bundled_asset_io.dart';
 
 class EmergencyNumberEntry {
   const EmergencyNumberEntry({required this.label, required this.number});
@@ -35,7 +35,7 @@ class EmergencyNumbersPack {
 
   static Future<EmergencyNumbersPack> loadBundled() async {
     final String raw =
-        await rootBundle.loadString('assets/data/emergency_numbers.json');
+        await loadBundledAssetString('assets/data/emergency_numbers.json');
     final Map<String, dynamic> map = jsonDecode(raw) as Map<String, dynamic>;
     final Map<String, List<EmergencyNumberEntry>> out =
         <String, List<EmergencyNumberEntry>>{};

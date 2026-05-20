@@ -1,4 +1,4 @@
-import 'package:disastron/features/home/model/model_install_domain_error.dart';
+import 'package:disastron/features/inference/domain/model_install_domain_error.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

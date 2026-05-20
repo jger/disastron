@@ -1,0 +1,34 @@
+# Curated preset .task / .litertlm models for offline inference.
+# Users can still install from any URL in Settings.
+#
+# SSOT — default/smallest preset for dashboard download CTA and first-time install.
+# Must match exactly one models[].id below.
+default_preset_id: gemma3n_e2b_int4
+
+models:
+  # - id: gemma3_270m_q8
+  #   title: Gemma 3 270M IT (q8)
+  #   description: Smallest preset; good for low storage.
+  #   url: https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q8.task
+
+  # - id: gemma3_1b_int4
+  #   title: Gemma 3 1B IT (int4)
+  #   description: Balanced quality vs size (~0.5GB class).
+  #   url: https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task
+
+  - id: gemma3n_e2b_int4
+    title: Gemma 3n E2B IT (int4)
+    description: Multimodal-capable family (larger download).
+    url: https://huggingface.co/google/gemma-3n-E2B-it-litert-preview/resolve/main/gemma-3n-E2B-it-int4.task
+
+  - id: gemma4_e2b_litertlm
+    title: Gemma 4 E2B IT (LiteRT-LM)
+    description: Multimodal (text, image, audio); large download (~2.4GB).
+    url: https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm
+    model_type: gemma4
+
+  - id: gemma4_e4b_litertlm
+    title: Gemma 4 E4B IT (LiteRT-LM)
+    description: Larger Gemma 4 variant; multimodal; ~4.3GB.
+    url: https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it.litertlm
+    model_type: gemma4

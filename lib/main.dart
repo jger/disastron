@@ -21,28 +21,20 @@ import 'package:disastron/app/app_appearance.dart';
 import 'package:disastron/app/app_locales.dart';
 import 'package:disastron/app/appearance_provider.dart';
 import 'package:disastron/app/locale_easy_bridge.dart';
-import 'package:disastron/app/locale_provider.dart';
-import 'package:disastron/features/home/model/huggingface_token_store.dart';
+import 'package:disastron/core/bootstrap/app_bootstrap.dart';
 import 'package:disastron/router/providers/app_router_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  final String? hfToken = await HuggingfaceTokenStore().read();
-  await FlutterGemma.initialize(huggingFaceToken: hfToken);
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final bool initialDone = prefs.getBool(kLanguageInitialDoneKey) ?? false;
-  final String? saved = prefs.getString(kLocaleCodePrefsKey);
-  final String startCode = initialDone &&
-          saved != null &&
-          AppLocales.codes.contains(saved)
-      ? saved
-      : AppLocales.codes.first;
+  await Future.wait<void>(<Future<void>>[
+    AppBootstrap.initializeGemma(),
+    AppBootstrap.loadPredefinedInferenceModels(),
+  ]);
+  final String startCode = await AppBootstrap.resolveStartLocaleCode();
   runApp(
     EasyLocalization(
       supportedLocales: AppLocales.supported,
@@ -66,6 +58,8 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
     final AsyncValue<AppAppearanceMode> appearance = ref.watch(appAppearanceProvider);
+    final ThemeData lightFallback = themeForAppearance(AppAppearanceMode.light);
+    final ThemeData darkFallback = themeForAppearance(AppAppearanceMode.dark);
     return appearance.when(
       data: (AppAppearanceMode mode) {
         return MaterialApp.router(
@@ -77,8 +71,16 @@ class MyApp extends ConsumerWidget {
           routeInformationParser: router.defaultRouteParser(),
           routeInformationProvider: router.routeInfoProvider(),
           routerDelegate: router.delegate(),
-          theme: buildLightTheme(highContrast: mode == AppAppearanceMode.lightHighContrast),
-          darkTheme: buildDarkTheme(highContrast: mode == AppAppearanceMode.darkHighContrast),
+          theme: themeForAppearance(
+            mode == AppAppearanceMode.lightHighContrast
+                ? AppAppearanceMode.lightHighContrast
+                : AppAppearanceMode.light,
+          ),
+          darkTheme: themeForAppearance(
+            mode == AppAppearanceMode.darkHighContrast
+                ? AppAppearanceMode.darkHighContrast
+                : AppAppearanceMode.dark,
+          ),
         );
       },
       loading: () => MaterialApp(
@@ -86,8 +88,8 @@ class MyApp extends ConsumerWidget {
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
-        theme: buildLightTheme(highContrast: false),
-        darkTheme: buildDarkTheme(highContrast: true),
+        theme: lightFallback,
+        darkTheme: darkFallback,
         themeMode: ThemeMode.dark,
         home: const SizedBox.shrink(),
       ),
@@ -96,8 +98,8 @@ class MyApp extends ConsumerWidget {
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
-        theme: buildLightTheme(highContrast: false),
-        darkTheme: buildDarkTheme(highContrast: true),
+        theme: lightFallback,
+        darkTheme: darkFallback,
         themeMode: ThemeMode.dark,
         home: const SizedBox.shrink(),
       ),

@@ -29,6 +29,18 @@ Core principle: **work offline** so maps, towers, and accounts are not single po
 
 Flutter, Riverpod, Auto Route, `flutter_gemma`, `image_picker` (chat attachments on supported models), bundled assets (wiki, emergency numbers, climate normals), local permissions for location / camera / photos / audio / vibration as required by the platform.
 
+## Releases (semantic-release)
+
+Versions and GitHub Releases are driven by **[semantic-release](https://github.com/semantic-release/semantic-release)** at the repo root (`package.json`, `release.config.js`). Use **[Conventional Commits](https://www.conventionalcommits.org/)** (`feat:`, `fix:`, `chore:`, …) on `main` so releases and changelog entries are generated correctly. The release workflow bumps **`pubspec.yaml`**, updates **`CHANGELOG.md`**, and commits with **`[skip ci]`** on the release commit.
+
+**CI setup:** add a repository secret `GH_TOKEN` — a personal access token (or fine-grained token) with `contents: write` so the workflow can push release commits and create GitHub Releases.
+
+**Local checks** (same Flutter steps as CI, without publishing):
+
+```bash
+make pre-release-checks
+```
+
 ## License
 
 See repository headers and `LICENSE` if present; licensing may be updated when the project is published openly.
