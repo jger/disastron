@@ -2,6 +2,13 @@
 
 All notable changes will be documented in this file.
 
+## [1.0.1](https://github.com/jger/disastron/compare/v1.0.0...v1.0.1) (2026-05-20)
+
+
+### Bug Fixes
+
+* add version to drawer ([b8a56b1](https://github.com/jger/disastron/commit/b8a56b131b2a806b80a5e7ae5e745b437c746434))
+
 # 1.0.0 (2026-05-20)
 
 
