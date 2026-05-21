@@ -2,6 +2,13 @@
 
 All notable changes will be documented in this file.
 
+# [1.1.0](https://github.com/jger/disastron/compare/v1.0.1...v1.1.0) (2026-05-21)
+
+
+### Features
+
+* open-source preparation ([8fd3392](https://github.com/jger/disastron/commit/8fd33922c56857cb784c784a478e9c308ff9df3b))
+
 ## [1.0.1](https://github.com/jger/disastron/compare/v1.0.0...v1.0.1) (2026-05-20)
 
 
