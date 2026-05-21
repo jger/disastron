@@ -2,6 +2,14 @@
 
 All notable changes will be documented in this file.
 
+## [1.1.1](https://github.com/jger/disastron/compare/v1.1.0...v1.1.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* add cancelStaleTask method to handle zombie download tasks and improve progress handling ([fdbcecb](https://github.com/jger/disastron/commit/fdbcecbaff47c1e86145d43dbdc5f2dd48fec083))
+* download resume function with background_downloader ([d89f6d8](https://github.com/jger/disastron/commit/d89f6d87b18e6039ac9614c8e5710780889f7ac6))
+
 # [1.1.0](https://github.com/jger/disastron/compare/v1.0.1...v1.1.0) (2026-05-21)
 
 
