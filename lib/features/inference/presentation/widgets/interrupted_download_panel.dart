@@ -38,7 +38,11 @@ class InterruptedDownloadPanel extends ConsumerWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Icon(Icons.cloud_download, color: scheme.onTertiaryContainer, size: 22),
+                    Icon(
+                      Icons.cloud_download,
+                      color: scheme.onTertiaryContainer,
+                      size: 22,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -57,15 +61,6 @@ class InterruptedDownloadPanel extends ConsumerWidget {
                     copy.subtitle!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: scheme.onTertiaryContainer,
-                        ),
-                  ),
-                ],
-                if (ui.pendingDownloadDebugLine != null) ...<Widget>[
-                  const SizedBox(height: 4),
-                  Text(
-                    ui.pendingDownloadDebugLine!,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: scheme.onTertiaryContainer.withValues(alpha: 0.7),
                         ),
                   ),
                 ],
@@ -108,16 +103,6 @@ class InterruptedDownloadPanel extends ConsumerWidget {
             copy.subtitle!,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
-          ),
-        ],
-        if (ui.pendingDownloadDebugLine != null) ...<Widget>[
-          const SizedBox(height: 8),
-          Text(
-            ui.pendingDownloadDebugLine!,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: scheme.onSurfaceVariant,
                 ),
           ),

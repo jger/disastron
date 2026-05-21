@@ -25,7 +25,8 @@ Future<bool> confirmLargeDownloadIfNotLikelyUnmetered(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext ctx) => AlertDialog(
-      title: Text(preset == null ? 'Large download' : 'Download ${preset.title}?'),
+      title:
+          Text(preset == null ? 'Large download' : 'Download ${preset.title}?'),
       content: Text(
         '${presetBlock ?? ''}'
         'You are not on Wi‑Fi. Downloading a model can use a large amount of '

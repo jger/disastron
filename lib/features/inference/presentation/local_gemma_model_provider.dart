@@ -47,7 +47,6 @@ class LocalGemmaModelUi {
     this.pendingDownloadUrl,
     this.pendingProgress,
     this.pendingPresetId,
-    this.pendingDownloadDebugLine,
   });
 
   final LocalGemmaPhase phase;
@@ -60,9 +59,6 @@ class LocalGemmaModelUi {
   final String? pendingDownloadUrl;
   final int? pendingProgress;
   final String? pendingPresetId;
-
-  // TODO(jger): Remove this before merge — resume debug (task id / partial bytes).
-  final String? pendingDownloadDebugLine;
 
   bool get isReady => phase == LocalGemmaPhase.ready;
 
@@ -218,16 +214,11 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       _syncUiToEngine();
       return;
     }
-    final String? debugLine = snap.taskId != null
-        ? 'Debug: task ${snap.taskId}'
-            '${snap.partialBytes != null ? ', ${snap.partialBytes} bytes on disk' : ''}'
-        : null;
     state = LocalGemmaModelUi(
       phase: LocalGemmaPhase.downloadInterrupted,
       pendingDownloadUrl: pending.url,
       pendingProgress: pending.lastProgress,
       pendingPresetId: pending.presetId,
-      pendingDownloadDebugLine: debugLine,
       activity: ModelInstallActivityKind.downloadNetwork,
     );
     developer.log(
@@ -515,8 +506,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     ModelType? modelType,
     ModelFileType? fileType,
   }) async {
-    final ModelFileType resolvedFileType =
-        fileType ?? modelFileTypeForUrl(url);
+    final ModelFileType resolvedFileType = fileType ?? modelFileTypeForUrl(url);
     final ModelType resolvedModelType =
         modelType ?? modelTypeForInferenceSource(url);
 

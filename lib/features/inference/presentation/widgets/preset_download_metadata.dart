@@ -12,9 +12,10 @@ class PresetDownloadMetadataSubtitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle? metaStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        );
+    final TextStyle? metaStyle =
+        Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
