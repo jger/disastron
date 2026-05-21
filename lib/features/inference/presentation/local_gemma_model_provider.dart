@@ -109,18 +109,39 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   // the background WorkManager job is stuck (e.g. after a WiFi reconnect that
   // killed and refused to reschedule the job). Cancelling the token flows into
   // the normal interrupted-state recovery path.
-  static const Duration _stallTimeout = Duration(minutes: 5);
+  static const Duration _stallTimeout = Duration(seconds: 90);
   Timer? _progressStallTimer;
 
+  /// Handles network download progress. Ignores regressive ticks (SmartDownloader
+  /// clamps failure sentinel -100% to 0%) so the stall timer is not reset while
+  /// resume is pending on a dead WorkManager job.
+  void _onNetworkInstallProgress(int epoch, int progress) {
+    if (!_isInstallEpochCurrent(epoch)) {
+      return;
+    }
+    final int current = state.progress;
+    if (progress < current) {
+      developer.log(
+        'Ignoring regressive progress $progress% (current $current%) — '
+        'likely failure/resume sentinel; stall timer unchanged.',
+        name: 'LocalGemmaModel',
+      );
+      return;
+    }
+    _resetStallTimer(epoch);
+    unawaited(_updatePendingProgress(progress));
+    state = state.withInstallProgress(progress);
+  }
+
   /// Resets the stall-detection countdown. Call at install start and on every
-  /// progress tick.
+  /// valid progress tick.
   void _resetStallTimer(int epoch) {
     _progressStallTimer?.cancel();
     _progressStallTimer = Timer(_stallTimeout, () {
       if (!_isInstallEpochCurrent(epoch)) return;
       if (state.phase != LocalGemmaPhase.installing) return;
       developer.log(
-        'Download stalled (no progress for ${_stallTimeout.inMinutes} min) — '
+        'Download stalled (no progress for ${_stallTimeout.inSeconds}s) — '
         'auto-cancelling to trigger interrupted-state recovery.',
         name: 'LocalGemmaModel',
       );
@@ -515,6 +536,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       final String? effectiveToken = (trimmed != null && trimmed.isNotEmpty)
           ? trimmed
           : await ref.read(huggingfaceTokenProvider.future);
+      await _resumeService.cancelStaleTask(url);
       _resetStallTimer(epoch);
       await _orchestrator.installFromNetwork(
         url,
@@ -523,12 +545,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         fileType: resolvedFileType,
         cancelToken: cancelToken,
         onProgress: (int progress) {
-          if (!_isInstallEpochCurrent(epoch)) {
-            return;
-          }
-          _resetStallTimer(epoch);
-          unawaited(_updatePendingProgress(progress));
-          state = state.withInstallProgress(progress);
+          _onNetworkInstallProgress(epoch, progress);
         },
       );
       if (!_isInstallEpochCurrent(epoch)) {
@@ -606,18 +623,14 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       final String? effectiveToken = (trimmed != null && trimmed.isNotEmpty)
           ? trimmed
           : await ref.read(huggingfaceTokenProvider.future);
+      await _resumeService.cancelStaleTask(model.url);
       _resetStallTimer(epoch);
       await _orchestrator.installPreset(
         model,
         token: effectiveToken,
         cancelToken: cancelToken,
         onProgress: (int progress) {
-          if (!_isInstallEpochCurrent(epoch)) {
-            return;
-          }
-          _resetStallTimer(epoch);
-          unawaited(_updatePendingProgress(progress));
-          state = state.withInstallProgress(progress);
+          _onNetworkInstallProgress(epoch, progress);
         },
       );
       if (!_isInstallEpochCurrent(epoch)) {

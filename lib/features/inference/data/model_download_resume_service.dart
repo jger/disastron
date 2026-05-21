@@ -57,6 +57,27 @@ class ModelDownloadResumeService {
     return p.join(dir, basenameFromStored(url));
   }
 
+  /// Cancels a zombie WorkManager task without deleting partial bytes on disk.
+  Future<void> cancelStaleTask(String url) async {
+    if (kIsWeb) {
+      return;
+    }
+    final String targetPath = await targetPathForUrl(url);
+    final String taskId = taskIdFor(url, targetPath);
+    try {
+      await FileDownloader().cancelTaskWithId(taskId);
+      developer.log(
+        'Cancelled stale download task: $taskId',
+        name: 'ModelDownloadResumeService',
+      );
+    } on Object catch (e) {
+      developer.log(
+        'cancelStaleTask failed: $e',
+        name: 'ModelDownloadResumeService',
+      );
+    }
+  }
+
   Future<ResumableDownloadSnapshot> detectResumable(
     PendingModelDownload pending,
   ) async {
