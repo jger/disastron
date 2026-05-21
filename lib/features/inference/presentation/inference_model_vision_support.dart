@@ -6,6 +6,9 @@ import 'package:flutter_gemma/flutter_gemma.dart';
 /// Chat enables image attach only after native init with `supportImage`
 /// succeeds; otherwise the session falls back to text-only inference.
 const Set<String> kVisionCapablePresetIds = <String>{
+  'gemma3_270m_q8',
+  'gemma3_270m_q4',
+  'gemma3_1b_int4',
   'gemma3n_e2b_int4',
   'gemma4_e2b_litertlm',
   'gemma4_e4b_litertlm',

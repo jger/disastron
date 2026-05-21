@@ -1,19 +1,25 @@
 import 'package:disastron/features/inference/presentation/widgets/hugging_face_token_input.dart';
 import 'package:flutter/material.dart';
 
-/// Shown when a Hugging Face download is started without a stored token.
+/// Shown when a gated Hugging Face download starts without a stored token.
 /// Returns trimmed token on Continue; null if cancelled.
-Future<String?> showHuggingFaceTokenPasteDialog(BuildContext context) {
+Future<String?> showHuggingFaceTokenPasteDialog(
+  BuildContext context, {
+  String? modelTitle,
+}) {
   return showDialog<String>(
     context: context,
     barrierDismissible: false,
-    builder: (BuildContext dialogContext) =>
-        const _HuggingFaceTokenPasteDialog(),
+    builder: (BuildContext dialogContext) => _HuggingFaceTokenPasteDialog(
+      modelTitle: modelTitle,
+    ),
   );
 }
 
 class _HuggingFaceTokenPasteDialog extends StatefulWidget {
-  const _HuggingFaceTokenPasteDialog();
+  const _HuggingFaceTokenPasteDialog({this.modelTitle});
+
+  final String? modelTitle;
 
   @override
   State<_HuggingFaceTokenPasteDialog> createState() =>
@@ -46,8 +52,11 @@ class _HuggingFaceTokenPasteDialogState
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Text(
-              'Downloads from Hugging Face need a read token. '
-              'Create one at huggingface.co/settings/tokens',
+              widget.modelTitle == null
+                  ? 'This download is gated on Hugging Face and needs a read token. '
+                      'Create one at huggingface.co/settings/tokens'
+                  : '“${widget.modelTitle}” is gated on Hugging Face. Paste a read token '
+                      'to download (huggingface.co/settings/tokens).',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),

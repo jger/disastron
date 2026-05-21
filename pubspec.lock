@@ -114,7 +114,7 @@ packages:
     source: hosted
     version: "10.4.0"
   background_downloader:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: background_downloader
       sha256: "4cb23d9ad4f5060944f38164e7b90d4bf99b57b2472a3bd4676e59b2db4afd06"

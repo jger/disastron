@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
+import 'package:disastron/features/inference/data/model_download_resume_service.dart';
 import 'package:disastron/features/inference/data/model_registry_store.dart';
+import 'package:disastron/features/inference/data/pending_model_download_store.dart';
 import 'package:disastron/features/inference/domain/model_install_activity_kind.dart';
 import 'package:disastron/features/inference/domain/model_install_domain_error.dart';
 import 'package:disastron/features/inference/domain/model_operation_state.dart';
@@ -22,7 +25,15 @@ part 'local_gemma_model_provider.g.dart';
 
 /// Riverpod surface for install lifecycle: delegates heavy work to the install orchestrator
 /// and syncs FlutterGemma when install completes. Gated HF models set `isGated403`.
-enum LocalGemmaPhase { notInstalled, installing, ready, error }
+enum LocalGemmaPhase {
+  notInstalled,
+  installing,
+  ready,
+  error,
+
+  /// Network download stopped with partial bytes on disk (user can resume).
+  downloadInterrupted,
+}
 
 class LocalGemmaModelUi {
   const LocalGemmaModelUi({
@@ -33,6 +44,10 @@ class LocalGemmaModelUi {
     this.isGated403 = false,
     this.gatedModelPageUrl,
     this.lastFailedDownloadUrl,
+    this.pendingDownloadUrl,
+    this.pendingProgress,
+    this.pendingPresetId,
+    this.pendingDownloadDebugLine,
   });
 
   final LocalGemmaPhase phase;
@@ -42,6 +57,12 @@ class LocalGemmaModelUi {
   final bool isGated403;
   final String? gatedModelPageUrl;
   final String? lastFailedDownloadUrl;
+  final String? pendingDownloadUrl;
+  final int? pendingProgress;
+  final String? pendingPresetId;
+
+  // TODO(jger): Remove this before merge — resume debug (task id / partial bytes).
+  final String? pendingDownloadDebugLine;
 
   bool get isReady => phase == LocalGemmaPhase.ready;
 
@@ -72,13 +93,45 @@ ModelFileType modelFileTypeForPath(String path) {
 class LocalGemmaModel extends _$LocalGemmaModel {
   final ModelInstallOrchestrator _orchestrator =
       ModelInstallOrchestrator(registry: ModelRegistryStore());
+  final PendingModelDownloadStore _pendingStore = PendingModelDownloadStore();
+  final ModelDownloadResumeService _resumeService =
+      const ModelDownloadResumeService();
   bool _restoreInFlight = false;
+  bool _pendingRefreshInFlight = false;
 
   /// Bumps when a new install/preflight starts or user cancels, so stale
   /// plugin callbacks don't overwrite UI.
   int _installEpoch = 0;
 
   CancelToken? _installCancelToken;
+
+  // Fires when no download progress arrives for [_stallTimeout], which means
+  // the background WorkManager job is stuck (e.g. after a WiFi reconnect that
+  // killed and refused to reschedule the job). Cancelling the token flows into
+  // the normal interrupted-state recovery path.
+  static const Duration _stallTimeout = Duration(minutes: 5);
+  Timer? _progressStallTimer;
+
+  /// Resets the stall-detection countdown. Call at install start and on every
+  /// progress tick.
+  void _resetStallTimer(int epoch) {
+    _progressStallTimer?.cancel();
+    _progressStallTimer = Timer(_stallTimeout, () {
+      if (!_isInstallEpochCurrent(epoch)) return;
+      if (state.phase != LocalGemmaPhase.installing) return;
+      developer.log(
+        'Download stalled (no progress for ${_stallTimeout.inMinutes} min) — '
+        'auto-cancelling to trigger interrupted-state recovery.',
+        name: 'LocalGemmaModel',
+      );
+      _installCancelToken?.cancel('Download stalled');
+    });
+  }
+
+  void _cancelStallTimer() {
+    _progressStallTimer?.cancel();
+    _progressStallTimer = null;
+  }
 
   void _invalidateRegistry() {
     ref.invalidate(modelRegistrySnapshotProvider);
@@ -96,9 +149,150 @@ class LocalGemmaModel extends _$LocalGemmaModel {
 
   /// Cancels in-flight download/install token (if any) and invalidates epoch.
   void _bumpEpochAndCancelToken([String reason = 'Cancelled']) {
+    _cancelStallTimer();
     _installCancelToken?.cancel(reason);
     _installCancelToken = null;
     _installEpoch++;
+  }
+
+  Future<void> _savePendingNetworkDownload({
+    required String url,
+    required ModelType modelType,
+    required ModelFileType fileType,
+    String? presetId,
+    int progress = 0,
+  }) async {
+    if (kIsWeb) {
+      return;
+    }
+    await _pendingStore.save(
+      PendingModelDownload(
+        url: url,
+        filename: basenameFromStored(url),
+        presetId: presetId,
+        modelType: modelType,
+        fileType: fileType,
+        lastProgress: progress,
+        updatedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  Future<void> _updatePendingProgress(int progress) async {
+    if (kIsWeb) {
+      return;
+    }
+    await _pendingStore.updateProgress(progress);
+  }
+
+  Future<void> _clearPendingDownload() async {
+    await _pendingStore.clear();
+  }
+
+  Future<void> _applyInterruptedState(PendingModelDownload pending) async {
+    final ResumableDownloadSnapshot snap =
+        await _resumeService.detectResumable(pending);
+    if (!snap.resumable) {
+      await _clearPendingDownload();
+      _syncUiToEngine();
+      return;
+    }
+    final String? debugLine = snap.taskId != null
+        ? 'Debug: task ${snap.taskId}'
+            '${snap.partialBytes != null ? ', ${snap.partialBytes} bytes on disk' : ''}'
+        : null;
+    state = LocalGemmaModelUi(
+      phase: LocalGemmaPhase.downloadInterrupted,
+      pendingDownloadUrl: pending.url,
+      pendingProgress: pending.lastProgress,
+      pendingPresetId: pending.presetId,
+      pendingDownloadDebugLine: debugLine,
+      activity: ModelInstallActivityKind.downloadNetwork,
+    );
+    developer.log(
+      'downloadInterrupted url=${pending.url} progress=${pending.lastProgress}',
+      name: 'LocalGemmaModel',
+    );
+  }
+
+  Future<void> _maybeTransitionToInterrupted(String url) async {
+    if (kIsWeb) {
+      _syncUiToEngine();
+      return;
+    }
+    final PendingModelDownload? pending = await _pendingStore.read();
+    if (pending == null || pending.url != url) {
+      _syncUiToEngine();
+      return;
+    }
+    await _applyInterruptedState(pending);
+  }
+
+  /// Re-reads prefs and shows [LocalGemmaPhase.downloadInterrupted] when resumable.
+  Future<void> refreshPendingDownload() async {
+    if (kIsWeb) {
+      return;
+    }
+    if (state.phase == LocalGemmaPhase.installing ||
+        state.phase == LocalGemmaPhase.ready) {
+      return;
+    }
+    if (_pendingRefreshInFlight) {
+      return;
+    }
+    _pendingRefreshInFlight = true;
+    try {
+      final PendingModelDownload? pending = await _pendingStore.read();
+      if (pending == null) {
+        if (state.phase == LocalGemmaPhase.downloadInterrupted) {
+          _syncUiToEngine();
+        }
+        return;
+      }
+      final ResumableDownloadSnapshot snap =
+          await _resumeService.detectResumable(pending);
+      if (!snap.resumable) {
+        await _clearPendingDownload();
+        if (state.phase == LocalGemmaPhase.downloadInterrupted) {
+          _syncUiToEngine();
+        }
+        return;
+      }
+      await _applyInterruptedState(pending);
+    } finally {
+      _pendingRefreshInFlight = false;
+    }
+  }
+
+  /// Continues a previously interrupted network download (preset or custom URL).
+  Future<void> resumePendingNetworkInstall() async {
+    final PendingModelDownload? pending = await _pendingStore.read();
+    if (pending == null) {
+      final String? fallbackUrl = state.lastFailedDownloadUrl;
+      if (fallbackUrl != null) {
+        await installFromNetwork(fallbackUrl);
+      }
+      return;
+    }
+    if (pending.presetId != null) {
+      await installPresetById(pending.presetId!);
+      return;
+    }
+    await installFromNetwork(
+      pending.url,
+      modelType: pending.modelType,
+      fileType: pending.fileType,
+    );
+  }
+
+  /// Deletes partial bytes and clears interrupted state.
+  Future<void> discardPendingDownload() async {
+    final PendingModelDownload? pending = await _pendingStore.read();
+    if (pending != null && !kIsWeb) {
+      await _resumeService.discardPending(pending);
+    }
+    await _clearPendingDownload();
+    _syncUiToEngine();
   }
 
   /// Preflight UI only (metered confirm / token). No [CancelToken] yet.
@@ -118,13 +312,27 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     _syncUiToEngine();
   }
 
-  /// User-facing cancel: stops network/file install via [CancelToken] and
-  /// leaves UI immediately (late completions ignored).
+  /// User-facing cancel: stops active install; keeps partial file when resumable.
   void requestInstallCancel() {
     if (state.phase != LocalGemmaPhase.installing) {
       return;
     }
+    final bool wasNetworkDownload =
+        state.activity == ModelInstallActivityKind.downloadNetwork;
     _bumpEpochAndCancelToken('User cancelled');
+    if (wasNetworkDownload) {
+      unawaited(_handleNetworkInstallCancelled());
+      return;
+    }
+    _syncUiToEngine();
+  }
+
+  Future<void> _handleNetworkInstallCancelled() async {
+    final PendingModelDownload? pending = await _pendingStore.read();
+    if (pending != null) {
+      await _applyInterruptedState(pending);
+      return;
+    }
     _syncUiToEngine();
   }
 
@@ -150,7 +358,9 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   LocalGemmaModelUi build() {
     final bool active = FlutterGemma.hasActiveModel();
     if (!active && !kIsWeb) {
-      unawaited(_tryRestoreModel());
+      unawaited(
+        _tryRestoreModel().then((_) => refreshPendingDownload()),
+      );
     } else if (active) {
       unawaited(_orchestrator.reconcileActiveWithPluginIfPossible());
     }
@@ -171,6 +381,8 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     if (FlutterGemma.hasActiveModel()) {
       unawaited(_orchestrator.reconcileActiveWithPluginIfPossible());
       _invalidateRegistry();
+    } else {
+      unawaited(refreshPendingDownload());
     }
   }
 
@@ -282,19 +494,28 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     ModelType? modelType,
     ModelFileType? fileType,
   }) async {
+    final ModelFileType resolvedFileType =
+        fileType ?? modelFileTypeForUrl(url);
+    final ModelType resolvedModelType =
+        modelType ?? modelTypeForInferenceSource(url);
+
     final int epoch = _beginTrackedInstall(
       ModelInstallActivityKind.downloadNetwork,
     );
+    await _savePendingNetworkDownload(
+      url: url,
+      modelType: resolvedModelType,
+      fileType: resolvedFileType,
+    );
+    state = state.copyWithPendingUrl(url);
+
     final CancelToken? cancelToken = _installCancelToken;
     try {
       final String? trimmed = token?.trim();
-      final ModelFileType resolvedFileType =
-          fileType ?? modelFileTypeForUrl(url);
-      final ModelType resolvedModelType =
-          modelType ?? modelTypeForInferenceSource(url);
       final String? effectiveToken = (trimmed != null && trimmed.isNotEmpty)
           ? trimmed
           : await ref.read(huggingfaceTokenProvider.future);
+      _resetStallTimer(epoch);
       await _orchestrator.installFromNetwork(
         url,
         token: effectiveToken,
@@ -305,12 +526,15 @@ class LocalGemmaModel extends _$LocalGemmaModel {
           if (!_isInstallEpochCurrent(epoch)) {
             return;
           }
+          _resetStallTimer(epoch);
+          unawaited(_updatePendingProgress(progress));
           state = state.withInstallProgress(progress);
         },
       );
       if (!_isInstallEpochCurrent(epoch)) {
         return;
       }
+      await _clearPendingDownload();
       state = const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
       _invalidateRegistry();
     } on Object catch (e) {
@@ -318,11 +542,28 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         return;
       }
       if (CancelToken.isCancel(e)) {
-        _syncUiToEngine();
+        await _maybeTransitionToInterrupted(url);
         return;
       }
       final ModelInstallDomainError mapped =
           mapModelInstallException(e, downloadUrl: url);
+      // Only network errors (timeouts, drops) leave a valid partial file worth
+      // resuming. Auth/storage/compatibility/unknown errors will fail again on
+      // retry, so skip detectResumable to avoid showing "Resume" for a 403 that
+      // would loop indefinitely.
+      if (mapped.kind == ModelInstallDomainErrorKind.network && !kIsWeb) {
+        final PendingModelDownload? pendingAfterError =
+            await _pendingStore.read();
+        if (pendingAfterError != null) {
+          final ResumableDownloadSnapshot snap =
+              await _resumeService.detectResumable(pendingAfterError);
+          if (snap.resumable) {
+            await _applyInterruptedState(pendingAfterError);
+            return;
+          }
+        }
+      }
+      await _clearPendingDownload();
       state = LocalGemmaModelUi(
         phase: LocalGemmaPhase.error,
         errorMessage: mapped.message,
@@ -331,6 +572,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         lastFailedDownloadUrl: url,
       );
     } finally {
+      _cancelStallTimer();
       _clearInstallTokenIfSame(cancelToken);
     }
   }
@@ -350,12 +592,21 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     final int epoch = _beginTrackedInstall(
       ModelInstallActivityKind.downloadNetwork,
     );
+    await _savePendingNetworkDownload(
+      url: model.url,
+      presetId: presetId,
+      modelType: model.modelType,
+      fileType: model.fileType,
+    );
+    state = state.copyWithPendingUrl(model.url);
+
     final CancelToken? cancelToken = _installCancelToken;
     try {
       final String? trimmed = token?.trim();
       final String? effectiveToken = (trimmed != null && trimmed.isNotEmpty)
           ? trimmed
           : await ref.read(huggingfaceTokenProvider.future);
+      _resetStallTimer(epoch);
       await _orchestrator.installPreset(
         model,
         token: effectiveToken,
@@ -364,12 +615,15 @@ class LocalGemmaModel extends _$LocalGemmaModel {
           if (!_isInstallEpochCurrent(epoch)) {
             return;
           }
+          _resetStallTimer(epoch);
+          unawaited(_updatePendingProgress(progress));
           state = state.withInstallProgress(progress);
         },
       );
       if (!_isInstallEpochCurrent(epoch)) {
         return;
       }
+      await _clearPendingDownload();
       state = const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
       _invalidateRegistry();
     } on Object catch (e) {
@@ -377,11 +631,25 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         return;
       }
       if (CancelToken.isCancel(e)) {
-        _syncUiToEngine();
+        await _maybeTransitionToInterrupted(model.url);
         return;
       }
       final ModelInstallDomainError mapped =
           mapModelInstallException(e, downloadUrl: model.url);
+      // Only network errors leave a valid partial file. Auth/storage/etc. will
+      // fail the same way on retry, so bypass detectResumable entirely.
+      if (mapped.kind == ModelInstallDomainErrorKind.network && !kIsWeb) {
+        final PendingModelDownload? pending = await _pendingStore.read();
+        if (pending != null) {
+          final ResumableDownloadSnapshot snap =
+              await _resumeService.detectResumable(pending);
+          if (snap.resumable) {
+            await _applyInterruptedState(pending);
+            return;
+          }
+        }
+      }
+      await _clearPendingDownload();
       state = LocalGemmaModelUi(
         phase: LocalGemmaPhase.error,
         errorMessage: mapped.message,
@@ -390,6 +658,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         lastFailedDownloadUrl: model.url,
       );
     } finally {
+      _cancelStallTimer();
       _clearInstallTokenIfSame(cancelToken);
     }
   }
@@ -474,5 +743,16 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         errorMessage: e.toString(),
       );
     }
+  }
+}
+
+extension _LocalGemmaModelUiPending on LocalGemmaModelUi {
+  LocalGemmaModelUi copyWithPendingUrl(String url) {
+    return LocalGemmaModelUi(
+      phase: phase,
+      progress: progress,
+      activity: activity,
+      pendingDownloadUrl: url,
+    );
   }
 }

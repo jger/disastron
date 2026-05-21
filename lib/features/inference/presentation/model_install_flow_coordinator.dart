@@ -12,7 +12,6 @@ Future<bool> coordinateInferenceNetworkInstallPreflight({
   required BuildContext context,
   required WidgetRef ref,
   required PredefinedInferenceModel model,
-  TextEditingController? tokenController,
 }) async {
   ref
       .read(localGemmaModelProvider.notifier)
@@ -21,7 +20,7 @@ Future<bool> coordinateInferenceNetworkInstallPreflight({
     final bool ok = await ensureHuggingFaceReadToken(
       context: context,
       ref: ref,
-      tokenController: tokenController,
+      modelTitle: model.title,
     );
     if (!ok) {
       ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
@@ -32,7 +31,7 @@ Future<bool> coordinateInferenceNetworkInstallPreflight({
     ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
     return false;
   }
-  if (!await confirmLargeDownloadIfNotLikelyUnmetered(context)) {
+  if (!await confirmLargeDownloadIfNotLikelyUnmetered(context, preset: model)) {
     ref.read(localGemmaModelProvider.notifier).abortInstallAttempt();
     return false;
   }
@@ -46,12 +45,8 @@ Future<bool> coordinateInferenceNetworkInstallPreflight({
 Future<bool> ensureHuggingFaceReadToken({
   required BuildContext context,
   required WidgetRef ref,
-  TextEditingController? tokenController,
+  String? modelTitle,
 }) async {
-  final String typed = tokenController?.text.trim() ?? '';
-  if (typed.isNotEmpty) {
-    return true;
-  }
   final String? stored = await ref.read(huggingfaceTokenProvider.future);
   if (stored != null && stored.trim().isNotEmpty) {
     return true;
@@ -59,7 +54,10 @@ Future<bool> ensureHuggingFaceReadToken({
   if (!context.mounted) {
     return false;
   }
-  final String? pasted = await showHuggingFaceTokenPasteDialog(context);
+  final String? pasted = await showHuggingFaceTokenPasteDialog(
+    context,
+    modelTitle: modelTitle,
+  );
   if (pasted == null || pasted.trim().isEmpty) {
     return false;
   }

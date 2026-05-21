@@ -14,6 +14,8 @@ import 'package:disastron/features/emergency/presentation/providers/emergency_nu
 import 'package:disastron/features/inference/domain/predefined_models.dart';
 import 'package:disastron/features/inference/presentation/local_gemma_model_provider.dart';
 import 'package:disastron/features/inference/presentation/model_install_flow_coordinator.dart';
+import 'package:disastron/features/inference/presentation/widgets/interrupted_download_panel.dart';
+import 'package:disastron/features/inference/presentation/widgets/preset_download_metadata.dart';
 import 'package:disastron/features/inference/presentation/widgets/model_install_progress_panel.dart';
 import 'package:disastron/features/wiki/presentation/wiki_article_sheet.dart';
 import 'package:disastron/features/wiki/presentation/wiki_models.dart';
@@ -139,6 +141,10 @@ class _NoOfflineModelBanner extends ConsumerWidget {
       );
     }
 
+    if (ui.phase == LocalGemmaPhase.downloadInterrupted) {
+      return const InterruptedDownloadPanel(compact: true);
+    }
+
     if (ui.phase != LocalGemmaPhase.notInstalled) {
       return const SizedBox.shrink();
     }
@@ -178,6 +184,15 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                     'preset': m.title,
                   },
                 ),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: onC,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              PresetDownloadMetadataChips(model: m),
+              const SizedBox(height: 4),
+              Text(
+                m.downloadMetadataLine,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: onC,
                     ),

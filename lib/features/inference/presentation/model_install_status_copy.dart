@@ -11,6 +11,25 @@ class InstallStatusCopy {
   final String? subtitle;
 }
 
+/// User-facing copy when a network download was interrupted but can be resumed.
+InstallStatusCopy interruptedDownloadStatusCopy(LocalGemmaModelUi ui) {
+  final int p = (ui.pendingProgress ?? ui.progress).clamp(0, 100);
+  if (p > 0) {
+    return InstallStatusCopy(
+      title: 'Download interrupted at $p%',
+      subtitle:
+          'Resume continues from saved progress when possible. On Hugging Face, '
+          'resume is best-effort; if it fails, discard and start again.',
+    );
+  }
+  return const InstallStatusCopy(
+    title: 'Download interrupted',
+    subtitle:
+        'Resume continues from saved progress when possible. On Hugging Face, '
+        'resume is best-effort; if it fails, discard and start again.',
+  );
+}
+
 /// User-facing lines from [ModelInstallActivityKind] + progress (plugin only reports 0–100).
 InstallStatusCopy modelInstallStatusCopy(LocalGemmaModelUi ui) {
   if (ui.phase != LocalGemmaPhase.installing) {

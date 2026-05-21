@@ -4,6 +4,7 @@
 import 'package:disastron/app/app_locales.dart';
 import 'package:disastron/core/preferences/prefs_keys.dart';
 import 'package:disastron/features/inference/data/huggingface_token_store.dart';
+import 'package:disastron/features/inference/data/model_download_resume_service.dart';
 import 'package:disastron/features/inference/data/predefined_models_loader.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,6 +20,7 @@ abstract final class AppBootstrap {
   static Future<void> initializeGemma() async {
     final String? hfToken = await HuggingfaceTokenStore().read();
     await FlutterGemma.initialize(huggingFaceToken: hfToken);
+    await ModelDownloadResumeService.prepareOnStartup();
   }
 
   /// Re-initializes Gemma after the user saves or clears the HF token in settings.
@@ -29,6 +31,7 @@ abstract final class AppBootstrap {
     } else {
       await FlutterGemma.initialize(huggingFaceToken: trimmed);
     }
+    await ModelDownloadResumeService.prepareOnStartup();
   }
 
   /// Locale code for EasyLocalization startLocale before ProviderScope runs.

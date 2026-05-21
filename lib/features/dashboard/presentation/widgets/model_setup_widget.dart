@@ -10,7 +10,9 @@ import 'package:disastron/features/inference/presentation/model_file_export.dart
 import 'package:disastron/features/inference/presentation/model_install_flow_coordinator.dart';
 import 'package:disastron/features/inference/presentation/model_registry_provider.dart';
 import 'package:disastron/features/inference/presentation/widgets/hugging_face_token_input.dart';
+import 'package:disastron/features/inference/presentation/widgets/interrupted_download_panel.dart';
 import 'package:disastron/features/inference/presentation/widgets/model_install_progress_panel.dart';
+import 'package:disastron/features/inference/presentation/widgets/preset_download_metadata.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
@@ -69,6 +71,14 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       text: kPredefinedInferenceModels.first.url,
     );
     _tokenController = TextEditingController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      unawaited(
+        ref.read(localGemmaModelProvider.notifier).refreshPendingDownload(),
+      );
+    });
   }
 
   @override
@@ -149,7 +159,6 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       context: context,
       ref: ref,
       model: model,
-      tokenController: _tokenController,
     );
     if (!ok || !mounted) {
       return;
@@ -209,6 +218,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
         return const ModelInstallProgressPanel(
           variant: ModelInstallProgressVariant.setupCentered,
         );
+      case LocalGemmaPhase.downloadInterrupted:
+        return const InterruptedDownloadPanel();
       case LocalGemmaPhase.ready:
         if (_showReplaceFlow) {
           return Column(
@@ -278,12 +289,21 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: FilledButton.icon(
-                  onPressed: () {
-                    ref
-                        .read(localGemmaModelProvider.notifier)
-                        .installFromNetwork(
-                          ui.lastFailedDownloadUrl!,
-                        );
+                  onPressed: () async {
+                    final LocalGemmaModel notifier =
+                        ref.read(localGemmaModelProvider.notifier);
+                    await notifier.resumePendingNetworkInstall();
+                    if (!context.mounted) {
+                      return;
+                    }
+                    final LocalGemmaModelUi after =
+                        ref.read(localGemmaModelProvider);
+                    if (after.phase == LocalGemmaPhase.error &&
+                        after.lastFailedDownloadUrl != null) {
+                      await notifier.installFromNetwork(
+                        after.lastFailedDownloadUrl!,
+                      );
+                    }
                   },
                   icon: const Icon(Icons.refresh),
                   label: const Text('Retry download'),
@@ -644,24 +664,38 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     );
   }
 
-  Widget _hfTokenFields(BuildContext context, AsyncValue<String?> tokenAsync) {
+  /// Optional pre-save; gated downloads prompt via dialog when no token is stored.
+  Widget _optionalHfTokenSection(
+    BuildContext context,
+    AsyncValue<String?> tokenAsync,
+  ) {
     final bool saved = hasPersistedHfToken(tokenAsync);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return ExpansionTile(
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.only(bottom: 8),
+      title: Text(
+        saved
+            ? 'Hugging Face token saved (optional)'
+            : 'Save Hugging Face token ahead of time (optional)',
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
+      subtitle: Text(
+        saved
+            ? 'Gated downloads use the saved token.'
+            : 'Not required until you download a gated preset.',
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+      ),
       children: <Widget>[
         const SelectableText(
           'Read token: https://huggingface.co/settings/tokens',
         ),
         const SizedBox(height: 8),
         if (saved) ...<Widget>[
-          Text(
-            'A Hugging Face token is saved.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 12),
           OutlinedButton(
             onPressed: _clearToken,
-            child: const Text('Clear token'),
+            child: const Text('Clear saved token'),
           ),
         ] else ...<Widget>[
           HuggingFaceTokenInput(controller: _tokenController),
@@ -679,7 +713,6 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     BuildContext context,
     AsyncValue<String?> tokenAsync,
   ) {
-    final bool hasToken = hasPersistedHfToken(tokenAsync);
     final List<PredefinedInferenceModel> publicModels =
         kPredefinedInferenceModels
             .where((PredefinedInferenceModel m) => !m.requiresHuggingFaceToken)
@@ -689,8 +722,6 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             .where((PredefinedInferenceModel m) => m.requiresHuggingFaceToken)
             .toList();
 
-    final bool showGatedPresets = hasToken && gatedModels.isNotEmpty;
-
     Widget presetTiles(Iterable<PredefinedInferenceModel> models) {
       return Column(
         children: <Widget>[
@@ -699,7 +730,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               margin: const EdgeInsets.only(bottom: 8),
               child: ListTile(
                 title: Text(m.title),
-                subtitle: Text(m.description),
+                subtitle: PresetDownloadMetadataSubtitle(model: m),
+                isThreeLine: true,
                 trailing: const Icon(Icons.download),
                 onTap: () => _installPreset(m),
               ),
@@ -717,16 +749,16 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           children: <Widget>[
             Text(
               publicModels.isEmpty
-                  ? 'Save a Hugging Face read token below to download presets.'
-                  : showGatedPresets
-                      ? 'Public presets below need no token. Gated models require a saved token.'
-                      : 'Public presets work without a token. Save a Hugging Face read token for gated models (e.g. Gemma 3n preview).',
+                  ? 'Tap a preset to download. Gated models ask for a Hugging Face read token when needed.'
+                  : gatedModels.isEmpty
+                      ? 'Tap a preset to download.'
+                      : 'Public presets need no token. Gated presets ask for a Hugging Face read token when you tap download.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
             const SizedBox(height: 12),
-            _hfTokenFields(context, tokenAsync),
+            _optionalHfTokenSection(context, tokenAsync),
             const SizedBox(height: 16),
             Text(
               'Available downloads',
@@ -745,12 +777,12 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               const SizedBox(height: 8),
               presetTiles(publicModels),
             ],
-            if (showGatedPresets) ...<Widget>[
+            if (gatedModels.isNotEmpty) ...<Widget>[
               const SizedBox(height: 16),
               const Divider(height: 1),
               const SizedBox(height: 12),
               Text(
-                'Gated on Hugging Face (token saved)',
+                'Gated on Hugging Face',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),

@@ -74,7 +74,37 @@ abstract final class PredefinedInferenceModelsLoader {
       url: _requiredString(map, 'url'),
       modelType: _parseModelType(map['model_type']),
       requiresToken: _optionalBool(map['requires_token']),
+      sizeMb: _optionalPositiveInt(map['size_mb']),
+      access: _parseAccess(map['access']),
+      multimodal: _optionalBool(map['multimodal']) ?? false,
     );
+  }
+
+  static int? _optionalPositiveInt(Object? value) {
+    if (value == null) {
+      return null;
+    }
+    if (value is int && value > 0) {
+      return value;
+    }
+    throw FormatException('Expected positive int, got $value');
+  }
+
+  static InferencePresetAccess _parseAccess(Object? raw) {
+    if (raw == null) {
+      return InferencePresetAccess.gated;
+    }
+    if (raw is! String || raw.trim().isEmpty) {
+      throw const FormatException('access must be "public" or "gated"');
+    }
+    switch (raw.trim().toLowerCase()) {
+      case 'public':
+        return InferencePresetAccess.public;
+      case 'gated':
+        return InferencePresetAccess.gated;
+      default:
+        throw FormatException('Unknown access "$raw"; use public or gated');
+    }
   }
 
   static String _requiredString(YamlMap map, String key) {
