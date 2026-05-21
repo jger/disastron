@@ -1,10 +1,5 @@
-/// ***************************************************************************
-/// Copyright (c) 2024 [Jannis Gerardis]
-///
-/// All rights reserved.
-/// ***************************************************************************
-
-library;
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2024-2026 Jannis Gerardis
 
 import 'package:disastron/features/dashboard/data/offline_temperature_forecast.dart';
 import 'package:disastron/features/dashboard/domain/light_state_calculator.dart';

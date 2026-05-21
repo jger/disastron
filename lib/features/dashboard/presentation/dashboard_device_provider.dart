@@ -1,10 +1,5 @@
-/// ***************************************************************************
-/// Copyright (c) 2024 [Jannis Gerardis]
-///
-/// All rights reserved.
-/// ***************************************************************************
-
-library;
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2024-2026 Jannis Gerardis
 
 import 'package:battery_plus/battery_plus.dart';
 import 'package:disastron/features/dashboard/domain/location_error_messages.dart';

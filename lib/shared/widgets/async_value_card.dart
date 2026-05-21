@@ -1,10 +1,5 @@
-/// ***************************************************************************
-/// Copyright (c) 2026 [Jannis Gerardis]
-///
-/// All rights reserved.
-/// ***************************************************************************
-
-library;
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2024-2026 Jannis Gerardis
 
 import 'package:disastron/core/theme/app_spacing.dart';
 import 'package:flutter/material.dart';

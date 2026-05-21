@@ -1,10 +1,5 @@
-/// ***************************************************************************
-/// Copyright (c) 2024 [Jannis Gerardis]
-///
-/// All rights reserved.
-/// ***************************************************************************
-
-library;
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2024-2026 Jannis Gerardis
 
 import 'package:auto_route/auto_route.dart';
 import 'package:disastron/features/wiki/presentation/wiki_article_sheet.dart';

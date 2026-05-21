@@ -1,5 +1,7 @@
 # Disastron
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Offline-first Flutter app for **emergency readiness and calm decision support** when networks fail or you need answers without leaving the device.
 
 ## About the name
@@ -10,7 +12,22 @@ Offline-first Flutter app for **emergency readiness and calm decision support** 
 
 The goal is to offer the **strongest help we can build—without artificial limits**—to anyone who needs it. **Human life is not a market segment**; access to solid guidance in a crisis should not be gated by subscriptions or vendor lock-in.
 
-**Open source:** the project is intended to go **open source once the maintainers consider it mature enough** to welcome contributors and public scrutiny without compromising safety or quality.
+**Open source:** application source code and bundled assets in this repository are released under the [MIT License](LICENSE). Contributions are welcome under that license.
+
+## Important notices
+
+- **Not medical advice** — Wiki articles (including CPR reminders) and on-device chat output are for **education and convenience only**. They are **not** a substitute for certified training, professional care, or calling emergency services when someone is hurt or unwell.
+- **Emergency numbers** — The bundled list is maintained in good faith; **verify numbers** for your region and situation. Official guidance from local authorities always takes precedence.
+- **SOS, alarm, torch, vibration** — Use these features **only where lawful and safe**; they can distract others or cause distress if misused.
+- **On-device AI** — Local models can **hallucinate or be wrong**. Do not rely on them for life-critical decisions; use judgment and human help.
+
+## Privacy
+
+The app is **offline-first** by design. Things that can leave the device when you choose to use them include: **optional downloads** of inference model files from Hugging Face (and any URL you paste), and **location / coarse place** when you grant OS permissions (used for context such as emergency numbers and dashboard text).
+
+## Security
+
+See [`SECURITY.md`](SECURITY.md) for how to report issues and a short checklist for secret scanning before releases.
 
 ## Features
 
@@ -41,6 +58,20 @@ Versions and GitHub Releases are driven by **[semantic-release](https://github.c
 make pre-release-checks
 ```
 
+## Third-party software
+
+Dart and Flutter dependencies ship under their own licenses. Full gathered texts are in [`third_party_licenses.txt`](third_party_licenses.txt); [`third_party_licenses.json`](third_party_licenses.json) records how that file was produced. See [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) and [`NOTICE`](NOTICE).
+
+## Downloaded models (separate from repo license)
+
+Preset and custom installs fetch **model weight files** (for example Gemma checkpoints) from Hugging Face or URLs you supply. Those files are **not** licensed under the MIT terms of this repository. You must comply with each model’s terms (for gated Gemma checkpoints, see [Google Gemma terms](https://ai.google.dev/gemma/terms) and the model card on Hugging Face). **Do not** commit downloaded `.task` / `.litertlm` / other weight blobs to git.
+
+## Trademarks
+
+**Gemma** and **Hugging Face** are trademarks of their respective owners. This project is an independent app; it is not endorsed by Google or Hugging Face.
+
 ## License
 
-See repository headers and `LICENSE` if present; licensing may be updated when the project is published openly.
+Copyright (c) 2024-2026 Jannis Gerardis.
+
+Source code and bundled assets in this repository are licensed under the **MIT License** — see [`LICENSE`](LICENSE). SPDX identifier: `MIT` (also noted in `// SPDX-License-Identifier: MIT` headers in Dart library files).

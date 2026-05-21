@@ -1,5 +1,6 @@
 name: disastron
 description: Flutter project with speed coding tools integrated
+license: MIT
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -28,6 +29,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  about: ^2.2.0
   audio_session: ^0.2.3
   auto_route: ^11.1.0
   battery_plus: ^7.0.0
@@ -70,6 +72,7 @@ dev_dependencies:
   flutter_native_splash: ^2.4.2
   flutter_test:
     sdk: flutter
+  license_checker: ^1.6.2
   melos: ^7.5.1
   riverpod_generator: ^4.0.3
   riverpod_lint: ^3.1.3

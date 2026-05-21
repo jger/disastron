@@ -1,10 +1,5 @@
-/// ***************************************************************************
-/// Copyright (c) 2024 [Jannis Gerardis]
-///
-/// All rights reserved.
-/// ***************************************************************************
-
-library;
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2024-2026 Jannis Gerardis
 
 /// Single place for SharedPreferences keys used across the app.
 abstract final class PrefsKeys {

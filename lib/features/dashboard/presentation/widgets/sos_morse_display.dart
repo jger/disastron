@@ -1,10 +1,5 @@
-/// ***************************************************************************
-/// Copyright (c) 2024 [Jannis Gerardis]
-///
-/// All rights reserved.
-/// ***************************************************************************
-
-library;
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2024-2026 Jannis Gerardis
 
 import 'package:disastron/features/dashboard/domain/sos_morse_codec.dart';
 import 'package:flutter/material.dart';

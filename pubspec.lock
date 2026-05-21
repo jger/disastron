@@ -9,6 +9,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "92.0.0"
+  about:
+    dependency: "direct main"
+    description:
+      name: about
+      sha256: f4e880d51b7263049914ea92e991f207075a0f93e45253ca2b91b626705446d5
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
   analysis_server_plugin:
     dependency: transitive
     description:
@@ -113,6 +121,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.5.4"
+  barbecue:
+    dependency: transitive
+    description:
+      name: barbecue
+      sha256: e3a0afaf9005e466887d6c87411a2ddd8d72fc46db3caabf278ee600f1e2f92c
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0"
   battery_plus:
     dependency: "direct main"
     description:
@@ -265,6 +281,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
+  colorize:
+    dependency: transitive
+    description:
+      name: colorize
+      sha256: "584746cd6ba1cba0633b6720f494fe6f9601c4170f0666c1579d2aa2a61071ba"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   connectivity_plus:
     dependency: "direct main"
     description:
@@ -949,6 +973,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.6"
+  license_checker:
+    dependency: "direct dev"
+    description:
+      name: license_checker
+      sha256: "8a35b6946e50811e070ac6fe4717ee431cd1a334e080df2116956b54b0bb0d0f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.2"
   lints:
     dependency: transitive
     description:
@@ -1093,6 +1125,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.1"
+  pana:
+    dependency: transitive
+    description:
+      name: pana
+      sha256: ae025b2c224f225ca6dd79fb61d0397b9ab8bdb3fcfa2f9b956ffb5f1b6be650
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.23.11"
   path:
     dependency: "direct main"
     description:
@@ -1293,6 +1333,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.0"
+  retry:
+    dependency: transitive
+    description:
+      name: retry
+      sha256: "822e118d5b3aafed083109c72d5f484c6dc66707885e07c0fbcb8b986bba7efc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.2"
   riverpod:
     dependency: transitive
     description:
@@ -1341,6 +1389,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  safe_url_check:
+    dependency: transitive
+    description:
+      name: safe_url_check
+      sha256: "49a3e060a7869cbafc8f4845ca1ecbbaaa53179980a32f4fdfeab1607e90f41d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.2"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1429,6 +1485,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  simple_mustache:
+    dependency: transitive
+    description:
+      name: simple_mustache
+      sha256: f9e9211586ba32dd6be9967c408c275b8c3493734836c8a0057c9f509a448fce
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -1514,6 +1578,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  string_validator:
+    dependency: transitive
+    description:
+      name: string_validator
+      sha256: "50dd8ecf91db6a732f4a851eeae81ee12406eedc62d0da72f2d91a04a2d10dd8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
   svg_flutter:
     dependency: "direct main"
     description:

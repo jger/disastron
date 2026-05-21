@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "description": "Pointer to third-party license texts for Disastron dependencies.",
+  "full_license_text_file": "third_party_licenses.txt",
+  "generator": "dart run license_checker generate-disclaimer -y -c license_checker.yaml -f third_party_licenses.txt",
+  "note": "This JSON does not embed license bodies. Regenerate third_party_licenses.txt after dependency changes (see THIRD_PARTY_LICENSES.md)."
+}
