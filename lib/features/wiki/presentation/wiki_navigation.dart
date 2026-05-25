@@ -28,6 +28,7 @@ Future<void> openWikiArticleById(
     context,
     title: article.title,
     bodyMarkdown: article.bodyMarkdown,
+    svgLabels: pack.svgLabels,
     onWikiLink: (String linkedId) async {
       Navigator.of(context).pop();
       await openWikiArticleById(context, ref, linkedId);

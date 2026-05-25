@@ -563,66 +563,65 @@ def strip_existing_sources(body: str) -> str:
     return body.rstrip()
 
 
-def ensure_aed_article(articles: list, locale: str) -> None:
-    """Insert or refresh the standalone AED wiki article after CPR."""
-    title, summary = AED_META[locale]
-    body = AED_BODIES[locale].strip()
-    for article in articles:
-        if article["id"] == "karpa_aed":
-            article["title"] = title
-            article["summary"] = summary
-            article["bodyMarkdown"] = body
-            return
-    insert_at = next(
-        i + 1
-        for i, a in enumerate(articles)
-        if a["id"] == "karpa_cpr"
+def _escape_yaml(value: str) -> str:
+    if "\n" in value or ":" in value or value.startswith(("#", "-", "[")):
+        return json.dumps(value, ensure_ascii=False)
+    return value
+
+
+def _parse_md(raw: str) -> tuple[str, str, str]:
+    if not raw.startswith("---"):
+        return "", "", raw.strip()
+    end = raw.index("---", 3)
+    if end < 0:
+        return "", "", raw.strip()
+    front = raw[3:end].strip()
+    body = raw[end + 3 :].lstrip("\n")
+    title = ""
+    summary = ""
+    for line in front.splitlines():
+        if line.startswith("title:"):
+            title = line.split(":", 1)[1].strip().strip('"')
+        elif line.startswith("summary:"):
+            summary = line.split(":", 1)[1].strip().strip('"')
+    return title, summary, body
+
+
+def _format_md(title: str, summary: str, body: str) -> str:
+    return (
+        f"---\n"
+        f"title: {_escape_yaml(title)}\n"
+        f"summary: {_escape_yaml(summary)}\n"
+        f"---\n"
+        f"{body.rstrip()}\n"
     )
-    articles.insert(
-        insert_at,
-        {
-            "id": "karpa_aed",
-            "title": title,
-            "summary": summary,
-            "bodyMarkdown": body,
-        },
-    )
 
 
-def patch_pack(path: Path, locale: str) -> None:
-    data = json.loads(path.read_text(encoding="utf-8"))
-    articles: list = data["articles"]
-    ensure_aed_article(articles, locale)
-
-    for article in articles:
-        aid = article["id"]
-        if aid == "karpa_cpr" and locale in CPR_BODIES:
-            article["bodyMarkdown"] = CPR_BODIES[locale].strip()
-            article["summary"] = CPR_SUMMARY[locale]
-        elif aid == "karpa_aed" and locale in AED_BODIES:
-            article["bodyMarkdown"] = AED_BODIES[locale].strip()
+def patch_locale_dir(locale_dir: Path, locale: str) -> None:
+    for path in sorted(locale_dir.glob("*.md")):
+        article_id = path.stem
+        title, summary, body = _parse_md(path.read_text(encoding="utf-8"))
+        if article_id == "karpa_cpr" and locale in CPR_BODIES:
+            body = CPR_BODIES[locale].strip()
+            summary = CPR_SUMMARY[locale]
+        elif article_id == "karpa_aed" and locale in AED_BODIES:
+            body = AED_BODIES[locale].strip()
             title, summary = AED_META[locale]
-            article["title"] = title
-            article["summary"] = summary
         else:
-            article["bodyMarkdown"] = strip_existing_sources(article["bodyMarkdown"])
-        article["bodyMarkdown"] = (
-            article["bodyMarkdown"] + "\n\n" + format_sources(locale, aid)
-        )
-    path.write_text(
-        json.dumps(data, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+            body = strip_existing_sources(body)
+        body = body + "\n\n" + format_sources(locale, article_id)
+        path.write_text(_format_md(title, summary, body), encoding="utf-8")
+        print(f"  {path.name}")
 
 
 def main() -> None:
     wiki_dir = Path(__file__).resolve().parents[1] / "assets" / "wiki"
-    for path in sorted(wiki_dir.glob("wiki_pack_*.json")):
-        locale = path.stem.replace("wiki_pack_", "")
-        if locale not in SOURCES_HEADER:
-            raise SystemExit(f"Unknown locale: {locale}")
-        patch_pack(path, locale)
-        print(f"Patched {path.name}")
+    for locale in sorted(SOURCES_HEADER):
+        locale_dir = wiki_dir / locale
+        if not locale_dir.is_dir():
+            continue
+        print(f"Patched {locale}/")
+        patch_locale_dir(locale_dir, locale)
 
 
 if __name__ == "__main__":

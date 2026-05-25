@@ -42,6 +42,10 @@ See [`SECURITY.md`](SECURITY.md) for how to report issues and a short checklist 
 
 Core principle: **work offline** so maps, towers, and accounts are not single points of failure when things go wrong.
 
+## Model training (LoRA)
+
+Dataset pipeline, n8n synthesis workflows, and Gemma 4 E2B LoRA training live in a separate repo: **`disastron-training`** (e.g. `/Users/jger/Projects/ai/disastron-training`). The app wiki (`assets/wiki/`) is the source of truth; training artifacts are versioned there. LoRA adapters are not bundled in the mobile app by default (LiteRT-LM vs PyTorch — see training repo README).
+
 ## Tech (short)
 
 Flutter, Riverpod, Auto Route, `flutter_gemma`, `image_picker` (chat attachments on supported models), bundled assets (wiki, emergency numbers, climate normals), local permissions for location / camera / photos / audio / vibration as required by the platform.

@@ -89,6 +89,20 @@ flutter:
   assets:
     - assets/images/
     - assets/wiki/
+    - assets/wiki/en/
+    - assets/wiki/en/svg/
+    - assets/wiki/de/
+    - assets/wiki/de/svg/
+    - assets/wiki/fr/
+    - assets/wiki/fr/svg/
+    - assets/wiki/es/
+    - assets/wiki/es/svg/
+    - assets/wiki/el/
+    - assets/wiki/el/svg/
+    - assets/wiki/zh/
+    - assets/wiki/zh/svg/
+    - assets/wiki/ar/
+    - assets/wiki/ar/svg/
     - assets/data/emergency_numbers.json
     - assets/data/climate_normals.json
     - assets/data/inference_models.yaml

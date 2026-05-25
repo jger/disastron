@@ -1,0 +1,16 @@
+articles:
+  - general_safety
+  - evacuation
+  - first_aid_bleeding
+  - fire_smoke
+  - earthquake
+  - flood
+  - communication_plan
+  - trip_planning
+  - karpa_cpr
+  - karpa_aed
+  - morse_code
+svg_assets:
+  - id: cpr_compressions
+    asset: assets/images/cpr_compressions.svg
+    labels: svg/cpr_compressions.json

@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -12,6 +11,7 @@ Future<void> openWikiArticleSheet(
   BuildContext context, {
   required String title,
   required String bodyMarkdown,
+  Map<String, String> svgLabels = const <String, String>{},
   Future<void> Function(String articleId)? onWikiLink,
 }) {
   return showModalBottomSheet<void>(
@@ -52,8 +52,11 @@ Future<void> openWikiArticleSheet(
                     var svgString = snapshot.data!;
                     final RegExp slugRegex = RegExp(r'\{\{([\w_]+)\}\}');
                     svgString = svgString.replaceAllMapped(slugRegex, (match) {
-                      final key = match.group(1);
-                      return key != null ? tr(key) : '';
+                      final String? key = match.group(1);
+                      if (key == null) {
+                        return '';
+                      }
+                      return svgLabels[key] ?? key;
                     });
 
                     return Padding(
