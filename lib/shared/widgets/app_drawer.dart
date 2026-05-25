@@ -106,7 +106,7 @@ class _AppDrawerState extends State<AppDrawer>
           ),
           const Divider(height: 1),
           ListTile(
-            leading: const Icon(Icons.palette_outlined),
+            leading: const Icon(Icons.settings_outlined),
             title: Text('drawer_theme'.tr()),
             onTap: () {
               Navigator.pop(context);

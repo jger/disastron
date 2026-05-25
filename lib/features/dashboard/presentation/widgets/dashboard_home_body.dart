@@ -17,9 +17,7 @@ import 'package:disastron/features/inference/presentation/model_install_flow_coo
 import 'package:disastron/features/inference/presentation/widgets/interrupted_download_panel.dart';
 import 'package:disastron/features/inference/presentation/widgets/model_install_progress_panel.dart';
 import 'package:disastron/features/inference/presentation/widgets/preset_download_metadata.dart';
-import 'package:disastron/features/wiki/presentation/wiki_article_sheet.dart';
-import 'package:disastron/features/wiki/presentation/wiki_models.dart';
-import 'package:disastron/features/wiki/presentation/wiki_pack_provider.dart';
+import 'package:disastron/features/wiki/presentation/wiki_navigation.dart';
 import 'package:disastron/router/routes.gr.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -286,7 +284,7 @@ class DashboardHomeBody extends ConsumerWidget {
                     icon: Icons.favorite_border,
                     title: 'dashboard_cpr_title'.tr(),
                     subtitle: 'dashboard_cpr_subtitle'.tr(),
-                    onTap: () => _openWikiArticle(context, ref, 'karpa_cpr'),
+                    onTap: () => openWikiArticleById(context, ref, 'karpa_cpr'),
                   ),
                   DashboardActionCard(
                     icon: Icons.sos,
@@ -299,7 +297,7 @@ class DashboardHomeBody extends ConsumerWidget {
                     title: 'dashboard_planning_title'.tr(),
                     subtitle: 'dashboard_planning_subtitle'.tr(),
                     onTap: () =>
-                        _openWikiArticle(context, ref, 'trip_planning'),
+                        openWikiArticleById(context, ref, 'trip_planning'),
                   ),
                 ];
                 return GridView.count(
@@ -316,29 +314,6 @@ class DashboardHomeBody extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Future<void> _openWikiArticle(
-    BuildContext context,
-    WidgetRef ref,
-    String id,
-  ) async {
-    final WikiPack pack = await ref.read(wikiPackProvider.future);
-    final WikiArticle? a = pack.articleById(id);
-    if (!context.mounted) {
-      return;
-    }
-    if (a == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('wiki_article_missing'.tr(args: <String>[id]))),
-      );
-      return;
-    }
-    await openWikiArticleSheet(
-      context,
-      title: a.title,
-      bodyMarkdown: a.bodyMarkdown,
     );
   }
 
