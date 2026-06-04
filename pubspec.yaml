@@ -1,6 +1,7 @@
 name: disastron
-description: Flutter project with speed coding tools integrated
+description: Offline-first Flutter emergency readiness app with on-device AI, offline wiki, and SOS tools.
 license: MIT
+# repository: and issue_tracker: add when a public remote is published
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -74,7 +75,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   license_checker: ^1.6.2
-  melos: ^7.5.1
   riverpod_generator: ^4.0.3
   riverpod_lint: ^3.1.3
 
