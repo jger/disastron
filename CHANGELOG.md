@@ -2,6 +2,14 @@
 
 All notable changes will be documented in this file.
 
+# [1.2.0](https://github.com/jger/disastron/compare/v1.1.1...v1.2.0) (2026-06-04)
+
+
+### Features
+
+* enhance tool layout customization and update translations; remove outdated wiki packs ([9f1735e](https://github.com/jger/disastron/commit/9f1735e9a1226d06444559b5e28b2c36d2ba9348))
+* **i18n:** localize model setup, SOS, and location errors ([d28b165](https://github.com/jger/disastron/commit/d28b165342ca6b2dab4842aead0ecab5f1042c5e))
+
 ## [1.1.1](https://github.com/jger/disastron/compare/v1.1.0...v1.1.1) (2026-05-21)
 
 
