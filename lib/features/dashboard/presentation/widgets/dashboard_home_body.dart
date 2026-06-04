@@ -277,7 +277,6 @@ class DashboardHomeBody extends ConsumerWidget {
       ),
     );
   }
-
 }
 
 class _DashboardToolGrid extends ConsumerWidget {

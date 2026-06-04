@@ -42,8 +42,7 @@ class WikiPage extends ConsumerWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
-                    onPressed: () =>
-                        openWikiArticleById(context, ref, a.id),
+                    onPressed: () => openWikiArticleById(context, ref, a.id),
                     icon: const Icon(Icons.article_outlined),
                     label: Text('wiki_read'.tr()),
                   ),

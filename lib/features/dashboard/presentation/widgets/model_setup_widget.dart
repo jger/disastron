@@ -191,7 +191,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         if (widget.showAppearance) ...<Widget>[
-          Text('appearance'.tr(), style: Theme.of(context).textTheme.titleMedium),
+          Text('appearance'.tr(),
+              style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           const AppearanceDropdown(),
           const SizedBox(height: 24),
@@ -479,7 +480,9 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     switch (result.kind) {
       case ModelExportResultKind.success:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('model_saved_copy'.tr(args: <String>[result.savedPath!]))),
+          SnackBar(
+              content: Text(
+                  'model_saved_copy'.tr(args: <String>[result.savedPath!]))),
         );
       case ModelExportResultKind.cancelled:
         return;
@@ -502,7 +505,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           child: LinearProgressIndicator(),
         ),
       ),
-      error: (Object e, StackTrace _) => Text('model_list_error'.tr(args: <String>['$e'])),
+      error: (Object e, StackTrace _) =>
+          Text('model_list_error'.tr(args: <String>['$e'])),
       data: (ModelRegistrySnapshot snap) {
         final ActiveInferenceModelSummary? summary =
             readActiveInferenceSummary(registry: snap);
@@ -674,15 +678,11 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.only(bottom: 8),
       title: Text(
-        saved
-            ? 'model_hf_saved_optional'.tr()
-            : 'model_hf_save_optional'.tr(),
+        saved ? 'model_hf_saved_optional'.tr() : 'model_hf_save_optional'.tr(),
         style: Theme.of(context).textTheme.titleSmall,
       ),
       subtitle: Text(
-        saved
-            ? 'model_hf_gated_uses_saved'.tr()
-            : 'model_hf_not_required'.tr(),
+        saved ? 'model_hf_gated_uses_saved'.tr() : 'model_hf_not_required'.tr(),
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

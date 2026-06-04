@@ -48,8 +48,7 @@ Future<void> _openCallHelp(BuildContext context, WidgetRef ref) async {
       await ref.read(dashboardDeviceProvider.future);
   final EmergencyNumbersPack pack =
       await ref.read(emergencyNumbersPackProvider.future);
-  final List<EmergencyNumberEntry> lines =
-      pack.forCountry(snap.isoCountryCode);
+  final List<EmergencyNumberEntry> lines = pack.forCountry(snap.isoCountryCode);
 
   if (!context.mounted) {
     return;

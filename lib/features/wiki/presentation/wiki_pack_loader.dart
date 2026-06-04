@@ -47,9 +47,8 @@ abstract final class WikiPackLoader {
     if (articlesNode is! YamlList) {
       throw const FormatException('Expected "articles" list in wiki manifest');
     }
-    final List<String> articleIds = articlesNode
-        .map((Object? e) => e.toString())
-        .toList(growable: false);
+    final List<String> articleIds =
+        articlesNode.map((Object? e) => e.toString()).toList(growable: false);
 
     final List<_SvgAssetEntry> svgAssets = <_SvgAssetEntry>[];
     final Object? svgNode = decoded['svg_assets'];
@@ -73,8 +72,8 @@ abstract final class WikiPackLoader {
     required String id,
   }) async {
     final String? raw = await _tryLoadLocaleAsset(locale, '$id.md');
-    final String content = raw ??
-        (await _loadLocaleAsset(kWikiLocaleFallback, '$id.md'));
+    final String content =
+        raw ?? (await _loadLocaleAsset(kWikiLocaleFallback, '$id.md'));
     final _ParsedMarkdown parsed = _parseMarkdownWithFrontmatter(content);
     return WikiArticle(
       id: id,

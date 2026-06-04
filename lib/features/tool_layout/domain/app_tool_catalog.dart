@@ -133,12 +133,14 @@ abstract final class AppToolCatalog {
 
     final List<String> out = <String>[];
     for (final String id in quickActionIds) {
-      if (pick(placements[id] ?? const ToolPlacementFlags(dashboard: false, drawer: false))) {
+      if (pick(placements[id] ??
+          const ToolPlacementFlags(dashboard: false, drawer: false))) {
         out.add(id);
       }
     }
     for (final String id in wikiArticleIds) {
-      if (pick(placements[id] ?? const ToolPlacementFlags(dashboard: false, drawer: false))) {
+      if (pick(placements[id] ??
+          const ToolPlacementFlags(dashboard: false, drawer: false))) {
         out.add(id);
       }
     }

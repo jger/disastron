@@ -55,7 +55,8 @@ class _HuggingFaceTokenPasteDialogState
             Text(
               widget.modelTitle == null
                   ? 'hf_token_gated_generic'.tr()
-                  : 'hf_token_gated_model'.tr(args: <String>[widget.modelTitle!]),
+                  : 'hf_token_gated_model'
+                      .tr(args: <String>[widget.modelTitle!]),
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),

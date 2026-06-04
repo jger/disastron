@@ -47,7 +47,8 @@ void main() {
     });
 
     test('ignores unknown tool ids in JSON', () {
-      const String raw = '{"unknown_tool": {"dashboard": true, "drawer": true}}';
+      const String raw =
+          '{"unknown_tool": {"dashboard": true, "drawer": true}}';
       final Map<String, ToolPlacementFlags> merged =
           mergeToolPlacements(buildToolPlacementDefaults(), raw);
       expect(merged.containsKey('unknown_tool'), isFalse);
@@ -99,7 +100,6 @@ void main() {
 
       expect(v.isOk, isFalse);
     });
-
   });
 
   group('encodeToolPlacements', () {

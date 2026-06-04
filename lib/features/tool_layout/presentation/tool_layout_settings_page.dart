@@ -167,8 +167,7 @@ class _ToolLayoutTable extends ConsumerWidget {
                   Text(
                     labels.subtitle!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                   ),
               ],
