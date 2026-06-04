@@ -13,6 +13,7 @@ import 'package:disastron/features/inference/presentation/widgets/hugging_face_t
 import 'package:disastron/features/inference/presentation/widgets/interrupted_download_panel.dart';
 import 'package:disastron/features/inference/presentation/widgets/model_install_progress_panel.dart';
 import 'package:disastron/features/inference/presentation/widgets/preset_download_metadata.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
@@ -133,7 +134,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     if (mounted) {
       _tokenController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Hugging Face token saved')),
+        SnackBar(content: Text('model_hf_token_saved'.tr())),
       );
     }
   }
@@ -143,7 +144,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     if (mounted) {
       _tokenController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Token cleared')),
+        SnackBar(content: Text('model_token_cleared'.tr())),
       );
     }
   }
@@ -178,7 +179,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           setState(() => _showReplaceFlow = false);
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Model ready. Open Chat to talk.')),
+          SnackBar(content: Text('model_ready_snack'.tr())),
         );
       }
     });
@@ -190,7 +191,10 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         if (widget.showAppearance) ...<Widget>[
-          Text('Appearance', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'appearance'.tr(),
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
           const AppearanceDropdown(),
           const SizedBox(height: 24),
@@ -231,7 +235,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               const SizedBox(height: 12),
               OutlinedButton(
                 onPressed: () => setState(() => _showReplaceFlow = false),
-                child: const Text('Cancel'),
+                child: Text('cancel'.tr()),
               ),
             ],
           );
@@ -241,12 +245,11 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text('Error', style: Theme.of(context).textTheme.titleMedium),
+            Text('error'.tr(), style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             if (ui.isGated403) ...<Widget>[
               Text(
-                'This model is gated on Hugging Face. Open the model page, '
-                'sign in, and accept the licence (Google terms), then retry.',
+                'model_gated_help'.tr(),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               if (ui.gatedModelPageUrl != null) ...<Widget>[
@@ -263,22 +266,22 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                     }
                     if (!ok) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Could not open browser')),
+                        SnackBar(content: Text('model_browser_failed'.tr())),
                       );
                     }
                   },
                   icon: const Icon(Icons.open_in_new),
-                  label: const Text('Open model page'),
+                  label: Text('model_open_page'.tr()),
                 ),
               ],
               const SizedBox(height: 12),
             ],
-            SelectableText(ui.errorMessage ?? 'Unknown error'),
+            SelectableText(ui.errorMessage ?? 'model_unknown_error'.tr()),
             if (_looksLikeInsufficientStorage(ui.errorMessage))
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: Text(
-                  'Low storage often causes install failures. Free disk space and retry.',
+                  'model_low_storage'.tr(),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -306,14 +309,14 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                     }
                   },
                   icon: const Icon(Icons.refresh),
-                  label: const Text('Retry download'),
+                  label: Text('model_retry_download'.tr()),
                 ),
               ),
             FilledButton(
               onPressed: () {
                 ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
               },
-              child: const Text('Back'),
+              child: Text('back'.tr()),
             ),
           ],
         );
@@ -324,7 +327,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             _emptyStateHeader(context),
             const SizedBox(height: 20),
             Text(
-              'Add a model:',
+              'model_add_heading'.tr(),
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 12),
@@ -348,12 +351,12 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             ),
             const SizedBox(height: 12),
             Text(
-              'No offline model installed',
+              'model_none_installed'.tr(),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'Chat runs on-device. Install a compatible model file before you can use Chat.',
+              'model_none_body'.tr(),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -379,7 +382,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Installing another model replaces the current one.',
+                'model_replace_warning'.tr(),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
@@ -399,20 +402,20 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     final bool? ok = await showDialog<bool>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
-        title: Text('Remove ${e.displayTitle}?'),
+        title: Text('model_remove_title'.tr(args: <String>[e.displayTitle])),
         content: Text(
           e.importedFromPicker
-              ? 'Removes this model from the app. The file you picked stays on disk.'
-              : 'Deletes downloaded model data from app storage to free space.',
+              ? 'model_remove_picked'.tr()
+              : 'model_remove_downloaded'.tr(),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Remove'),
+            child: Text('remove'.tr()),
           ),
         ],
       ),
@@ -433,7 +436,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       showDialog<void>(
         context: context,
         builder: (BuildContext ctx) => AlertDialog(
-          title: const Text('Save copy'),
+          title: Text('model_save_copy_title'.tr()),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -444,12 +447,12 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               ),
               const SizedBox(height: 12),
               Text(
-                'Preparing file…',
+                'model_save_preparing'.tr(),
                 style: Theme.of(ctx).textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),
               Text(
-                'You can close this window; saving continues in the background.',
+                'model_save_background'.tr(),
                 style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                       color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                     ),
@@ -459,7 +462,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Close'),
+              child: Text('close'.tr()),
             ),
           ],
         ),
@@ -479,14 +482,18 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     switch (result.kind) {
       case ModelExportResultKind.success:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Saved copy: ${result.savedPath}')),
+          SnackBar(
+            content: Text(
+              'model_saved_copy'.tr(args: <String>[result.savedPath!]),
+            ),
+          ),
         );
       case ModelExportResultKind.cancelled:
         return;
       case ModelExportResultKind.failure:
       case ModelExportResultKind.unsupported:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message ?? 'Could not save copy')),
+          SnackBar(content: Text(result.message ?? 'model_save_failed'.tr())),
         );
     }
   }
@@ -502,7 +509,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           child: LinearProgressIndicator(),
         ),
       ),
-      error: (Object e, StackTrace _) => Text('Model list error: $e'),
+      error: (Object e, StackTrace _) =>
+          Text('model_list_error'.tr(args: <String>['$e'])),
       data: (ModelRegistrySnapshot snap) {
         final ActiveInferenceModelSummary? summary =
             readActiveInferenceSummary(registry: snap);
@@ -511,7 +519,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           children: <Widget>[
             if (snap.entries.isNotEmpty) ...<Widget>[
               Text(
-                'Installed models',
+                'model_installed_heading'.tr(),
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -534,7 +542,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                           Padding(
                             padding: const EdgeInsets.only(right: 6),
                             child: Text(
-                              'Active',
+                              'model_active_badge'.tr(),
                               style: Theme.of(context)
                                   .textTheme
                                   .labelLarge
@@ -548,15 +556,15 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                         else
                           TextButton(
                             onPressed: () => _onUseEntry(e),
-                            child: const Text('Use'),
+                            child: Text('model_use'.tr()),
                           ),
                         IconButton(
-                          tooltip: 'Save copy',
+                          tooltip: 'model_save_copy_tooltip'.tr(),
                           icon: const Icon(Icons.save_alt_outlined),
                           onPressed: () => _exportEntry(e),
                         ),
                         IconButton(
-                          tooltip: 'Remove',
+                          tooltip: 'model_remove_tooltip'.tr(),
                           icon: const Icon(Icons.delete_outline),
                           onPressed: () => _confirmRemoveEntry(e),
                         ),
@@ -583,7 +591,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Active model',
+                            'model_active_heading'.tr(),
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ),
@@ -591,7 +599,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      summary?.label ?? 'Installed',
+                      summary?.label ?? 'model_installed_label'.tr(),
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     if (summary != null) ...<Widget>[
@@ -613,7 +621,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             FilledButton.icon(
               onPressed: () => setState(() => _showReplaceFlow = true),
               icon: const Icon(Icons.swap_horiz),
-              label: const Text('Add or replace model'),
+              label: Text('model_add_or_replace'.tr()),
             ),
             const SizedBox(height: 8),
             OutlinedButton(
@@ -621,7 +629,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                 ref.invalidate(modelRegistrySnapshotProvider);
                 ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
               },
-              child: const Text('Refresh status'),
+              child: Text('model_refresh_status'.tr()),
             ),
           ],
         );
@@ -640,10 +648,10 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           controller: _installTabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
-          tabs: const <Tab>[
-            Tab(text: 'Download preset'),
-            Tab(text: 'This device'),
-            Tab(text: 'From URL'),
+          tabs: <Tab>[
+            Tab(text: 'model_tab_preset'.tr()),
+            Tab(text: 'model_tab_device'.tr()),
+            Tab(text: 'model_tab_url'.tr()),
           ],
         ),
         const SizedBox(height: 12),
@@ -674,35 +682,31 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.only(bottom: 8),
       title: Text(
-        saved
-            ? 'Hugging Face token saved (optional)'
-            : 'Save Hugging Face token ahead of time (optional)',
+        saved ? 'model_hf_saved_optional'.tr() : 'model_hf_save_optional'.tr(),
         style: Theme.of(context).textTheme.titleSmall,
       ),
       subtitle: Text(
-        saved
-            ? 'Gated downloads use the saved token.'
-            : 'Not required until you download a gated preset.',
+        saved ? 'model_hf_gated_uses_saved'.tr() : 'model_hf_not_required'.tr(),
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
       ),
       children: <Widget>[
-        const SelectableText(
-          'Read token: https://huggingface.co/settings/tokens',
+        SelectableText(
+          'model_hf_read_token'.tr(),
         ),
         const SizedBox(height: 8),
         if (saved) ...<Widget>[
           OutlinedButton(
             onPressed: _clearToken,
-            child: const Text('Clear saved token'),
+            child: Text('model_clear_saved_token'.tr()),
           ),
         ] else ...<Widget>[
           HuggingFaceTokenInput(controller: _tokenController),
           const SizedBox(height: 8),
           FilledButton(
             onPressed: _saveToken,
-            child: const Text('Save token'),
+            child: Text('model_save_token'.tr()),
           ),
         ],
       ],
@@ -749,10 +753,10 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           children: <Widget>[
             Text(
               publicModels.isEmpty
-                  ? 'Tap a preset to download. Gated models ask for a Hugging Face read token when needed.'
+                  ? 'model_preset_tap_gated'.tr()
                   : gatedModels.isEmpty
-                      ? 'Tap a preset to download.'
-                      : 'Public presets need no token. Gated presets ask for a Hugging Face read token when you tap download.',
+                      ? 'model_preset_tap'.tr()
+                      : 'model_preset_tap_public'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -761,7 +765,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             _optionalHfTokenSection(context, tokenAsync),
             const SizedBox(height: 16),
             Text(
-              'Available downloads',
+              'model_available_downloads'.tr(),
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -769,7 +773,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             const SizedBox(height: 8),
             if (publicModels.isNotEmpty) ...<Widget>[
               Text(
-                'Public presets',
+                'model_public_presets'.tr(),
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -782,7 +786,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               const Divider(height: 1),
               const SizedBox(height: 12),
               Text(
-                'Gated on Hugging Face',
+                'model_gated_presets'.tr(),
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -804,8 +808,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Text(
-              'Pick a .task, .bin, .litertlm, or .tflite file (e.g. one you saved '
-              'to Downloads from Installed models → Save copy).',
+              'model_pick_file_help'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -814,7 +817,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             FilledButton.icon(
               onPressed: _pickAndInstall,
               icon: const Icon(Icons.folder_open),
-              label: const Text('Choose file'),
+              label: Text('model_choose_file'.tr()),
             ),
           ],
         ),
@@ -830,7 +833,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Text(
-              'Paste a direct link to a model file.',
+              'model_url_help'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -839,16 +842,16 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             TextField(
               controller: _urlController,
               maxLines: 3,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'https://…/model.task',
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                hintText: 'model_url_hint'.tr(),
               ),
             ),
             const SizedBox(height: 12),
             FilledButton.icon(
               onPressed: _downloadFromUrl,
               icon: const Icon(Icons.download),
-              label: const Text('Download & install'),
+              label: Text('model_download_install'.tr()),
             ),
           ],
         ),

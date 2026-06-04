@@ -41,6 +41,10 @@ class AppRouter extends RootStackRouter {
           page: ModelConfigRoute.page,
           path: '/settings/model',
         ),
+        AutoRoute(
+          page: ToolLayoutSettingsRoute.page,
+          path: '/settings/tool-layout',
+        ),
         RedirectRoute(path: '*', redirectTo: '/'),
       ];
 }

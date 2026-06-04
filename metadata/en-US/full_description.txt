@@ -1,0 +1,9 @@
+Disastron helps you stay calm and prepared when networks fail or you need answers without leaving the device.
+
+Features include an offline wiki (CPR essentials, evacuation, floods, and more in multiple languages), emergency numbers by detected country, dashboard with day/night and typical local conditions, SOS Morse with torch/audio/vibration, todos, and on-device AI chat via downloadable Gemma models.
+
+Important: wiki and chat output are for education only — not medical advice. Always call local emergency services when someone is hurt. Model downloads from Hugging Face require accepting each model's license terms; weights are not bundled in the app or this repository.
+
+Privacy: offline-first by design. Optional network use for model downloads and location when you grant OS permissions.
+
+Open source under MIT. See CONTENT_ATTRIBUTION.md for wiki source licensing.

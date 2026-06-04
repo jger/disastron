@@ -12,7 +12,7 @@ Offline-first Flutter app for **emergency readiness and calm decision support** 
 
 The goal is to offer the **strongest help we can build—without artificial limits**—to anyone who needs it. **Human life is not a market segment**; access to solid guidance in a crisis should not be gated by subscriptions or vendor lock-in.
 
-**Open source:** application source code and bundled assets in this repository are released under the [MIT License](LICENSE). Contributions are welcome under that license.
+**Open source:** application source code and bundled assets in this repository are released under the [MIT License](LICENSE). Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## Important notices
 
@@ -41,6 +41,23 @@ See [`SECURITY.md`](SECURITY.md) for how to report issues and a short checklist 
 - **Settings** — **Theme & appearance** (multiple modes, including dark high contrast for visibility and battery messaging), **offline model** install (presets, URL, file from device).
 
 Core principle: **work offline** so maps, towers, and accounts are not single points of failure when things go wrong.
+
+## Model training (LoRA)
+
+Dataset pipeline, n8n synthesis workflows, and Gemma 4 E2B LoRA training live in a separate **`disastron-training`** repository (not bundled here). The app wiki (`assets/wiki/`) is the source of truth for bundled content; training artifacts are versioned there. LoRA adapters are not bundled in the mobile app by default (LiteRT-LM vs PyTorch).
+
+## Development
+
+Requirements: Flutter **3.44.0** ([`.fvmrc`](.fvmrc)), Dart `>=3.5.0`.
+
+```bash
+cd disastron   # your clone of this repository
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter run
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for PR workflow, wiki validation, and maintainer release signing. Content licensing for wiki articles: [CONTENT_ATTRIBUTION.md](CONTENT_ATTRIBUTION.md).
 
 ## Tech (short)
 

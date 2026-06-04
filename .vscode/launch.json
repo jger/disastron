@@ -8,29 +8,19 @@
         {
             "name": "disastron",
             "request": "launch",
-            "deviceId": "emulator-5554",
             "type": "dart"
         },
         {
             "name": "disastron (profile mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile",
-            "deviceId": "emulator-5554"
+            "flutterMode": "profile"
         },
         {
             "name": "disastron (release mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "release",
-            "deviceId": "emulator-5554"
-        },
-        {
-            "name": "disastron (debug mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "debug",
-            "deviceId": "2312DRAABG"
+            "flutterMode": "release"
         }
     ]
 }

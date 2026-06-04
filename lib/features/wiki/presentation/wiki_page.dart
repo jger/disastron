@@ -2,8 +2,8 @@
 // Copyright (c) 2024-2026 Jannis Gerardis
 
 import 'package:auto_route/auto_route.dart';
-import 'package:disastron/features/wiki/presentation/wiki_article_sheet.dart';
 import 'package:disastron/features/wiki/presentation/wiki_models.dart';
+import 'package:disastron/features/wiki/presentation/wiki_navigation.dart';
 import 'package:disastron/features/wiki/presentation/wiki_pack_provider.dart';
 import 'package:disastron/shared/widgets/genui_card.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -42,11 +42,7 @@ class WikiPage extends ConsumerWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
-                    onPressed: () => openWikiArticleSheet(
-                      context,
-                      title: a.title,
-                      bodyMarkdown: a.bodyMarkdown,
-                    ),
+                    onPressed: () => openWikiArticleById(context, ref, a.id),
                     icon: const Icon(Icons.article_outlined),
                     label: Text('wiki_read'.tr()),
                   ),

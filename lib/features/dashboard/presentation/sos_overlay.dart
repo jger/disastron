@@ -3,16 +3,12 @@ import 'dart:async';
 import 'package:disastron/features/dashboard/domain/sos_morse_codec.dart';
 import 'package:disastron/features/dashboard/presentation/sos_morse_tone.dart';
 import 'package:disastron/features/dashboard/presentation/widgets/sos_morse_display.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:torch_light/torch_light.dart';
 import 'package:vibration/vibration.dart';
-
-const String _kBluetoothSosMessage =
-    'Broadcasting SOS over Bluetooth needs device-specific protocols '
-    '(e.g. Aurora-style open signaling). This build only uses flashlight, '
-    'screen, tone, and vibration — Bluetooth transmit is not active yet.';
 
 List<SosMorseToken> _sosBuildSequenceForCompute(String raw) {
   return buildSosMorseSequence(raw);
@@ -367,9 +363,9 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
     setState(() => _bluetoothAlert = value);
     if (value && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(_kBluetoothSosMessage),
-          duration: Duration(seconds: 6),
+        SnackBar(
+          content: Text('sos_bluetooth_message'.tr()),
+          duration: const Duration(seconds: 6),
         ),
       );
     }
@@ -401,7 +397,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                   Icon(Icons.sos, size: 72, color: fg),
                   const SizedBox(height: 12),
                   Text(
-                    'SOS / Morse',
+                    'sos_title'.tr(),
                     style: theme.textTheme.headlineSmall?.copyWith(
                       color: fg,
                       fontWeight: FontWeight.bold,
@@ -428,7 +424,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
                         Text(
-                          'Morse',
+                          'sos_morse_heading'.tr(),
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -450,7 +446,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                             _MorseCapsFormatter(),
                           ],
                           decoration: InputDecoration(
-                            labelText: 'Message (CAPS)',
+                            labelText: 'sos_message_label'.tr(),
                             counterText:
                                 '${_msgController.text.length}/${_MorseCapsFormatter.kMaxLen}',
                             border: const OutlineInputBorder(),
@@ -466,14 +462,16 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                         Row(
                           children: <Widget>[
                             Text(
-                              'Speed',
+                              'sos_speed'.tr(),
                               style: theme.textTheme.labelLarge,
                             ),
                             Expanded(
                               child: Slider(
                                 value: _speed,
                                 divisions: 20,
-                                label: '~$wpm WPM',
+                                label: 'sos_wpm'.tr(
+                                  namedArgs: <String, String>{'wpm': '$wpm'},
+                                ),
                                 onChanged: (double v) =>
                                     setState(() => _speed = v),
                               ),
@@ -490,12 +488,12 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: <Widget>[
                             FilterChip(
-                              label: const Text('BT'),
+                              label: Text('sos_bt'.tr()),
                               selected: _bluetoothAlert,
                               onSelected: _onBluetoothChanged,
                             ),
                             FilterChip(
-                              label: const Text('Audio'),
+                              label: Text('sos_audio'.tr()),
                               selected: _audioAlerts,
                               onSelected: (bool v) {
                                 setState(() => _audioAlerts = v);
@@ -507,7 +505,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                               },
                             ),
                             FilterChip(
-                              label: const Text('Light'),
+                              label: Text('sos_light'.tr()),
                               selected: _lightAlerts,
                               onSelected: (bool v) {
                                 setState(() {
@@ -522,7 +520,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                               },
                             ),
                             FilterChip(
-                              label: const Text('Vibe'),
+                              label: Text('sos_vibe'.tr()),
                               selected: _vibrationAlerts,
                               onSelected: (bool v) {
                                 setState(() => _vibrationAlerts = v);
@@ -540,14 +538,14 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                               Expanded(
                                 child: OutlinedButton(
                                   onPressed: _pauseTransmit,
-                                  child: const Text('Pause'),
+                                  child: Text('sos_pause'.tr()),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: FilledButton.tonal(
                                   onPressed: _stopTransmit,
-                                  child: const Text('Stop'),
+                                  child: Text('sos_stop'.tr()),
                                 ),
                               ),
                             ],
@@ -558,14 +556,14 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                               Expanded(
                                 child: FilledButton(
                                   onPressed: _resumeTransmit,
-                                  child: const Text('Resume'),
+                                  child: Text('sos_resume'.tr()),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: FilledButton.tonal(
                                   onPressed: _stopTransmit,
-                                  child: const Text('Stop'),
+                                  child: Text('sos_stop'.tr()),
                                 ),
                               ),
                             ],
@@ -574,11 +572,11 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                           FilledButton(
                             onPressed:
                                 _sequence.isEmpty ? null : _startTransmit,
-                            child: const Text('Start'),
+                            child: Text('sos_start'.tr()),
                           ),
                         TextButton(
                           onPressed: () => unawaited(_closeOverlay()),
-                          child: const Text('× Close'),
+                          child: Text('sos_close'.tr()),
                         ),
                       ],
                     ),

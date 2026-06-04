@@ -3,6 +3,7 @@ import 'package:disastron/features/dashboard/data/offline_temperature_forecast.d
 import 'package:disastron/features/dashboard/domain/light_state_calculator.dart';
 import 'package:disastron/features/dashboard/presentation/dashboard_device_provider.dart';
 import 'package:disastron/features/dashboard/presentation/dashboard_weather_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 /// Builds the variable part of the chat system instruction from dashboard data.
 /// Field names stay stable so offline prompts stay reproducible across locales.
@@ -45,7 +46,7 @@ String formatChatDashboardSituation({
 
   final String? locErr = device.locationError ?? weather.locationError;
   if (locErr != null && locErr.isNotEmpty) {
-    b.writeln('location_error: $locErr');
+    b.writeln('location_error: ${locErr.tr()}');
   }
 
   final LightStateResult? light = weather.light;

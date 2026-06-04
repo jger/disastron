@@ -56,5 +56,20 @@ node_modules/
 # Locally docs
 docs/
 
+# Internal dev notes (live in private disastron-dev-docs repo)
+dev.md
+future-features.md
+COMMANDS.md
+
+# Cursor IDE (not part of public OSS tree)
+.cursor/
+
+# Local staging for private dev-docs repo (do not commit)
+disastron-dev-docs/
+
 # Binary model artifacts
 assets/model.bin
+*.task
+*.litertlm
+*.jks
+key.properties

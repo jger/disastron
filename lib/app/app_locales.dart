@@ -3,7 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 
-/// BCP-style codes used in prefs and wiki filenames (`wiki_pack_<code>.json`).
+/// BCP-style codes used in prefs and wiki pack folders (`assets/wiki/<code>/`).
 abstract final class AppLocales {
   static const List<String> codes = <String>[
     'en',

@@ -1,14 +1,18 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:svg_flutter/svg_flutter.dart';
+
+/// Scheme for cross-links between wiki articles: `[label](wiki:article_id)`.
+const String kWikiLinkScheme = 'wiki:';
 
 /// Offline wiki article modal — GenUI-style readable sheet.
 Future<void> openWikiArticleSheet(
   BuildContext context, {
   required String title,
   required String bodyMarkdown,
+  Map<String, String> svgLabels = const <String, String>{},
+  Future<void> Function(String articleId)? onWikiLink,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -24,6 +28,18 @@ Future<void> openWikiArticleSheet(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
         child: MarkdownBody(
           data: '# $title\n\n$bodyMarkdown',
+          onTapLink: (String linkText, String? href, String _) {
+            if (href == null ||
+                !href.startsWith(kWikiLinkScheme) ||
+                onWikiLink == null) {
+              return;
+            }
+            final String articleId = href.substring(kWikiLinkScheme.length);
+            if (articleId.isEmpty) {
+              return;
+            }
+            onWikiLink(articleId);
+          },
           sizedImageBuilder: (MarkdownImageConfig config) {
             final uriString = config.uri.toString();
             final isSvg = uriString.toLowerCase().endsWith('.svg');
@@ -36,8 +52,11 @@ Future<void> openWikiArticleSheet(
                     var svgString = snapshot.data!;
                     final RegExp slugRegex = RegExp(r'\{\{([\w_]+)\}\}');
                     svgString = svgString.replaceAllMapped(slugRegex, (match) {
-                      final key = match.group(1);
-                      return key != null ? tr(key) : '';
+                      final String? key = match.group(1);
+                      if (key == null) {
+                        return '';
+                      }
+                      return svgLabels[key] ?? key;
                     });
 
                     return Padding(

@@ -6,25 +6,25 @@ import 'package:disastron/app/appearance_provider.dart';
 import 'package:disastron/app/locale_provider.dart';
 import 'package:disastron/features/dashboard/presentation/dashboard_device_provider.dart';
 import 'package:disastron/features/dashboard/presentation/dashboard_weather_provider.dart';
-import 'package:disastron/features/dashboard/presentation/sos_overlay.dart';
 import 'package:disastron/features/dashboard/presentation/widgets/dashboard_action_card.dart';
 import 'package:disastron/features/dashboard/presentation/widgets/dashboard_weather_card.dart';
-import 'package:disastron/features/emergency/emergency_numbers.dart';
-import 'package:disastron/features/emergency/presentation/providers/emergency_numbers_pack_provider.dart';
 import 'package:disastron/features/inference/domain/predefined_models.dart';
 import 'package:disastron/features/inference/presentation/local_gemma_model_provider.dart';
 import 'package:disastron/features/inference/presentation/model_install_flow_coordinator.dart';
 import 'package:disastron/features/inference/presentation/widgets/interrupted_download_panel.dart';
 import 'package:disastron/features/inference/presentation/widgets/model_install_progress_panel.dart';
 import 'package:disastron/features/inference/presentation/widgets/preset_download_metadata.dart';
-import 'package:disastron/features/wiki/presentation/wiki_article_sheet.dart';
+import 'package:disastron/features/tool_layout/domain/app_tool.dart';
+import 'package:disastron/features/tool_layout/domain/app_tool_catalog.dart';
+import 'package:disastron/features/tool_layout/presentation/open_app_tool.dart';
+import 'package:disastron/features/tool_layout/presentation/tool_layout_labels.dart';
+import 'package:disastron/features/tool_layout/presentation/tool_placements_provider.dart';
 import 'package:disastron/features/wiki/presentation/wiki_models.dart';
 import 'package:disastron/features/wiki/presentation/wiki_pack_provider.dart';
 import 'package:disastron/router/routes.gr.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 /// Dark-HC battery tip; close hides until user leaves this theme.
 class _HcBatteryTipBanner extends ConsumerStatefulWidget {
@@ -259,49 +259,64 @@ class DashboardHomeBody extends ConsumerWidget {
           ..invalidate(dashboardDeviceProvider)
           ..invalidate(dashboardWeatherProvider);
       },
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(12),
+      child: const SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            const _DashboardStatusCard(),
-            const SizedBox(height: 16),
-            const _NoOfflineModelBanner(),
-            const SizedBox(height: 16),
-            const _HcBatteryTipBanner(),
-            const SizedBox(height: 16),
-            LayoutBuilder(
+            _DashboardStatusCard(),
+            SizedBox(height: 16),
+            _NoOfflineModelBanner(),
+            SizedBox(height: 16),
+            _HcBatteryTipBanner(),
+            SizedBox(height: 16),
+            _DashboardToolGrid(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DashboardToolGrid extends ConsumerWidget {
+  const _DashboardToolGrid();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<Map<String, ToolPlacementFlags>> placementsAsync =
+        ref.watch(toolPlacementsProvider);
+    final AsyncValue<WikiPack> wikiAsync = ref.watch(wikiPackProvider);
+
+    return placementsAsync.when(
+      data: (Map<String, ToolPlacementFlags> placements) {
+        return wikiAsync.when(
+          data: (WikiPack wikiPack) {
+            final List<String> toolIds = AppToolCatalog.idsForSurface(
+              placements,
+              AppToolSurface.dashboard,
+            );
+            if (toolIds.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return LayoutBuilder(
               builder: (BuildContext context, BoxConstraints c) {
                 final double w = c.maxWidth;
                 final int cols = w >= 520 ? 3 : 2;
-                final List<Widget> cards = <Widget>[
-                  DashboardActionCard(
-                    icon: Icons.emergency_share_outlined,
-                    title: 'dashboard_call_help_title'.tr(),
-                    subtitle: 'dashboard_call_help_subtitle'.tr(),
-                    onTap: () => _openCallHelp(context, ref),
-                  ),
-                  DashboardActionCard(
-                    icon: Icons.favorite_border,
-                    title: 'dashboard_cpr_title'.tr(),
-                    subtitle: 'dashboard_cpr_subtitle'.tr(),
-                    onTap: () => _openWikiArticle(context, ref, 'karpa_cpr'),
-                  ),
-                  DashboardActionCard(
-                    icon: Icons.sos,
-                    title: 'dashboard_sos_title'.tr(),
-                    subtitle: 'dashboard_sos_subtitle'.tr(),
-                    onTap: () => openSosOverlay(context),
-                  ),
-                  DashboardActionCard(
-                    icon: Icons.luggage_outlined,
-                    title: 'dashboard_planning_title'.tr(),
-                    subtitle: 'dashboard_planning_subtitle'.tr(),
-                    onTap: () =>
-                        _openWikiArticle(context, ref, 'trip_planning'),
-                  ),
-                ];
+                final List<Widget> cards = toolIds.map((String toolId) {
+                  final AppToolDefinition def =
+                      AppToolCatalog.definitionFor(toolId);
+                  final ToolLayoutLabels labels = labelsForTool(
+                    toolId,
+                    wikiPack: wikiPack,
+                  );
+                  return DashboardActionCard(
+                    icon: def.icon,
+                    title: labels.title,
+                    subtitle: labels.subtitle ?? '',
+                    onTap: () => openAppTool(context, ref, toolId),
+                  );
+                }).toList();
                 return GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -312,99 +327,20 @@ class DashboardHomeBody extends ConsumerWidget {
                   children: cards,
                 );
               },
-            ),
-          ],
-        ),
+            );
+          },
+          loading: () => const SizedBox(
+            height: 120,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (_, __) => const SizedBox.shrink(),
+        );
+      },
+      loading: () => const SizedBox(
+        height: 120,
+        child: Center(child: CircularProgressIndicator()),
       ),
-    );
-  }
-
-  Future<void> _openWikiArticle(
-    BuildContext context,
-    WidgetRef ref,
-    String id,
-  ) async {
-    final WikiPack pack = await ref.read(wikiPackProvider.future);
-    final WikiArticle? a = pack.articleById(id);
-    if (!context.mounted) {
-      return;
-    }
-    if (a == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('wiki_article_missing'.tr(args: <String>[id]))),
-      );
-      return;
-    }
-    await openWikiArticleSheet(
-      context,
-      title: a.title,
-      bodyMarkdown: a.bodyMarkdown,
-    );
-  }
-
-  Future<void> _openCallHelp(BuildContext context, WidgetRef ref) async {
-    final DashboardDeviceSnapshot snap =
-        await ref.read(dashboardDeviceProvider.future);
-    final EmergencyNumbersPack pack =
-        await ref.read(emergencyNumbersPackProvider.future);
-    final List<EmergencyNumberEntry> lines =
-        pack.forCountry(snap.isoCountryCode);
-
-    if (!context.mounted) {
-      return;
-    }
-
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (BuildContext ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          bottom: MediaQuery.paddingOf(ctx).bottom + 16,
-          top: 8,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Text(
-              'Emergency numbers',
-              style: Theme.of(ctx).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              snap.isoCountryCode != null
-                  ? 'Detected region: ${snap.isoCountryCode}'
-                  : 'Region unknown — showing defaults',
-              style: Theme.of(ctx).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 12),
-            ListView.separated(
-              shrinkWrap: true,
-              itemCount: lines.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (BuildContext context, int i) {
-                final EmergencyNumberEntry e = lines[i];
-                final String telDigits =
-                    e.number.replaceAll(RegExp(r'[^\d+]'), '');
-                return ListTile(
-                  leading: const Icon(Icons.phone_in_talk),
-                  title: Text(e.label),
-                  subtitle: Text(e.number),
-                  onTap: () async {
-                    final Uri uri = Uri(scheme: 'tel', path: telDigits);
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri);
-                    }
-                  },
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }
@@ -537,7 +473,7 @@ class _StatusExpansionTile extends StatelessWidget {
                 if (snapshot.locationError != null) ...<Widget>[
                   const SizedBox(height: 8),
                   Text(
-                    snapshot.locationError!,
+                    snapshot.locationError!.tr(),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.error,
                         ),

@@ -74,9 +74,9 @@ models:
     test('bundled inference_models.yaml parses with metadata', () async {
       _ensureFlutterTestBinding();
       final catalog = await PredefinedInferenceModelsLoader.loadBundled();
-      expect(catalog.defaultPresetId, 'gemma3_270m_q8');
-      expect(catalog.defaultPreset.sizeMb, 304);
-      expect(catalog.models.length, greaterThanOrEqualTo(5));
+      expect(catalog.defaultPresetId, 'gemma4_e2b_litertlm');
+      expect(catalog.defaultPreset.sizeMb, 2468);
+      expect(catalog.models.length, greaterThanOrEqualTo(2));
       final public = catalog.models
           .where((m) => m.access == InferencePresetAccess.public)
           .toList();
