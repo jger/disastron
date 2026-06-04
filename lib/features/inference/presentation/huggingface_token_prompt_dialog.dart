@@ -1,4 +1,5 @@
 import 'package:disastron/features/inference/presentation/widgets/hugging_face_token_input.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 /// Shown when a gated Hugging Face download starts without a stored token.
@@ -45,7 +46,7 @@ class _HuggingFaceTokenPasteDialogState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Hugging Face token'),
+      title: Text('hf_token_title'.tr()),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -53,16 +54,14 @@ class _HuggingFaceTokenPasteDialogState
           children: <Widget>[
             Text(
               widget.modelTitle == null
-                  ? 'This download is gated on Hugging Face and needs a read token. '
-                      'Create one at huggingface.co/settings/tokens'
-                  : '“${widget.modelTitle}” is gated on Hugging Face. Paste a read token '
-                      'to download (huggingface.co/settings/tokens).',
+                  ? 'hf_token_gated_generic'.tr()
+                  : 'hf_token_gated_model'.tr(args: <String>[widget.modelTitle!]),
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
             HuggingFaceTokenInput(
               controller: _controller,
-              labelText: 'Paste hf_… token',
+              labelText: 'hf_token_paste_label'.tr(),
             ),
           ],
         ),
@@ -70,7 +69,7 @@ class _HuggingFaceTokenPasteDialogState
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text('cancel'.tr()),
         ),
         FilledButton(
           onPressed: () {
@@ -80,7 +79,7 @@ class _HuggingFaceTokenPasteDialogState
             }
             Navigator.of(context).pop(t);
           },
-          child: const Text('Continue'),
+          child: Text('continue'.tr()),
         ),
       ],
     );

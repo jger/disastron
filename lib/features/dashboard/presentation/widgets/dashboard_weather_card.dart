@@ -1,6 +1,7 @@
 import 'package:disastron/features/dashboard/domain/light_state_calculator.dart';
 import 'package:disastron/features/dashboard/domain/location_error_messages.dart';
 import 'package:disastron/features/dashboard/presentation/dashboard_weather_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -55,13 +56,14 @@ class DashboardWeatherCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    s.locationError ??
-                        DashboardLocationErrors.unavailableFallback,
+                    (s.locationError ??
+                            DashboardLocationErrors.unavailableFallback)
+                        .tr(),
                     style: theme.textTheme.bodySmall?.copyWith(color: cs.error),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Turn on GPS and allow location for sun times and typical temps.',
+                    'location_gps_hint'.tr(),
                     style: small,
                   ),
                 ],

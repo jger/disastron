@@ -474,7 +474,7 @@ class _StatusExpansionTile extends StatelessWidget {
                 if (snapshot.locationError != null) ...<Widget>[
                   const SizedBox(height: 8),
                   Text(
-                    snapshot.locationError!,
+                    snapshot.locationError!.tr(),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.error,
                         ),
