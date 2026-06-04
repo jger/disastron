@@ -15,13 +15,6 @@ Map<String, ToolPlacementFlags> buildToolPlacementDefaults() {
     );
   }
 
-  for (final String id in AppToolCatalog.settingsIds) {
-    map[id] = const ToolPlacementFlags(
-      dashboard: false,
-      drawer: true,
-    );
-  }
-
   for (final String id in AppToolCatalog.wikiArticleIds) {
     final bool onDashboard = id == 'karpa_cpr' || id == 'trip_planning';
     map[id] = ToolPlacementFlags(

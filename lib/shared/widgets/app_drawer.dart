@@ -120,7 +120,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer>
           ...placementsAsync.when(
             data: (Map<String, ToolPlacementFlags> placements) {
               return wikiAsync.when(
-                data: (WikiPack wikiPack) => _drawerToolTiles(
+                data: (WikiPack wikiPack) => _drawerShortcutTiles(
                   context,
                   placements,
                   wikiPack,
@@ -132,14 +132,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer>
             loading: () => <Widget>[],
             error: (_, __) => <Widget>[],
           ),
-          ListTile(
-            leading: const Icon(Icons.dashboard_customize_outlined),
-            title: Text('drawer_tool_layout'.tr()),
-            onTap: () {
-              Navigator.pop(context);
-              context.router.push(const ToolLayoutSettingsRoute());
-            },
-          ),
+          ..._drawerConfigurationTiles(context),
           if (_versionLabel != null) ...<Widget>[
             const SizedBox(height: 24),
             SafeArea(
@@ -161,45 +154,59 @@ class _AppDrawerState extends ConsumerState<AppDrawer>
     );
   }
 
-  List<Widget> _drawerToolTiles(
+  List<Widget> _drawerShortcutTiles(
     BuildContext context,
     Map<String, ToolPlacementFlags> placements,
     WikiPack wikiPack,
   ) {
-    final List<String> shortcutIds = <String>[
-      ...AppToolCatalog.quickActionIds,
-      ...AppToolCatalog.wikiArticleIds,
-    ];
-    const List<String> settingsIds = AppToolCatalog.settingsIds;
-
     final List<Widget> tiles = <Widget>[];
-
-    for (final String toolId in shortcutIds) {
-      final ToolPlacementFlags flags = placements[toolId] ??
-          const ToolPlacementFlags(dashboard: false, drawer: false);
-      if (!flags.drawer) {
-        continue;
-      }
-      tiles.add(_toolTile(context, toolId, wikiPack));
+    for (final String toolId in AppToolCatalog.idsForSurface(
+      placements,
+      AppToolSurface.drawer,
+    )) {
+      tiles.add(_shortcutTile(context, toolId, wikiPack));
     }
-
     if (tiles.isNotEmpty) {
       tiles.add(const Divider(height: 1));
     }
-
-    for (final String toolId in settingsIds) {
-      final ToolPlacementFlags flags = placements[toolId] ??
-          const ToolPlacementFlags(dashboard: false, drawer: false);
-      if (!flags.drawer) {
-        continue;
-      }
-      tiles.add(_toolTile(context, toolId, wikiPack));
-    }
-
     return tiles;
   }
 
-  Widget _toolTile(BuildContext context, String toolId, WikiPack wikiPack) {
+  List<Widget> _drawerConfigurationTiles(BuildContext context) {
+    return <Widget>[
+      ListTile(
+        leading: const Icon(Icons.settings_outlined),
+        title: Text('drawer_theme'.tr()),
+        onTap: () {
+          Navigator.pop(context);
+          context.router.push(const AppearanceSettingsRoute());
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.psychology_outlined),
+        title: Text('drawer_offline_model'.tr()),
+        onTap: () {
+          Navigator.pop(context);
+          context.router.push(const ModelConfigRoute());
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.info_outline),
+        title: Text('drawer_about'.tr()),
+        onTap: () async {
+          Navigator.pop(context);
+          final PackageInfo info =
+              _packageInfo ?? await PackageInfo.fromPlatform();
+          if (!context.mounted) {
+            return;
+          }
+          await showDisastronAbout(context, packageInfo: info);
+        },
+      ),
+    ];
+  }
+
+  Widget _shortcutTile(BuildContext context, String toolId, WikiPack wikiPack) {
     final AppToolDefinition def = AppToolCatalog.definitionFor(toolId);
     final ToolLayoutLabels labels = labelsForTool(toolId, wikiPack: wikiPack);
     return ListTile(
@@ -209,15 +216,6 @@ class _AppDrawerState extends ConsumerState<AppDrawer>
       onTap: () async {
         Navigator.pop(context);
         if (!context.mounted) {
-          return;
-        }
-        if (toolId == AppToolCatalog.aboutId) {
-          final PackageInfo info =
-              _packageInfo ?? await PackageInfo.fromPlatform();
-          if (!context.mounted) {
-            return;
-          }
-          await showDisastronAbout(context, packageInfo: info);
           return;
         }
         await openAppTool(context, ref, toolId);

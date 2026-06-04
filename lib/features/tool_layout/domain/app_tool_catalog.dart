@@ -40,9 +40,9 @@ abstract final class AppToolCatalog {
     aboutId,
   ];
 
-  static const List<String> allConfigurableIds = <String>[
+  /// Tools the user can place on dashboard/drawer (settings stay fixed in drawer).
+  static const List<String> placementConfigurableIds = <String>[
     ...quickActionIds,
-    ...settingsIds,
     ...wikiArticleIds,
   ];
 
@@ -116,13 +116,10 @@ abstract final class AppToolCatalog {
     return wikiArticleIds.contains(toolId);
   }
 
-  /// Tools that must stay on dashboard and/or drawer (not only on bottom nav).
+  /// Quick actions that must stay on dashboard and/or drawer.
   static const Set<String> mustStayReachableIds = <String>{
     callHelpId,
     sosId,
-    appearanceSettingsId,
-    offlineModelId,
-    aboutId,
   };
 
   static List<String> idsForSurface(
@@ -141,11 +138,6 @@ abstract final class AppToolCatalog {
       }
     }
     for (final String id in wikiArticleIds) {
-      if (pick(placements[id] ?? const ToolPlacementFlags(dashboard: false, drawer: false))) {
-        out.add(id);
-      }
-    }
-    for (final String id in settingsIds) {
       if (pick(placements[id] ?? const ToolPlacementFlags(dashboard: false, drawer: false))) {
         out.add(id);
       }

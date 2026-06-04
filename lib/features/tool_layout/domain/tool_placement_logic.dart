@@ -41,7 +41,7 @@ Map<String, ToolPlacementFlags> mergeToolPlacements(
     return merged;
   }
 
-  for (final String id in AppToolCatalog.allConfigurableIds) {
+  for (final String id in AppToolCatalog.placementConfigurableIds) {
     final Object? entry = decoded[id];
     if (entry is Map<String, dynamic>) {
       merged[id] = ToolPlacementFlags.fromJson(entry);
@@ -53,7 +53,7 @@ Map<String, ToolPlacementFlags> mergeToolPlacements(
 String encodeToolPlacements(Map<String, ToolPlacementFlags> placements) {
   final Map<String, dynamic> out = <String, dynamic>{};
   for (final MapEntry<String, ToolPlacementFlags> e in placements.entries) {
-    if (!AppToolCatalog.allConfigurableIds.contains(e.key)) {
+    if (!AppToolCatalog.placementConfigurableIds.contains(e.key)) {
       continue;
     }
     out[e.key] = e.value.toJson();

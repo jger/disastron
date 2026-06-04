@@ -19,11 +19,7 @@ void main() {
       expect(d['general_safety']!.dashboard, isFalse);
       expect(d['general_safety']!.drawer, isFalse);
 
-      expect(d[AppToolCatalog.appearanceSettingsId]!.drawer, isTrue);
-      expect(d[AppToolCatalog.appearanceSettingsId]!.dashboard, isFalse);
-
-      expect(d[AppToolCatalog.offlineModelId]!.drawer, isTrue);
-      expect(d[AppToolCatalog.aboutId]!.drawer, isTrue);
+      expect(d.containsKey(AppToolCatalog.appearanceSettingsId), isFalse);
     });
   });
 
@@ -104,19 +100,6 @@ void main() {
       expect(v.isOk, isFalse);
     });
 
-    test('blocks removing settings from both surfaces', () {
-      final Map<String, ToolPlacementFlags> current =
-          buildToolPlacementDefaults();
-
-      final ToolPlacementValidation v = validatePlacementChange(
-        current: current,
-        toolId: AppToolCatalog.appearanceSettingsId,
-        surface: AppToolSurface.drawer,
-        newValue: false,
-      );
-
-      expect(v.isOk, isFalse);
-    });
   });
 
   group('encodeToolPlacements', () {

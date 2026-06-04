@@ -105,12 +105,6 @@ class _ToolLayoutTable extends ConsumerWidget {
               ref,
               AppToolCatalog.quickActionIds,
             ),
-            _sectionRow(context, 'tool_layout_section_settings'.tr()),
-            ..._rowsForIds(
-              context,
-              ref,
-              AppToolCatalog.settingsIds,
-            ),
             _sectionRow(context, 'tool_layout_section_wiki'.tr()),
             ..._rowsForIds(
               context,

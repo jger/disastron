@@ -3,6 +3,7 @@
 
 import 'package:disastron/core/preferences/prefs_keys.dart';
 import 'package:disastron/features/tool_layout/domain/app_tool.dart';
+import 'package:disastron/features/tool_layout/domain/app_tool_catalog.dart';
 import 'package:disastron/features/tool_layout/domain/tool_placement_defaults.dart';
 import 'package:disastron/features/tool_layout/domain/tool_placement_logic.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -30,6 +31,11 @@ class ToolPlacements extends _$ToolPlacements {
     required AppToolSurface surface,
     required bool value,
   }) async {
+    if (!AppToolCatalog.placementConfigurableIds.contains(toolId)) {
+      return const ToolPlacementValidation(
+        code: ToolPlacementValidationCode.ok,
+      );
+    }
     final Map<String, ToolPlacementFlags> current = _current();
     final ToolPlacementValidation validation = validatePlacementChange(
       current: current,
