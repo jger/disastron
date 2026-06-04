@@ -2,7 +2,9 @@
 
 ## Reporting
 
-If you find a security vulnerability in Disastron, please open a **private** advisory or contact the maintainers through the channels listed on the repository. Do not post exploit details in public issues.
+If you find a security vulnerability in Disastron, **do not post exploit details in public issue trackers or forums**.
+
+Contact the **project maintainers privately** with enough detail to reproduce the issue. When this project is hosted on a git forge, prefer that host's private vulnerability reporting if available.
 
 ## Secrets and CI
 
