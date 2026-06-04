@@ -470,7 +470,8 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                                 value: _speed,
                                 divisions: 20,
                                 label: 'sos_wpm'.tr(
-                                    namedArgs: <String, String>{'wpm': '$wpm'}),
+                                  namedArgs: <String, String>{'wpm': '$wpm'},
+                                ),
                                 onChanged: (double v) =>
                                     setState(() => _speed = v),
                               ),

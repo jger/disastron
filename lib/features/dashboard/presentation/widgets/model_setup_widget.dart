@@ -191,8 +191,10 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         if (widget.showAppearance) ...<Widget>[
-          Text('appearance'.tr(),
-              style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'appearance'.tr(),
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
           const AppearanceDropdown(),
           const SizedBox(height: 24),
@@ -481,8 +483,10 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       case ModelExportResultKind.success:
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  'model_saved_copy'.tr(args: <String>[result.savedPath!]))),
+            content: Text(
+              'model_saved_copy'.tr(args: <String>[result.savedPath!]),
+            ),
+          ),
         );
       case ModelExportResultKind.cancelled:
         return;
