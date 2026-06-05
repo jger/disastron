@@ -39,5 +39,28 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+      if target.name == 'flutter_soloud'
+        config.build_settings.delete('OTHER_LDFLAGS[sdk=iphoneos*]')
+        config.build_settings.delete('OTHER_LDFLAGS[sdk=iphonesimulator*]')
+      end
+    end
+  end
+
+  # CocoaPods cannot merge SDK-conditioned OTHER_LDFLAGS from flutter_soloud
+  # and MediaPipeTasksGenAIC; link Xiph libs once at the app target.
+  plugin_root = '${PODS_ROOT}/../.symlinks/plugins/flutter_soloud/ios'
+  soloud_device = "-L#{plugin_root}/flutter_soloud/libs -logg_iOS-device -lopus_iOS-device -lvorbis_iOS-device -lvorbisfile_iOS-device -lFLAC_iOS-device"
+  soloud_sim = "-L#{plugin_root}/flutter_soloud/libs -logg_iOS-simulator -lopus_iOS-simulator -lvorbis_iOS-simulator -lvorbisfile_iOS-simulator -lFLAC_iOS-simulator"
+
+  installer.aggregate_targets.each do |aggregate_target|
+    aggregate_target.xcconfigs.each do |config_name, config_file|
+      xcconfig_path = aggregate_target.xcconfig_path(config_name)
+      config_file.attributes['OTHER_LDFLAGS[sdk=iphoneos*]'] = "$(inherited) #{soloud_device}"
+      config_file.attributes['OTHER_LDFLAGS[sdk=iphonesimulator*]'] = "$(inherited) #{soloud_sim}"
+      config_file.save_as(xcconfig_path)
+    end
   end
 end
