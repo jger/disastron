@@ -1,1 +1,1 @@
-Offline-first emergency readiness: offline wiki, SOS Morse, emergency numbers, and on-device AI chat.
+When disaster hits: offline wiki, SOS Morse, todos & on-device AI chat.
