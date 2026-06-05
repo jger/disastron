@@ -191,6 +191,7 @@
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
 			buildPhases = (
 				962EBA9F4B8B767CBCF466E7 /* [CP] Check Pods Manifest.lock */,
+				A7B8C9D0E1F2031425364758 /* Purge Stale Native Assets */,
 				9740EEB61CF901F6004384FC /* Run Script */,
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
@@ -328,6 +329,22 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A7B8C9D0E1F2031425364758 /* Purge Stale Native Assets */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Purge Stale Native Assets";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Flutter #185667: shared native_assets cache can embed sim dylib in device builds.\nFRAMEWORK=\"${SRCROOT}/../build/native_assets/ios/objective_c.framework/objective_c\"\nif [ -f \"$FRAMEWORK\" ]; then\n  PLATFORM=$(otool -l \"$FRAMEWORK\" 2>/dev/null | awk '/LC_BUILD_VERSION/{getline; getline; print $2; exit}')\n  WANT=2\n  if [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n    WANT=7\n  fi\n  if [ -n \"$PLATFORM\" ] && [ \"$PLATFORM\" != \"$WANT\" ]; then\n    echo \"warning: objective_c platform $PLATFORM != $WANT for $PLATFORM_NAME; purging stale native_assets\"\n    rm -rf \"${SRCROOT}/../build/native_assets/ios/objective_c.framework\"\n  fi\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
