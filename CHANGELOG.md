@@ -2,6 +2,13 @@
 
 All notable changes will be documented in this file.
 
+## [1.2.1](https://github.com/jger/disastron/compare/v1.2.0...v1.2.1) (2026-06-05)
+
+
+### Bug Fixes
+
+* **ios:** launch icons ([d0450a3](https://github.com/jger/disastron/commit/d0450a3f7951014df5062669c8767edc3ec29464))
+
 # [1.2.0](https://github.com/jger/disastron/compare/v1.1.1...v1.2.0) (2026-06-04)
 
 
