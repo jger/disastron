@@ -192,14 +192,13 @@
   "wiki_import_failed": "Failed to import: {}",
   "wiki_offline_alert_title": "Connection Needed",
   "wiki_offline_alert_message": "You are currently offline. Outgoing links require an active internet connection.",
-  "wiki_import_dialog_title": "Import Page",
+  "wiki_import_dialog_title": "Save locally",
   "wiki_import_dialog_message": "Save this page to your offline wiki:",
   "wiki_import_success_snack": "Page imported successfully. Download started!",
   "wiki_online_banner_title": "Viewing Online",
-  "wiki_online_banner_import": "Import",
+  "wiki_online_banner_import": "Save locally",
   "wiki_downloading_progress": "Downloading... {}%",
   "wiki_search_hint": "Search pages...",
   "wiki_search_no_results": "No results found for \"{}\"",
   "wiki_sync": "Sync"
 }
-
