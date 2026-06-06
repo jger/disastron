@@ -25,6 +25,7 @@ import 'package:disastron/features/tool_layout/presentation/tool_placements_prov
 import 'package:disastron/features/wiki/presentation/wiki_download_provider.dart';
 import 'package:disastron/features/wiki/presentation/wiki_models.dart';
 import 'package:disastron/features/wiki/presentation/wiki_pack_provider.dart';
+import 'package:disastron/features/wiki/presentation/wiki_page.dart';
 import 'package:disastron/features/wiki/presentation/wiki_sources_provider.dart';
 import 'package:disastron/router/routes.gr.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -390,10 +391,11 @@ class _NoOfflineWikiBannerState extends ConsumerState<_NoOfflineWikiBanner> {
                 children: <Widget>[
                   TextButton(
                     onPressed: () {
+                      ref.read(wikiSelectedTabProvider.notifier).state = 1;
                       ref.read(homeBottomNavIndexProvider.notifier).state = 3;
                     },
                     child: Text(
-                      'nav_wiki'.tr(),
+                      'wiki_go_to_sync'.tr(),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.bold,

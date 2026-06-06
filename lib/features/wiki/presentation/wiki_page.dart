@@ -15,12 +15,13 @@ import 'package:disastron/router/routes.gr.dart';
 import 'package:disastron/shared/widgets/genui_card.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 final wikiSearchActiveProvider = StateProvider<bool>((ref) => false);
 final wikiSearchQueryProvider = StateProvider<String>((ref) => '');
+final wikiSelectedTabProvider = StateProvider<int>((ref) => 0);
+final wikiDownloadHintDismissedProvider = StateProvider<bool>((ref) => false);
 
 @RoutePage()
 class WikiPage extends HookConsumerWidget {
@@ -28,7 +29,7 @@ class WikiPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedTab = useState(0); // 0 = Bundled, 1 = Web Wiki
+    final selectedTab = ref.watch(wikiSelectedTabProvider);
     final AsyncValue<WikiPack> packAsync = ref.watch(wikiPackProvider);
     final sourcesAsync = ref.watch(wikiSourcesProvider);
     final downloadsAsync = ref.watch(wikiDownloadProvider);
@@ -71,9 +72,9 @@ class WikiPage extends HookConsumerWidget {
               ],
             ),
             const SizedBox(height: 16),
-            _buildSegmentedControl(context, selectedTab),
+            _buildSegmentedControl(context, ref, selectedTab),
             const SizedBox(height: 16),
-            if (selectedTab.value == 0)
+            if (selectedTab == 0)
               ..._buildBundledSection(context, ref, pack, searchQuery)
             else
               ..._buildWebSection(
@@ -96,7 +97,8 @@ class WikiPage extends HookConsumerWidget {
 
   Widget _buildSegmentedControl(
     BuildContext context,
-    ValueNotifier<int> selectedTab,
+    WidgetRef ref,
+    int selectedTab,
   ) {
     return Container(
       padding: const EdgeInsets.all(4),
@@ -108,12 +110,12 @@ class WikiPage extends HookConsumerWidget {
         children: [
           Expanded(
             child: GestureDetector(
-              onTap: () => selectedTab.value = 0,
+              onTap: () => ref.read(wikiSelectedTabProvider.notifier).state = 0,
               child: Container(
                 alignment: Alignment.center,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: selectedTab.value == 0
+                  color: selectedTab == 0
                       ? Theme.of(context).colorScheme.primaryContainer
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
@@ -122,7 +124,7 @@ class WikiPage extends HookConsumerWidget {
                   'wiki_tab_bundled'.tr(),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: selectedTab.value == 0
+                    color: selectedTab == 0
                         ? Theme.of(context).colorScheme.onPrimaryContainer
                         : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -132,12 +134,12 @@ class WikiPage extends HookConsumerWidget {
           ),
           Expanded(
             child: GestureDetector(
-              onTap: () => selectedTab.value = 1,
+              onTap: () => ref.read(wikiSelectedTabProvider.notifier).state = 1,
               child: Container(
                 alignment: Alignment.center,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: selectedTab.value == 1
+                  color: selectedTab == 1
                       ? Theme.of(context).colorScheme.primaryContainer
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
@@ -146,7 +148,7 @@ class WikiPage extends HookConsumerWidget {
                   'wiki_tab_web'.tr(),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: selectedTab.value == 1
+                    color: selectedTab == 1
                         ? Theme.of(context).colorScheme.onPrimaryContainer
                         : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -271,10 +273,19 @@ class WikiPage extends HookConsumerWidget {
           }
 
           final downloads = downloadsAsync.value ?? {};
+          final hasDownloaded = localSources.any((s) {
+            final dlState = downloads[s.url];
+            return dlState?.status == WikiDownloadStatus.downloaded;
+          });
+          final hintDismissed = ref.watch(wikiDownloadHintDismissedProvider);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (!hasDownloaded && !hintDismissed) ...[
+                _buildSyncHintBanner(context, ref),
+                const SizedBox(height: 16),
+              ],
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -637,5 +648,94 @@ class WikiPage extends HookConsumerWidget {
           ],
         );
     }
+  }
+
+  Widget _buildSyncHintBanner(BuildContext context, WidgetRef ref) {
+    final Color onContainer = Theme.of(context).colorScheme.onPrimaryContainer;
+    return Material(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 6, 8, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Icon(Icons.info_outline, color: onContainer, size: 22),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(
+                      'wiki_download_hint_title'.tr(),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: onContainer,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
+                  icon: Icon(Icons.close, color: onContainer, size: 20),
+                  tooltip: 'dismiss'.tr(),
+                  onPressed: () {
+                    ref.read(wikiDownloadHintDismissedProvider.notifier).state =
+                        true;
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: () {
+                final text = 'wiki_download_hint_body'.tr();
+                final parts = text.split('{icon}');
+                if (parts.length < 2) {
+                  return Text(
+                    text,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: onContainer,
+                        ),
+                  );
+                }
+                return RichText(
+                  text: TextSpan(
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: onContainer,
+                        ),
+                    children: [
+                      TextSpan(text: parts[0]),
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Icon(
+                            Icons.cloud_download_outlined,
+                            size: 18,
+                            color: onContainer,
+                          ),
+                        ),
+                      ),
+                      TextSpan(text: parts[1]),
+                    ],
+                  ),
+                );
+              }(),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
