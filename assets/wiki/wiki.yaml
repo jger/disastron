@@ -1,0 +1,49 @@
+- url: "https://en.m.wikipedia.org/wiki/First_aid"
+  title: "First Aid Basics"
+  category: "Medical & Health"
+  locale: "en"
+
+- url: "https://en.m.wikipedia.org/wiki/Survival_kit"
+  title: "Emergency Survival Kit"
+  category: "Preparation"
+  locale: "en"
+
+- url: "https://en.m.wikipedia.org/wiki/Earthquake_preparedness"
+  title: "Earthquake Preparedness"
+  category: "Disasters"
+  locale: "en"
+
+- url: "https://de.m.wikipedia.org/wiki/Erste_Hilfe"
+  title: "Erste Hilfe"
+  category: "Medizin & Gesundheit"
+  locale: "de"
+
+- url: "https://de.m.wikipedia.org/wiki/Katastrophenschutz"
+  title: "Katastrophenschutz"
+  category: "Vorbereitung"
+  locale: "de"
+
+- url: "https://fr.m.wikipedia.org/wiki/Premiers_secours"
+  title: "Premiers Secours"
+  category: "Santé"
+  locale: "fr"
+
+- url: "https://es.m.wikipedia.org/wiki/Primeros_auxilios"
+  title: "Primeros Auxilios"
+  category: "Salud"
+  locale: "es"
+
+- url: "https://el.m.wikipedia.org/wiki/%CE%A0%CF%81%CF%8E%CF%84%CE%B5%CF%82_%CE%B2%CE%BF%CE%AE%CE%B8%CE%B5%CE%B9%CE%B5%CF%82"
+  title: "Πρώτες Βοήθειες"
+  category: "Υγεία"
+  locale: "el"
+
+- url: "https://zh.m.wikipedia.org/wiki/%E6%80%A5%E6%95%91"
+  title: "急救指南"
+  category: "医疗与健康"
+  locale: "zh"
+
+- url: "https://ar.m.wikipedia.org/wiki/%D8%A5%D8%B9%D9%85%D8%A7%D9%84_%D8%A7%D9%84%D8%A5%D8%B5%D8%A7%D8%A8%D8%A7%D8%AA_%D8%A7%D9%84%D8%A3%D9%88%D9%84%D9%8A%D8%A9"
+  title: "الإسعافات الأولية"
+  category: "الصحة"
+  locale: "ar"
