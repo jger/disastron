@@ -2,6 +2,14 @@
 
 All notable changes will be documented in this file.
 
+# [1.3.0](https://github.com/jger/disastron/compare/v1.2.1...v1.3.0) (2026-06-06)
+
+
+### Features
+
+* add offline wiki viewing and downloading capability with WebView support ([96cff6d](https://github.com/jger/disastron/commit/96cff6d06ef2879adf91f268908e4d101ce69143))
+* expand wiki content, add persistent offline availability banner, and implement associated parsing tests ([e5eb6c4](https://github.com/jger/disastron/commit/e5eb6c4c5f926d1a6987f53f7606090ef0c8cd54))
+
 ## [1.2.1](https://github.com/jger/disastron/compare/v1.2.0...v1.2.1) (2026-06-05)
 
 
