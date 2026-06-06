@@ -14,7 +14,13 @@ module.exports = {
     [
       'semantic-release-dart',
       {
-        updateBuildNumber: true,
+        updateBuildNumber: false,
+      },
+    ],
+    [
+      '@semantic-release/exec',
+      {
+        prepareCmd: 'bash scripts/increment_build.sh',
       },
     ],
     [
