@@ -11,4 +11,6 @@ abstract final class PrefsKeys {
   static const String emergencyTodos = 'emergency_todos_v1';
   static const String pendingModelDownload = 'pending_model_download_v1';
   static const String toolPlacements = 'tool_placements_v1';
+  static const String wikiYamlSyncBannerDismissed =
+      'wiki_yaml_sync_banner_dismissed';
 }

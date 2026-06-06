@@ -50,48 +50,54 @@ Future<DashboardDeviceSnapshot> dashboardDevice(Ref ref) async {
     // ignore
   }
 
-  LocationPermission perm = await Geolocator.checkPermission();
-  if (perm == LocationPermission.denied) {
-    perm = await Geolocator.requestPermission();
-  }
-
   double? lat;
   double? lon;
   String? iso;
   String? locality;
   String? locErr;
 
-  if (perm == LocationPermission.denied ||
-      perm == LocationPermission.deniedForever) {
-    locErr = DashboardLocationErrors.permissionDenied;
-  } else {
-    try {
+  try {
+    LocationPermission perm = await Geolocator.checkPermission();
+    if (perm == LocationPermission.denied) {
+      perm = await Geolocator.requestPermission();
+    }
+
+    if (perm == LocationPermission.denied ||
+        perm == LocationPermission.deniedForever) {
+      locErr = DashboardLocationErrors.permissionDenied;
+    } else {
       final bool serviceOn = await Geolocator.isLocationServiceEnabled();
       if (!serviceOn) {
         locErr = DashboardLocationErrors.servicesDisabled;
       } else {
-        final Position pos = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.medium,
-            timeLimit: Duration(seconds: 20),
-          ),
-        );
+        final Position pos = await Geolocator.getLastKnownPosition() ??
+            await Geolocator.getCurrentPosition(
+              locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.medium,
+                timeLimit: Duration(seconds: 5),
+              ),
+            );
         lat = pos.latitude;
         lon = pos.longitude;
-        final List<Placemark> marks = await placemarkFromCoordinates(
-          lat,
-          lon,
-        );
-        if (marks.isNotEmpty) {
-          final Placemark p = marks.first;
-          iso = p.isoCountryCode;
-          locality =
-              p.locality ?? p.subAdministrativeArea ?? p.administrativeArea;
+
+        try {
+          final List<Placemark> marks = await placemarkFromCoordinates(
+            lat,
+            lon,
+          ).timeout(const Duration(seconds: 2));
+          if (marks.isNotEmpty) {
+            final Placemark p = marks.first;
+            iso = p.isoCountryCode;
+            locality =
+                p.locality ?? p.subAdministrativeArea ?? p.administrativeArea;
+          }
+        } on Object {
+          // Ignore geocoding failure offline so GPS coordinates still work.
         }
       }
-    } on Object catch (e) {
-      locErr = e.toString();
     }
+  } on Object {
+    locErr = DashboardLocationErrors.unavailableFallback;
   }
 
   return DashboardDeviceSnapshot(

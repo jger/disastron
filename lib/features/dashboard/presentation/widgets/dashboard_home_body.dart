@@ -1,13 +1,16 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:battery_plus/battery_plus.dart';
 import 'package:disastron/app/app_appearance.dart';
 import 'package:disastron/app/appearance_provider.dart';
 import 'package:disastron/app/locale_provider.dart';
+import 'package:disastron/core/preferences/prefs_keys.dart';
 import 'package:disastron/features/dashboard/presentation/dashboard_device_provider.dart';
 import 'package:disastron/features/dashboard/presentation/dashboard_weather_provider.dart';
 import 'package:disastron/features/dashboard/presentation/widgets/dashboard_action_card.dart';
 import 'package:disastron/features/dashboard/presentation/widgets/dashboard_weather_card.dart';
+import 'package:disastron/features/home_shell/presentation/home_tab_index_provider.dart';
 import 'package:disastron/features/inference/domain/predefined_models.dart';
 import 'package:disastron/features/inference/presentation/local_gemma_model_provider.dart';
 import 'package:disastron/features/inference/presentation/model_install_flow_coordinator.dart';
@@ -19,12 +22,16 @@ import 'package:disastron/features/tool_layout/domain/app_tool_catalog.dart';
 import 'package:disastron/features/tool_layout/presentation/open_app_tool.dart';
 import 'package:disastron/features/tool_layout/presentation/tool_layout_labels.dart';
 import 'package:disastron/features/tool_layout/presentation/tool_placements_provider.dart';
+import 'package:disastron/features/wiki/presentation/wiki_download_provider.dart';
 import 'package:disastron/features/wiki/presentation/wiki_models.dart';
 import 'package:disastron/features/wiki/presentation/wiki_pack_provider.dart';
+import 'package:disastron/features/wiki/presentation/wiki_page.dart';
+import 'package:disastron/features/wiki/presentation/wiki_sources_provider.dart';
 import 'package:disastron/router/routes.gr.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Dark-HC battery tip; close hides until user leaves this theme.
 class _HcBatteryTipBanner extends ConsumerStatefulWidget {
@@ -238,6 +245,173 @@ class _NoOfflineModelBanner extends ConsumerWidget {
   }
 }
 
+class _NoOfflineWikiBanner extends ConsumerStatefulWidget {
+  const _NoOfflineWikiBanner();
+
+  @override
+  ConsumerState<_NoOfflineWikiBanner> createState() =>
+      _NoOfflineWikiBannerState();
+}
+
+class _NoOfflineWikiBannerState extends ConsumerState<_NoOfflineWikiBanner> {
+  bool _dismissed = false;
+  bool _loadingDismissState = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDismissState();
+  }
+
+  Future<void> _loadDismissState() async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final bool dismissed =
+          prefs.getBool(PrefsKeys.wikiYamlSyncBannerDismissed) ?? false;
+      if (mounted) {
+        setState(() {
+          _dismissed = dismissed;
+          _loadingDismissState = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _loadingDismissState = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _dismissBanner() async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(PrefsKeys.wikiYamlSyncBannerDismissed, true);
+      if (mounted) {
+        setState(() {
+          _dismissed = true;
+        });
+      }
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loadingDismissState || _dismissed) {
+      return const SizedBox.shrink();
+    }
+
+    final localeAsync = ref.watch(appLocaleProvider);
+    final String locale = localeAsync.maybeWhen(
+      data: (s) => s.localeCode,
+      orElse: () => 'en',
+    );
+
+    final sourcesAsync = ref.watch(wikiSourcesProvider);
+    final downloadsAsync = ref.watch(wikiDownloadProvider);
+
+    if (sourcesAsync.isLoading || downloadsAsync.isLoading) {
+      return const SizedBox.shrink();
+    }
+
+    final sources = sourcesAsync.value ?? [];
+    final downloads = downloadsAsync.value ?? {};
+
+    final localSources = sources.where((s) => s.locale == locale).toList();
+    if (localSources.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final bool hasDownloaded = localSources.any((s) {
+      final dlState = downloads[s.url];
+      return dlState?.status == WikiDownloadStatus.downloaded;
+    });
+
+    if (hasDownloaded) {
+      return const SizedBox.shrink();
+    }
+
+    final Color onC = Theme.of(context).colorScheme.onErrorContainer;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Theme.of(context).colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 6, 8, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Icon(Icons.menu_book_outlined, color: onC, size: 22),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        'no_offline_wiki_title'.tr(),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: onC,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 36,
+                      minHeight: 36,
+                    ),
+                    icon: Icon(Icons.close, color: onC, size: 20),
+                    tooltip: 'dismiss'.tr(),
+                    onPressed: _dismissBanner,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  'no_offline_wiki_body'.tr(),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: onC,
+                      ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      ref.read(wikiSelectedTabProvider.notifier).state = 1;
+                      ref.read(homeBottomNavIndexProvider.notifier).state = 3;
+                    },
+                    child: Text(
+                      'wiki_go_to_sync'.tr(),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Main dashboard scrollable body: status, quick actions.
 class DashboardHomeBody extends ConsumerWidget {
   const DashboardHomeBody({super.key});
@@ -268,6 +442,7 @@ class DashboardHomeBody extends ConsumerWidget {
             _DashboardStatusCard(),
             SizedBox(height: 16),
             _NoOfflineModelBanner(),
+            _NoOfflineWikiBanner(),
             SizedBox(height: 16),
             _HcBatteryTipBanner(),
             SizedBox(height: 16),
@@ -381,6 +556,11 @@ class _StatusExpansionTile extends StatelessWidget {
 
   final DashboardDeviceSnapshot snapshot;
 
+  String _localizeBatteryState(BatteryState? state) {
+    if (state == null) return 'battery_state_unknown'.tr();
+    return 'battery_state_${state.name}'.tr();
+  }
+
   String _shortSummary(BuildContext context) {
     final String bat =
         snapshot.batteryPercent != null ? '${snapshot.batteryPercent}%' : '—';
@@ -444,7 +624,7 @@ class _StatusExpansionTile extends StatelessWidget {
                   Icons.battery_std,
                   'Battery',
                   snapshot.batteryPercent != null
-                      ? '${snapshot.batteryPercent}% (${snapshot.batteryState})'
+                      ? '${snapshot.batteryPercent}% (${_localizeBatteryState(snapshot.batteryState)})'
                       : '—',
                 ),
                 const SizedBox(height: 8),

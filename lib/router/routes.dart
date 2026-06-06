@@ -34,6 +34,14 @@ class AppRouter extends RootStackRouter {
           path: '/wiki',
         ),
         AutoRoute(
+          page: WikiConfigRoute.page,
+          path: '/wiki/config',
+        ),
+        AutoRoute(
+          page: WikiWebviewRoute.page,
+          path: '/wiki/webview',
+        ),
+        AutoRoute(
           page: AppearanceSettingsRoute.page,
           path: '/settings/appearance',
         ),

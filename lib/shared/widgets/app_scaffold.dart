@@ -34,7 +34,7 @@ class _AppScaffoldState extends State<AppScaffold> {
     //   return const AppIndicator();
     // }
     return Scaffold(
-      appBar: widget.showAppBar ? AppAppBar() : null,
+      appBar: widget.showAppBar ? const AppAppBar() : null,
       // drawer: const AppDrawer(),
       body: widget.body,
       bottomNavigationBar: widget.bottomNavigationBar,
