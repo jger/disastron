@@ -34,11 +34,22 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
 
   bool _isViewingOnline = false;
   String _activeUrl = '';
+  String _lastKnownCategory = 'Imported';
 
   @override
   void initState() {
     super.initState();
     _activeUrl = widget.url;
+
+    final sources = ref.read(wikiSourcesProvider).value ?? [];
+    final matching = sources.firstWhere(
+      (s) => s.url.split('#').first == widget.url.split('#').first,
+      orElse: () =>
+          const WikiSource(url: '', title: '', category: '', locale: ''),
+    );
+    if (matching.url.isNotEmpty) {
+      _lastKnownCategory = matching.category;
+    }
 
     _controller = WebViewController()
       ..setUserAgent(
@@ -67,6 +78,14 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
           },
           onNavigationRequest: (NavigationRequest request) async {
             final url = request.url;
+            final docDir = await getApplicationDocumentsDirectory();
+            final sandboxPath = docDir.path;
+            final sources = ref.read(wikiSourcesProvider).value ?? [];
+
+            final targetSource = _findSourceForUrl(url, sources, sandboxPath);
+            if (targetSource != null) {
+              _lastKnownCategory = targetSource.category;
+            }
 
             if (url.startsWith('file://')) {
               final docDir = await getApplicationDocumentsDirectory();
@@ -117,7 +136,6 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
 
             final cleanedUrl = url.split('#').first;
 
-            final sources = ref.read(wikiSourcesProvider).value ?? [];
             final matchingSource = sources.firstWhere(
               (s) => s.url.split('#').first == cleanedUrl,
               orElse: () => const WikiSource(
@@ -231,7 +249,8 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
       final String pageUrl = _activeUrl;
 
       final titleController = TextEditingController(text: pageTitle);
-      final categoryController = TextEditingController(text: 'Imported');
+      final categoryController =
+          TextEditingController(text: _lastKnownCategory);
       final formKey = GlobalKey<FormState>();
 
       if (!mounted) return;
@@ -299,6 +318,12 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
 
                   if (ctx.mounted) {
                     Navigator.pop(ctx);
+                  }
+
+                  if (mounted) {
+                    setState(() {
+                      _lastKnownCategory = newSource.category;
+                    });
                   }
 
                   unawaited(
@@ -473,5 +498,73 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
         ],
       ),
     );
+  }
+
+  WikiSource? _findSourceForUrl(
+    String url,
+    List<WikiSource> sources,
+    String sandboxPath,
+  ) {
+    final cleanedUrl = url.split('#').first;
+
+    if (cleanedUrl.startsWith('file://')) {
+      final uri = Uri.tryParse(cleanedUrl);
+      if (uri != null) {
+        final path = uri.path;
+        if (path.startsWith(sandboxPath)) {
+          final regExp = RegExp('wiki_offline_downloads/([^/]+)/index.html');
+          final match = regExp.firstMatch(path);
+          if (match != null) {
+            final hash = match.group(1);
+            for (final s in sources) {
+              final sHash = s.url.hashCode.toUnsigned(32).toRadixString(16);
+              if (sHash == hash) {
+                return s;
+              }
+            }
+          }
+        } else {
+          String reconstructedUrl = '';
+          if (uri.host.isNotEmpty) {
+            reconstructedUrl =
+                'https://${uri.host}${uri.path}${uri.query.isNotEmpty ? '?${uri.query}' : ''}';
+          } else {
+            final activeUri = Uri.tryParse(_activeUrl);
+            if (activeUri != null) {
+              final baseScheme =
+                  activeUri.scheme.isNotEmpty ? activeUri.scheme : 'https';
+              final baseHost = activeUri.host;
+              reconstructedUrl =
+                  '$baseScheme://$baseHost${uri.path}${uri.query.isNotEmpty ? '?${uri.query}' : ''}';
+            } else {
+              reconstructedUrl = 'https://en.m.wikipedia.org${uri.path}';
+            }
+          }
+          final cleanedReconstructed = reconstructedUrl.split('#').first;
+          final match = sources.firstWhere(
+            (s) => s.url.split('#').first == cleanedReconstructed,
+            orElse: () => const WikiSource(
+              url: '',
+              title: '',
+              category: '',
+              locale: '',
+            ),
+          );
+          return match.url.isNotEmpty ? match : null;
+        }
+      }
+      return null;
+    }
+
+    final match = sources.firstWhere(
+      (s) => s.url.split('#').first == cleanedUrl,
+      orElse: () => const WikiSource(
+        url: '',
+        title: '',
+        category: '',
+        locale: '',
+      ),
+    );
+    return match.url.isNotEmpty ? match : null;
   }
 }

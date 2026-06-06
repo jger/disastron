@@ -70,6 +70,8 @@
   "dismiss": "关闭",
   "no_offline_model_title": "无离线模型",
   "no_offline_model_body": "聊天需要已下载的模型。请安装最小预设（{preset}），或在设置 → 离线模型中选择其他模型。",
+  "no_offline_wiki_title": "无离线百科页面",
+  "no_offline_wiki_body": "没有缓存可用于离线使用的页面。立即下载紧急参考指南，以确保在没有网络时可以访问。",
   "offline_model_settings": "离线模型设置",
   "download_smallest": "下载最小模型",
   "cancel": "取消",
@@ -200,5 +202,10 @@
   "wiki_downloading_progress": "正在下载... {}%",
   "wiki_search_hint": "搜索页面...",
   "wiki_search_no_results": "未找到 \"{}\" 的结果",
-  "wiki_sync": "同步"
+  "wiki_sync": "同步",
+  "battery_state_charging": "正在充电",
+  "battery_state_discharging": "放电中",
+  "battery_state_full": "已充满",
+  "battery_state_connectedNotCharging": "已连接未充电",
+  "battery_state_unknown": "未知"
 }

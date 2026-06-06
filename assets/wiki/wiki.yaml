@@ -13,6 +13,26 @@
   category: "Disasters"
   locale: "en"
 
+- url: "https://en.m.wikipedia.org/wiki/Cardiopulmonary_resuscitation"
+  title: "Cardiopulmonary Resuscitation (CPR)"
+  category: "Medical & Health"
+  locale: "en"
+
+- url: "https://en.m.wikipedia.org/wiki/Portable_water_purification"
+  title: "Water Purification"
+  category: "Preparation"
+  locale: "en"
+
+- url: "https://en.m.wikipedia.org/wiki/Wildfire"
+  title: "Wildfire Safety"
+  category: "Disasters"
+  locale: "en"
+
+- url: "https://en.m.wikipedia.org/wiki/Flood_control"
+  title: "Flood Preparedness"
+  category: "Disasters"
+  locale: "en"
+
 - url: "https://de.m.wikipedia.org/wiki/Erste_Hilfe"
   title: "Erste Hilfe"
   category: "Medizin & Gesundheit"
@@ -23,9 +43,39 @@
   category: "Vorbereitung"
   locale: "de"
 
+- url: "https://de.m.wikipedia.org/wiki/Herz-Lungen-Wiederbelebung"
+  title: "Herz-Lungen-Wiederbelebung (HLW)"
+  category: "Medizin & Gesundheit"
+  locale: "de"
+
+- url: "https://de.m.wikipedia.org/wiki/Notgep%C3%A4ck"
+  title: "Notgepäck (Fluchtrucksack)"
+  category: "Vorbereitung"
+  locale: "de"
+
+- url: "https://de.m.wikipedia.org/wiki/Trinkwasseraufbereitung"
+  title: "Trinkwasseraufbereitung"
+  category: "Vorbereitung"
+  locale: "de"
+
 - url: "https://fr.m.wikipedia.org/wiki/Premiers_secours"
   title: "Premiers Secours"
   category: "Santé"
+  locale: "fr"
+
+- url: "https://fr.m.wikipedia.org/wiki/R%C3%A9animation_cardiopulmonaire"
+  title: "Réanimation Cardiopulmonaire (RCP)"
+  category: "Santé"
+  locale: "fr"
+
+- url: "https://fr.m.wikipedia.org/wiki/Kit_de_survie"
+  title: "Kit de Survie"
+  category: "Préparation"
+  locale: "fr"
+
+- url: "https://fr.m.wikipedia.org/wiki/Gestion_de_crise"
+  title: "Gestion des Catastrophes"
+  category: "Catastrophes"
   locale: "fr"
 
 - url: "https://es.m.wikipedia.org/wiki/Primeros_auxilios"
@@ -33,9 +83,34 @@
   category: "Salud"
   locale: "es"
 
+- url: "https://es.m.wikipedia.org/wiki/Reanimaci%C3%B3n_cardiopulmonar"
+  title: "Reanimación Cardiopulmonar (RCP)"
+  category: "Salud"
+  locale: "es"
+
+- url: "https://es.m.wikipedia.org/wiki/Mochila_de_emergencia"
+  title: "Mochila de Emergencia"
+  category: "Preparación"
+  locale: "es"
+
+- url: "https://es.m.wikipedia.org/wiki/Administraci%C3%B3n_de_desastres"
+  title: "Preparación ante Desastres"
+  category: "Desastres"
+  locale: "es"
+
 - url: "https://el.m.wikipedia.org/wiki/%CE%A0%CF%81%CF%8E%CF%84%CE%B5%CF%82_%CE%B2%CE%BF%CE%AE%CE%B8%CE%B5%CE%B9%CE%B5%CF%82"
   title: "Πρώτες Βοήθειες"
   category: "Υγεία"
+  locale: "el"
+
+- url: "https://el.m.wikipedia.org/wiki/%CE%9A%CE%B1%CF%81%CE%B4%CE%B9%CE%BF%CF%80%CE%BD%CE%B5%CF%85%CE%BC%CE%BF%CE%BD%CE%B9%CE%BA%CE%AE_%CE%B1%CE%BD%CE%B1%CE%B6%CF%89%CE%BF%CE%B3%CF%8C%CE%BD%CE%B7%CF%83%CE%B7"
+  title: "Καρδιοπνευμονική Αναζωογόνηση (ΚΑΡΠΑ)"
+  category: "Υγεία"
+  locale: "el"
+
+- url: "https://el.m.wikipedia.org/wiki/%CE%A0%CE%BF%CE%BB%CE%B9%CF%84%CE%B9%CE%BA%CE%AE_%CF%80%CF%81%CE%BF%CF%83%CF%84%CE%B1%CF%83%CE%AF%CE%B1"
+  title: "Πολιτική Προστασία"
+  category: "Προστασία"
   locale: "el"
 
 - url: "https://zh.m.wikipedia.org/wiki/%E6%80%A5%E6%95%91"
@@ -43,7 +118,32 @@
   category: "医疗与健康"
   locale: "zh"
 
-- url: "https://ar.m.wikipedia.org/wiki/%D8%A5%D8%B9%D9%85%D8%A7%D9%84_%D8%A7%D9%84%D8%A5%D8%B5%D8%A7%D8%A8%D8%A7%D8%AA_%D8%A7%D9%84%D8%A3%D9%88%D9%84%D9%8A%D8%A9"
+- url: "https://zh.m.wikipedia.org/wiki/%E5%BF%83%E8%82%BA%E5%A4%8D%E8%8B%8F"
+  title: "心肺复苏术 (CPR)"
+  category: "医疗与健康"
+  locale: "zh"
+
+- url: "https://zh.m.wikipedia.org/wiki/%E6%80%A5%E6%95%91%E7%AE%B1"
+  title: "紧急求生包"
+  category: "准备"
+  locale: "zh"
+
+- url: "https://zh.m.wikipedia.org/wiki/%E7%81%BE%E5%AE%B3%E7%AE%A1%E7%90%86"
+  title: "灾害管理"
+  category: "防灾"
+  locale: "zh"
+
+- url: "https://ar.m.wikipedia.org/wiki/%D8%A5%D8%B3%D8%B9%D8%A7%D9%81%D8%A7%D8%AA_%D8%A3%D9%88%D9%84%D9%8A%D8%A9"
   title: "الإسعافات الأولية"
   category: "الصحة"
+  locale: "ar"
+
+- url: "https://ar.m.wikipedia.org/wiki/%D8%A5%D9%86%D8%B9%D8%A7%D8%B4_%D9%82%D9%84%D8%A8%D9%8A_%D8%B1%D8%A6%D9%88%D9%8A"
+  title: "إنعاش قلبي رئوي (CPR)"
+  category: "الصحة"
+  locale: "ar"
+
+- url: "https://ar.m.wikipedia.org/wiki/%D8%A5%D8%AF%D8%A7%D8%B1%D8%A9_%D8%A7%D9%84%D8%B7%D9%88%D8%A7%D8%B1%D8%A6"
+  title: "إدارة الكوارث"
+  category: "الكوارث"
   locale: "ar"

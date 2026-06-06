@@ -70,6 +70,8 @@
   "dismiss": "Fermer",
   "no_offline_model_title": "Pas de modèle hors ligne",
   "no_offline_model_body": "Le chat nécessite un modèle téléchargé. Installez le plus petit préréglage ({preset}) ou choisissez-en un autre dans Paramètres → Modèle hors ligne.",
+  "no_offline_wiki_title": "Aucune page wiki hors ligne",
+  "no_offline_wiki_body": "Aucune page n'est mise en cache pour une utilisation hors ligne. Téléchargez les références d'urgence maintenant pour y accéder sans connexion.",
   "offline_model_settings": "Réglages du modèle hors ligne",
   "download_smallest": "Télécharger le plus petit",
   "cancel": "Annuler",
@@ -200,5 +202,10 @@
   "wiki_downloading_progress": "Téléchargement... {}%",
   "wiki_search_hint": "Rechercher des pages...",
   "wiki_search_no_results": "Aucun résultat trouvé pour \"{}\"",
-  "wiki_sync": "Synchroniser"
+  "wiki_sync": "Synchroniser",
+  "battery_state_charging": "En charge",
+  "battery_state_discharging": "Décharge",
+  "battery_state_full": "Plein",
+  "battery_state_connectedNotCharging": "Branché, pas en charge",
+  "battery_state_unknown": "Inconnu"
 }

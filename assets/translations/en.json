@@ -70,6 +70,8 @@
   "dismiss": "Dismiss",
   "no_offline_model_title": "No offline model",
   "no_offline_model_body": "Chat needs a downloaded model. Install the smallest preset ({preset}) or choose another under Settings → Offline model.",
+  "no_offline_wiki_title": "No offline wiki pages",
+  "no_offline_wiki_body": "No pages are cached for offline use. Download emergency references now to ensure access to vital guides when offline.",
   "offline_model_settings": "Offline model settings",
   "download_smallest": "Download smallest",
   "cancel": "Cancel",
@@ -200,5 +202,10 @@
   "wiki_downloading_progress": "Downloading... {}%",
   "wiki_search_hint": "Search pages...",
   "wiki_search_no_results": "No results found for \"{}\"",
-  "wiki_sync": "Sync"
+  "wiki_sync": "Sync",
+  "battery_state_charging": "Charging",
+  "battery_state_discharging": "Discharging",
+  "battery_state_full": "Full",
+  "battery_state_connectedNotCharging": "Connected, not charging",
+  "battery_state_unknown": "Unknown"
 }

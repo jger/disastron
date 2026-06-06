@@ -70,6 +70,8 @@
   "dismiss": "إغلاق",
   "no_offline_model_title": "لا يوجد نموذج دون اتصال",
   "no_offline_model_body": "تحتاج الدردشة إلى نموذج مُنزَّل. ثبّت الإعداد الأصغر ({preset}) أو اختر آخر من الإعدادات → النموذج دون اتصال.",
+  "no_offline_wiki_title": "لا توجد صفحات ويكيبيديا دون اتصال",
+  "no_offline_wiki_body": "لا توجد صفحات مخزنة للاستخدام دون اتصال. قم بتنزيل مراجع الطوارئ الآن لضمان الوصول إلى الأدلة الحيوية عند انقطاع الاتصال.",
   "offline_model_settings": "إعدادات النموذج دون اتصال",
   "download_smallest": "تنزيل الأصغر",
   "cancel": "إلغاء",
@@ -200,5 +202,10 @@
   "wiki_downloading_progress": "Downloading... {}%",
   "wiki_search_hint": "البحث في الصفحات...",
   "wiki_search_no_results": "لم يتم العثور على نتائج لـ \"{}\"",
-  "wiki_sync": "مزامنة"
+  "wiki_sync": "مزامنة",
+  "battery_state_charging": "جاري الشحن",
+  "battery_state_discharging": "جاري التفريغ",
+  "battery_state_full": "ممتلئة",
+  "battery_state_connectedNotCharging": "متصل، لا يشحن",
+  "battery_state_unknown": "غير معروف"
 }

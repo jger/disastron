@@ -70,6 +70,8 @@
   "dismiss": "Descartar",
   "no_offline_model_title": "Sin modelo sin conexión",
   "no_offline_model_body": "El chat necesita un modelo descargado. Instala el preset más pequeño ({preset}) u otro en Ajustes → Modelo sin conexión.",
+  "no_offline_wiki_title": "Sin páginas wiki sin conexión",
+  "no_offline_wiki_body": "No hay páginas guardadas para usar sin conexión. Descargue las referencias de emergencia ahora para acceder a guías vitales sin internet.",
   "offline_model_settings": "Ajustes del modelo sin conexión",
   "download_smallest": "Descargar el más pequeño",
   "cancel": "Cancelar",
@@ -200,5 +202,10 @@
   "wiki_downloading_progress": "Descargando... {}%",
   "wiki_search_hint": "Buscar páginas...",
   "wiki_search_no_results": "No se encontraron resultados para \"{}\"",
-  "wiki_sync": "Sincronizar"
+  "wiki_sync": "Sincronizar",
+  "battery_state_charging": "Cargando",
+  "battery_state_discharging": "Descargando",
+  "battery_state_full": "Lleno",
+  "battery_state_connectedNotCharging": "Conectado, no cargando",
+  "battery_state_unknown": "Desconocido"
 }

@@ -70,6 +70,8 @@
   "dismiss": "Κλείσιμο",
   "no_offline_model_title": "Χωρίς εκτός σύνδεσης μοντέλο",
   "no_offline_model_body": "Η συνομιλία χρειάζεται ληφθέν μοντέλο. Εγκαταστήστε το μικρότερο προκαθορισμένο ({preset}) ή άλλο στις Ρυθμίσεις → Εκτός σύνδεσης μοντέλο.",
+  "no_offline_wiki_title": "Δεν υπάρχουν σελίδες wiki εκτός σύνδεσης",
+  "no_offline_wiki_body": "Δεν υπάρχουν αποθηκευμένες σελίδες για χρήση εκτός σύνδεσης. Κατεβάστε τις οδηγίες έκτακτης ανάγκης τώρα για πρόσβαση χωρίς σύνδεση.",
   "offline_model_settings": "Ρυθμίσεις εκτός σύνδεσης μοντέλου",
   "download_smallest": "Λήψη μικρότερου",
   "cancel": "Ακύρωση",
@@ -200,5 +202,10 @@
   "wiki_downloading_progress": "Downloading... {}%",
   "wiki_search_hint": "Αναζήτηση σελίδων...",
   "wiki_search_no_results": "Δεν βρέθηκαν αποτελέσματα για \"{}\"",
-  "wiki_sync": "Συγχρονισμός"
+  "wiki_sync": "Συγχρονισμός",
+  "battery_state_charging": "Φορτίζει",
+  "battery_state_discharging": "Αποφορτίζεται",
+  "battery_state_full": "Πλήρης",
+  "battery_state_connectedNotCharging": "Συνδεδεμένο, δε φορτίζει",
+  "battery_state_unknown": "Άγνωστο"
 }

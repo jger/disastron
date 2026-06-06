@@ -70,6 +70,8 @@
   "dismiss": "Schließen",
   "no_offline_model_title": "Kein Offline-Modell",
   "no_offline_model_body": "Chat braucht ein heruntergeladenes Modell. Installiere das kleinste Preset ({preset}) oder wähle eines unter Einstellungen → Offline-Modell.",
+  "no_offline_wiki_title": "Keine Wiki-Seiten offline",
+  "no_offline_wiki_body": "Es sind keine Seiten für die Offline-Nutzung zwischengespeichert. Laden Sie Notfallreferenzen jetzt herunter, um im Ernstfall ohne Internet darauf zuzugreifen.",
   "offline_model_settings": "Offline-Modell-Einstellungen",
   "download_smallest": "Kleinstes laden",
   "cancel": "Abbrechen",
@@ -200,5 +202,10 @@
   "wiki_downloading_progress": "Wird heruntergeladen... {}%",
   "wiki_search_hint": "Seiten durchsuchen...",
   "wiki_search_no_results": "Keine Ergebnisse gefunden für \"{}\"",
-  "wiki_sync": "Synchronisieren"
+  "wiki_sync": "Synchronisieren",
+  "battery_state_charging": "Wird geladen",
+  "battery_state_discharging": "Entlädt",
+  "battery_state_full": "Voll",
+  "battery_state_connectedNotCharging": "Angeschlossen, lädt nicht",
+  "battery_state_unknown": "Unbekannt"
 }

@@ -499,7 +499,9 @@ class WikiPage extends HookConsumerWidget {
                 ] else if (dlState.status == WikiDownloadStatus.failed) ...[
                   const SizedBox(height: 4),
                   Text(
-                    'wiki_download_failed'.tr(),
+                    dlState.error != null && dlState.error!.isNotEmpty
+                        ? '${'wiki_download_failed'.tr()} (${dlState.error})'
+                        : 'wiki_download_failed'.tr(),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.error,
                           fontWeight: FontWeight.w500,
