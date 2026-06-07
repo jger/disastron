@@ -25,6 +25,7 @@ class GemmaInputField extends StatefulWidget {
 class GemmaInputFieldState extends State<GemmaInputField> {
   StreamSubscription<ModelResponse>? _subscription;
   Message _message = Message.text(text: '');
+  bool _isGenerating = false;
 
   @override
   void initState() {
@@ -33,6 +34,7 @@ class GemmaInputFieldState extends State<GemmaInputField> {
   }
 
   Future<void> _processMessages() async {
+    setState(() => _isGenerating = true);
     _subscription =
         widget.gemmaService.processMessageAsync(widget.userMessage).listen(
       (ModelResponse response) {
@@ -45,17 +47,33 @@ class GemmaInputFieldState extends State<GemmaInputField> {
         }
       },
       onDone: () async {
+        if (mounted) {
+          setState(() => _isGenerating = false);
+        }
         await widget.streamHandled(_message);
       },
       onError: (Object e, StackTrace st) async {
-        setState(() {
-          _message = Message.text(
-            text: '${_message.text}\n[Error: $e]',
-          );
-        });
+        if (mounted) {
+          setState(() {
+            _isGenerating = false;
+            _message = Message.text(
+              text: '${_message.text}\n[Error: $e]',
+            );
+          });
+        }
         await widget.streamHandled(_message);
       },
     );
+  }
+
+  Future<void> _stopGeneration() async {
+    await _subscription?.cancel();
+    _subscription = null;
+    if (mounted) {
+      setState(() => _isGenerating = false);
+    }
+    // Commit whatever was generated so far
+    await widget.streamHandled(_message);
   }
 
   @override
@@ -69,8 +87,29 @@ class GemmaInputFieldState extends State<GemmaInputField> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: ChatMessageWidget(message: _message),
+    final ColorScheme cs = Theme.of(context).colorScheme;
+
+    return Stack(
+      alignment: Alignment.bottomRight,
+      children: <Widget>[
+        SingleChildScrollView(
+          child: ChatMessageWidget(message: _message),
+        ),
+        if (_isGenerating)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4, right: 4),
+            child: IconButton(
+              tooltip: 'Stop generating',
+              icon: Icon(
+                Icons.stop_circle_outlined,
+                size: 28,
+                color: cs.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
+              onPressed: _stopGeneration,
+              padding: const EdgeInsets.all(8),
+            ),
+          ),
+      ],
     );
   }
 }
