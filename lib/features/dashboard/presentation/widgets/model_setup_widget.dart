@@ -274,6 +274,11 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                   label: Text('model_open_page'.tr()),
                 ),
               ],
+              const SizedBox(height: 16),
+              HuggingFaceTokenInput(
+                controller: _tokenController,
+                labelText: 'hf_token_paste_label'.tr(),
+              ),
               const SizedBox(height: 12),
             ],
             SelectableText(ui.errorMessage ?? 'model_unknown_error'.tr()),
@@ -293,6 +298,15 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                 padding: const EdgeInsets.only(bottom: 12),
                 child: FilledButton.icon(
                   onPressed: () async {
+                    final String token = _tokenController.text.trim();
+                    if (token.isNotEmpty) {
+                      await ref
+                          .read(huggingfaceTokenProvider.notifier)
+                          .save(token);
+                      if (mounted) {
+                        _tokenController.clear();
+                      }
+                    }
                     final LocalGemmaModel notifier =
                         ref.read(localGemmaModelProvider.notifier);
                     await notifier.resumePendingNetworkInstall();
@@ -314,6 +328,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               ),
             FilledButton(
               onPressed: () {
+                _tokenController.clear();
                 ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
               },
               child: Text('back'.tr()),
