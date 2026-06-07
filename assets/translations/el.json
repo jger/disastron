@@ -210,5 +210,6 @@
   "battery_state_discharging": "Αποφορτίζεται",
   "battery_state_full": "Πλήρης",
   "battery_state_connectedNotCharging": "Συνδεδεμένο, δε φορτίζει",
-  "battery_state_unknown": "Άγνωστο"
+  "battery_state_unknown": "Άγνωστο",
+  "chat_llm_warning": "Η τεχνητή νοημοσύνη στη συσκευή μπορεί να κάνει λάθη. Επαληθεύετε πάντα κρίσιμες πληροφορίες με επίσημες πηγές."
 }

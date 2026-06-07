@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2024-2026 Jannis Gerardis
 
+import 'package:disastron/features/chat/presentation/chat_reset_provider.dart';
 import 'package:disastron/features/home_shell/presentation/home_tab_index_provider.dart';
 import 'package:disastron/features/wiki/presentation/wiki_page.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -37,6 +38,7 @@ class _AppAppBarState extends ConsumerState<AppAppBar> {
   Widget build(BuildContext context) {
     final selectedTab = ref.watch(homeBottomNavIndexProvider);
     final searchActive = ref.watch(wikiSearchActiveProvider);
+    final resetCallback = ref.watch(chatResetProvider);
     final fg = Theme.of(context).appBarTheme.foregroundColor ??
         Theme.of(context).colorScheme.onSurface;
 
@@ -115,6 +117,13 @@ class _AppAppBarState extends ConsumerState<AppAppBar> {
             onPressed: () {
               ref.read(wikiSearchActiveProvider.notifier).state = true;
             },
+          ),
+        ],
+        if (selectedTab == 2 && resetCallback != null) ...[
+          IconButton(
+            tooltip: 'Reset chat',
+            icon: const Icon(Icons.restart_alt),
+            onPressed: resetCallback,
           ),
         ],
       ],

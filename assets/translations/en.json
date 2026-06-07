@@ -210,5 +210,6 @@
   "battery_state_discharging": "Discharging",
   "battery_state_full": "Full",
   "battery_state_connectedNotCharging": "Connected, not charging",
-  "battery_state_unknown": "Unknown"
+  "battery_state_unknown": "Unknown",
+  "chat_llm_warning": "On-device AI can make mistakes. Always verify critical information with official sources."
 }

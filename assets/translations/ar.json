@@ -210,5 +210,6 @@
   "battery_state_discharging": "جاري التفريغ",
   "battery_state_full": "ممتلئة",
   "battery_state_connectedNotCharging": "متصل، لا يشحن",
-  "battery_state_unknown": "غير معروف"
+  "battery_state_unknown": "غير معروف",
+  "chat_llm_warning": "يمكن للذكاء الاصطناعي على الجهاز أن يرتكب أخطاء. تحقق دائماً من المعلومات الهامة مع المصادر الرسمية."
 }

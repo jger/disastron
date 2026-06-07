@@ -210,5 +210,6 @@
   "battery_state_discharging": "Entlädt",
   "battery_state_full": "Voll",
   "battery_state_connectedNotCharging": "Angeschlossen, lädt nicht",
-  "battery_state_unknown": "Unbekannt"
+  "battery_state_unknown": "Unbekannt",
+  "chat_llm_warning": "Die KI auf dem Gerät kann Fehler machen. Überprüfen Sie wichtige Informationen immer anhand offizieller Quellen."
 }

@@ -210,5 +210,6 @@
   "battery_state_discharging": "Descargando",
   "battery_state_full": "Lleno",
   "battery_state_connectedNotCharging": "Conectado, no cargando",
-  "battery_state_unknown": "Desconocido"
+  "battery_state_unknown": "Desconocido",
+  "chat_llm_warning": "La IA en el dispositivo puede cometer errores. Verifique siempre la información crítica con fuentes oficiales."
 }

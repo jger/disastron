@@ -210,5 +210,6 @@
   "battery_state_discharging": "Décharge",
   "battery_state_full": "Plein",
   "battery_state_connectedNotCharging": "Branché, pas en charge",
-  "battery_state_unknown": "Inconnu"
+  "battery_state_unknown": "Inconnu",
+  "chat_llm_warning": "L'IA sur l'appareil peut faire des erreurs. Vérifiez toujours les informations critiques avec des sources officielles."
 }

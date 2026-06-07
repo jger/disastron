@@ -210,5 +210,6 @@
   "battery_state_discharging": "放电中",
   "battery_state_full": "已充满",
   "battery_state_connectedNotCharging": "已连接未充电",
-  "battery_state_unknown": "未知"
+  "battery_state_unknown": "未知",
+  "chat_llm_warning": "设备端人工智能可能会出错。请务必根据官方来源核实关键信息。"
 }

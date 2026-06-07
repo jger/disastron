@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:disastron/features/chat/presentation/chat_dashboard_situation_provider.dart';
 import 'package:disastron/features/chat/presentation/chat_handlers.dart';
+import 'package:disastron/features/chat/presentation/chat_reset_provider.dart';
 import 'package:disastron/features/chat/presentation/first_chat_accident_provider.dart';
 import 'package:disastron/features/chat/presentation/service/chat_dashboard_context.dart';
 import 'package:disastron/features/chat/presentation/service/gemma_service.dart';
@@ -16,7 +17,9 @@ import 'package:disastron/features/home_shell/presentation/home_tab_index_provid
 import 'package:disastron/features/inference/data/model_registry_store.dart';
 import 'package:disastron/features/inference/presentation/inference_model_vision_support.dart';
 import 'package:disastron/features/inference/presentation/local_gemma_model_provider.dart';
+import 'package:disastron/features/inference/presentation/lora_provider.dart';
 import 'package:disastron/features/inference/presentation/model_registry_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,6 +36,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final List<Message> _messages = <Message>[];
   bool _chatReady = false;
   String? _initError;
+  bool _showWarningBanner = true;
 
   /// Effective image attach support after init (native engine may refuse vision).
   bool _runtimeImageSupportEnabled = false;
@@ -48,6 +52,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
+    ref.read(chatResetProvider.notifier).state = null;
     unawaited(_gemma.close());
     super.dispose();
   }
@@ -98,6 +103,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _initError = null;
       _runtimeImageSupportEnabled = runtimeVisionEnabled;
     });
+    ref.read(chatResetProvider.notifier).state =
+        () => unawaited(_confirmResetChat(context));
     if (showVisionFallbackSnack) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!context.mounted) {
@@ -126,6 +133,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           await ref.read(modelRegistrySnapshotProvider.future);
       final bool visionRequested = activeRegistryEntrySupportsVision(registry);
 
+      final String? activeEntryId = registry.activeEntryId;
+      String? loraPath;
+      if (activeEntryId != null) {
+        loraPath = await ref.read(activeLoraPathProvider(activeEntryId).future);
+      }
+
       if (visionRequested) {
         try {
           await _gemma.init(
@@ -133,6 +146,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             reloadInferenceWeights: reloadInferenceWeights,
             supportImage: true,
             maxNumImages: 1,
+            loraPath: loraPath,
           );
           _markChatReady(
             runtimeVisionEnabled: true,
@@ -146,6 +160,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           }
           await _gemma.init(
             systemInstruction: system,
+            loraPath: loraPath,
           );
           _markChatReady(
             runtimeVisionEnabled: false,
@@ -158,6 +173,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       await _gemma.init(
         systemInstruction: system,
         reloadInferenceWeights: reloadInferenceWeights,
+        loraPath: loraPath,
       );
       _markChatReady(
         runtimeVisionEnabled: false,
@@ -170,6 +186,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           _runtimeImageSupportEnabled = false;
           _initError = e.toString();
         });
+        ref.read(chatResetProvider.notifier).state = null;
       }
     }
   }
@@ -262,7 +279,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _chatReady = false;
       _runtimeImageSupportEnabled = false;
       _initError = null;
+      _showWarningBanner = true;
     });
+    ref.read(chatResetProvider.notifier).state = null;
     await _ensureChatReady(reloadInferenceWeights: true);
   }
 
@@ -270,6 +289,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     ref
       ..listen<int>(homeBottomNavIndexProvider, (int? previous, int next) {
+        if (next == kHomeTabIndexChat && previous != kHomeTabIndexChat) {
+          setState(() {
+            _showWarningBanner = true;
+          });
+        }
         unawaited(
           _scheduleDeviceContextInjectIfEnteredChatTab(
             previousIndex: previous,
@@ -292,6 +316,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 _messages.clear();
                 _initError = null;
               });
+              ref.read(chatResetProvider.notifier).state = null;
             }
           }
         },
@@ -310,18 +335,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      appBar: AppBar(
-        backgroundColor: cs.surfaceContainerHigh,
-        title: const Text('Chat'),
-        actions: <Widget>[
-          if (modelUi.isReady && _chatReady && _initError == null)
-            IconButton(
-              tooltip: 'Reset chat',
-              icon: const Icon(Icons.restart_alt),
-              onPressed: () => unawaited(_confirmResetChat(context)),
-            ),
-        ],
-      ),
       body: Stack(
         children: <Widget>[
           if (!modelUi.isReady)
@@ -343,14 +356,28 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               message: 'Starting offline assistant…',
             )
           else
-            ChatListWidget(
-              gemmaService: _gemma,
-              showAccidentChips: showAccidentChips,
-              onAccidentChip: _onAccidentChip,
-              gemmaHandler: _onAssistantMessage,
-              humanHandler: _onHumanMessage,
-              messages: _messages,
-              isImageSupported: _runtimeImageSupportEnabled,
+            Column(
+              children: <Widget>[
+                if (_showWarningBanner)
+                  _ChatWarningBanner(
+                    onDismiss: () {
+                      setState(() {
+                        _showWarningBanner = false;
+                      });
+                    },
+                  ),
+                Expanded(
+                  child: ChatListWidget(
+                    gemmaService: _gemma,
+                    showAccidentChips: showAccidentChips,
+                    onAccidentChip: _onAccidentChip,
+                    gemmaHandler: _onAssistantMessage,
+                    humanHandler: _onHumanMessage,
+                    messages: _messages,
+                    isImageSupported: _runtimeImageSupportEnabled,
+                  ),
+                ),
+              ],
             ),
         ],
       ),
@@ -384,6 +411,48 @@ class _NoModelBody extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ChatWarningBanner extends StatelessWidget {
+  const _ChatWarningBanner({required this.onDismiss});
+
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme cs = Theme.of(context).colorScheme;
+    return Container(
+      color: cs.errorContainer,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: <Widget>[
+          Icon(
+            Icons.warning_amber_rounded,
+            color: cs.onErrorContainer,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'chat_llm_warning'.tr(),
+              style: TextStyle(
+                color: cs.onErrorContainer,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 16),
+            color: cs.onErrorContainer,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: onDismiss,
+          ),
+        ],
       ),
     );
   }
