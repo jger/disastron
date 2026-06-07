@@ -17,6 +17,7 @@
         android:label="Disastron"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
+        android:usesCleartextTraffic="true"
         android:pageSizeCompat="enabled">
         <activity
             android:name=".MainActivity"
