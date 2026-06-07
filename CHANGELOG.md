@@ -2,6 +2,19 @@
 
 All notable changes will be documented in this file.
 
+# [1.4.0](https://github.com/jger/disastron/compare/v1.3.0...v1.4.0) (2026-06-07)
+
+
+### Bug Fixes
+
+* add Hugging Face token input field and save logic to model setup widget ([b853439](https://github.com/jger/disastron/commit/b853439c39a5fc5e251ece57ed17a548e6c77da7))
+* allow http links ([0da46b7](https://github.com/jger/disastron/commit/0da46b7c9a9ac416edc71dd2b084e1774babcdb9))
+
+
+### Features
+
+* add stop generation functionality and UI indicator to GemmaInputField ([9c8216c](https://github.com/jger/disastron/commit/9c8216c780b8974cc49f02b122e276a17353d000))
+
 # [1.3.0](https://github.com/jger/disastron/compare/v1.2.1...v1.3.0) (2026-06-06)
 
 
