@@ -13,6 +13,18 @@ ModelFileType modelFileTypeForUrl(String url) {
   return ModelFileType.task;
 }
 
+/// Maps [ModelFileType] to the runtime engine it uses.
+/// `.litertlm` → LiteRT; `.task` and `.bin` → MediaPipe.
+InferenceBackend inferenceBackendForFileType(ModelFileType fileType) {
+  switch (fileType) {
+    case ModelFileType.litertlm:
+      return InferenceBackend.litert;
+    case ModelFileType.task:
+    case ModelFileType.binary:
+      return InferenceBackend.mediapipe;
+  }
+}
+
 /// Infer model family from a download URL or local file path (URL tab + file import).
 ModelType modelTypeForInferenceSource(String urlOrPath) {
   final String trimmed = urlOrPath.trim();

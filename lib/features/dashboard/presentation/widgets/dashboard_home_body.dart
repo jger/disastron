@@ -430,7 +430,8 @@ class DashboardHomeBody extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () async {
         ref
-          ..invalidate(dashboardDeviceProvider)
+          ..invalidate(dashboardLocationProvider)
+          ..invalidate(dashboardBatteryProvider)
           ..invalidate(dashboardWeatherProvider);
       },
       child: const SingleChildScrollView(

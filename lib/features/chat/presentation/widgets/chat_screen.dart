@@ -41,9 +41,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   /// Effective image attach support after init (native engine may refuse vision).
   bool _runtimeImageSupportEnabled = false;
 
+  /// Cached container reference so we can safely clear chatResetProvider
+  /// inside [dispose], where [ref] is no longer safe to use.
+  late ProviderContainer _container;
+
   @override
   void initState() {
     super.initState();
+    // Cache before any async work so dispose() can use it safely.
+    _container = ProviderScope.containerOf(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
       unawaited(_ensureChatReady(reloadInferenceWeights: true));
@@ -52,14 +58,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
-    ref.read(chatResetProvider.notifier).state = null;
+    // Use cached container — ref is unsafe to call after unmount.
+    _container.read(chatResetProvider.notifier).state = null;
     unawaited(_gemma.close());
     super.dispose();
   }
 
   Future<String> _loadFreshSituationString() async {
     ref
-      ..invalidate(dashboardDeviceProvider)
+      ..invalidate(dashboardLocationProvider)
+      ..invalidate(dashboardBatteryProvider)
       ..invalidate(dashboardWeatherProvider);
     try {
       return await ref.read(chatDashboardSituationProvider.future);
@@ -82,6 +90,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       return;
     }
     if (!FlutterGemma.hasActiveModel() || !_chatReady) {
+      return;
+    }
+    final bool useCtx = ref.read(useDisastronContextProvider);
+    if (!useCtx) {
       return;
     }
     final String situation = await _loadFreshSituationString();
@@ -127,8 +139,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       return;
     }
     try {
-      final String situation = await _loadFreshSituationString();
-      final String system = composeDisasterSystemInstruction(situation);
+      final bool useCtx = ref.read(useDisastronContextProvider);
+      final String? system;
+      if (useCtx) {
+        final String situation = await _loadFreshSituationString();
+        system = composeDisasterSystemInstruction(situation);
+      } else {
+        system = null;
+      }
       final ModelRegistrySnapshot registry =
           await ref.read(modelRegistrySnapshotProvider.future);
       final bool visionRequested = activeRegistryEntrySupportsVision(registry);
@@ -197,8 +215,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       return;
     }
     final String trimmedDisplay = result.displayText.trim();
-    final String assistantBody =
-        trimmedDisplay.isEmpty ? '(Checklist updated.)' : trimmedDisplay;
+    final String assistantBody = trimmedDisplay.isEmpty
+        ? (result.appliedCount > 0 ? '(Checklist updated.)' : '(No response)')
+        : trimmedDisplay;
     setState(() {
       _messages.add(Message.text(text: assistantBody));
       if (result.appliedCount > 0) {
@@ -266,6 +285,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (ok != true || !mounted) {
       return;
     }
+    await _performReset(reloadInferenceWeights: true);
+  }
+
+  Future<void> _performReset({required bool reloadInferenceWeights}) async {
     await _gemma.close();
     if (!mounted) {
       return;
@@ -282,7 +305,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _showWarningBanner = true;
     });
     ref.read(chatResetProvider.notifier).state = null;
-    await _ensureChatReady(reloadInferenceWeights: true);
+    await _ensureChatReady(reloadInferenceWeights: reloadInferenceWeights);
   }
 
   @override
@@ -318,6 +341,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               });
               ref.read(chatResetProvider.notifier).state = null;
             }
+          }
+        },
+      )
+      ..listen<bool>(
+        useDisastronContextProvider,
+        (bool? previous, bool next) {
+          if (previous != null && previous != next) {
+            unawaited(_performReset(reloadInferenceWeights: false));
           }
         },
       );

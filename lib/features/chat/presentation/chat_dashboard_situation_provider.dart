@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Aggregates [dashboardDeviceProvider] + [dashboardWeatherProvider] into one text block.
 final FutureProvider<String> chatDashboardSituationProvider =
-    FutureProvider.autoDispose<String>((Ref ref) async {
+    FutureProvider<String>((Ref ref) async {
   final DashboardDeviceSnapshot device =
       await ref.watch(dashboardDeviceProvider.future);
   final DashboardWeatherSnapshot weather =

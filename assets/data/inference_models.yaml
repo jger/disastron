@@ -7,47 +7,66 @@
 # Metadata (verified on Hugging Face):
 #   size_mb     — approximate download size
 #   access      — public (anonymous OK) | gated (HF token + Gemma license)
+#   backend     — litert | mediapipe (determines runtime engine; mediapipe supports dynamic LoRA)
 #   multimodal  — supports image input in chat when true
+#   supports_lora — model supports dynamic LoRA adapter loading (mediapipe only)
 default_preset_id: gemma4_e2b_litertlm
 
 models:
-  # - id: gemma3_270m_q8
-  #   title: Gemma 3 270M IT (q8)
-  #   description: Smallest chat preset; text and images.
-  #   url: https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q8.task
-  #   size_mb: 304
-  #   access: gated
-  #   multimodal: true
+  - id: gemma3_270m_q8
+    title: Gemma 3 270M IT (q8)
+    description: Smallest chat preset. Dynamic LoRA adapter support. Requires Hugging Face token.
+    url: https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q8.task
+    model_type: gemmaIt
+    backend: mediapipe
+    size_mb: 304
+    access: gated
+    multimodal: false
+    requires_token: true
+    supports_lora: true
 
   # - id: gemma3_270m_q4
   #   title: Gemma 3 270M IT (q4)
-  #   description: Ultra-small download; slightly lower quality than q8.
+  #   description: Ultra-small download; slightly lower quality than q8. Dynamic LoRA adapter support. Requires Hugging Face token.
   #   url: https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q4_0-web.task
+  #   model_type: gemmaIt
+  #   backend: mediapipe
   #   size_mb: 249
   #   access: gated
-  #   multimodal: true
+  #   multimodal: false
+  #   requires_token: true
+  #   supports_lora: true
 
   # - id: gemma3_1b_int4
   #   title: Gemma 3 1B IT (int4)
-  #   description: Balanced quality vs size; text and images.
+  #   description: Balanced quality vs size. Dynamic LoRA adapter support. Requires Hugging Face token.
   #   url: https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task
+  #   model_type: gemmaIt
+  #   backend: mediapipe
   #   size_mb: 555
   #   access: gated
-  #   multimodal: true
+  #   multimodal: false
+  #   requires_token: true
+  #   supports_lora: true
 
   # - id: gemma3n_e2b_int4
   #   title: Gemma 3n E2B IT (int4)
-  #   description: Newer 3n family; multimodal; large download.
+  #   description: Newer 3n family; multimodal; large download. Dynamic LoRA adapter support. Requires Hugging Face token.
   #   url: https://huggingface.co/google/gemma-3n-E2B-it-litert-preview/resolve/main/gemma-3n-E2B-it-int4.task
+  #   model_type: gemmaIt
+  #   backend: mediapipe
   #   size_mb: 2991
   #   access: gated
   #   multimodal: true
+  #   requires_token: true
+  #   supports_lora: true
 
   - id: gemma4_e2b_litertlm
     title: Gemma 4 E2B IT (LiteRT-LM)
     description: Multimodal (text, image, audio); no HF token needed.
     url: https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm
     model_type: gemma4
+    backend: litert
     size_mb: 2468
     access: public
     multimodal: true
@@ -58,7 +77,9 @@ models:
     description: Larger Gemma 4 variant; multimodal; no HF token needed.
     url: https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it.litertlm
     model_type: gemma4
+    backend: litert
     size_mb: 3490
     access: public
     multimodal: true
     requires_token: false
+

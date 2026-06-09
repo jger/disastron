@@ -1,11 +1,13 @@
 import 'dart:io' show File;
 
 /// Coordinates inference installs (network, file, preset): maps native errors to domain errors for UI.
+import 'package:disastron/features/inference/data/lora_registry_store.dart';
 import 'package:disastron/features/inference/data/model_registry_store.dart';
 import 'package:disastron/features/inference/domain/inference_model_descriptor.dart';
 import 'package:disastron/features/inference/domain/model_install_domain_error.dart';
 import 'package:disastron/features/inference/domain/predefined_models.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_gemma/core/di/service_registry.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -42,6 +44,7 @@ class ModelInstallOrchestrator {
       : _registry = registry;
 
   final ModelRegistryStore _registry;
+  final LoraRegistryStore _loraRegistry = LoraRegistryStore();
 
   String _entryIdForPreset(String presetId) => 'preset:$presetId';
 
@@ -323,5 +326,163 @@ class ModelInstallOrchestrator {
         ),
       );
     }
+  }
+
+  // --- LoRA Operations ---
+
+  Future<void> installLoraFromNetwork(
+    String url,
+    String modelEntryId, {
+    String? token,
+    void Function(int progress)? onProgress,
+    CancelToken? cancelToken,
+  }) async {
+    final String filename = basenameFromStored(url);
+    final String targetPath = p.join(
+      (await getApplicationDocumentsDirectory()).path,
+      filename,
+    );
+
+    final String loraEntryId = 'lora:${url.hashCode}';
+
+    if (onProgress != null) {
+      await for (final progress
+          in ServiceRegistry.instance.downloadService.downloadWithProgress(
+        url,
+        targetPath,
+        token: token,
+        cancelToken: cancelToken,
+      )) {
+        onProgress(progress);
+      }
+    } else {
+      await ServiceRegistry.instance.downloadService.download(
+        url,
+        targetPath,
+        token: token,
+        cancelToken: cancelToken,
+      );
+    }
+
+    final LoraRegistrySnapshot snap = await _loraRegistry.readSnapshot();
+    final InstalledLoraEntry entry = InstalledLoraEntry(
+      id: loraEntryId,
+      modelEntryId: modelEntryId,
+      sourceUrlOrPath: url,
+      displayLabel: filename,
+    );
+    final List<InstalledLoraEntry> nextEntries = <InstalledLoraEntry>[
+      ...snap.entries.where((InstalledLoraEntry e) => e.id != loraEntryId),
+      entry,
+    ];
+    final Map<String, String> nextActive =
+        Map<String, String>.from(snap.activeLoraIdPerModel);
+    nextActive[modelEntryId] = loraEntryId;
+
+    await _loraRegistry.writeSnapshot(
+      LoraRegistrySnapshot(
+        entries: nextEntries,
+        activeLoraIdPerModel: nextActive,
+      ),
+    );
+  }
+
+  Future<void> installLoraFromFile(String path, String modelEntryId) async {
+    final String loraEntryId = 'lora:${path.hashCode}';
+    final String label = basenameFromStored(path);
+    final LoraRegistrySnapshot snap = await _loraRegistry.readSnapshot();
+    final InstalledLoraEntry entry = InstalledLoraEntry(
+      id: loraEntryId,
+      modelEntryId: modelEntryId,
+      sourceUrlOrPath: path,
+      displayLabel: label,
+      importedFromPicker: true,
+    );
+    final List<InstalledLoraEntry> nextEntries = <InstalledLoraEntry>[
+      ...snap.entries.where((InstalledLoraEntry e) => e.id != loraEntryId),
+      entry,
+    ];
+    final Map<String, String> nextActive =
+        Map<String, String>.from(snap.activeLoraIdPerModel);
+    nextActive[modelEntryId] = loraEntryId;
+
+    await _loraRegistry.writeSnapshot(
+      LoraRegistrySnapshot(
+        entries: nextEntries,
+        activeLoraIdPerModel: nextActive,
+      ),
+    );
+  }
+
+  Future<void> removeLoraEntry(String loraEntryId) async {
+    final LoraRegistrySnapshot snap = await _loraRegistry.readSnapshot();
+    final InstalledLoraEntry? entry = snap.entryById(loraEntryId);
+    if (entry == null) return;
+
+    if (!entry.importedFromPicker) {
+      final String filename = basenameFromStored(entry.sourceUrlOrPath);
+      final String localPath = p.join(
+        (await getApplicationDocumentsDirectory()).path,
+        filename,
+      );
+      final File file = File(localPath);
+      if (file.existsSync()) {
+        await file.delete();
+      }
+    }
+
+    final List<InstalledLoraEntry> nextEntries = snap.entries
+        .where((InstalledLoraEntry e) => e.id != loraEntryId)
+        .toList();
+    final Map<String, String> nextActive =
+        Map<String, String>.from(snap.activeLoraIdPerModel)
+          ..removeWhere((String k, String v) => v == loraEntryId);
+
+    await _loraRegistry.writeSnapshot(
+      LoraRegistrySnapshot(
+        entries: nextEntries,
+        activeLoraIdPerModel: nextActive,
+      ),
+    );
+  }
+
+  Future<void> updateLoraLabel(String loraEntryId, String nextLabel) async {
+    final LoraRegistrySnapshot snap = await _loraRegistry.readSnapshot();
+    final List<InstalledLoraEntry> nextEntries =
+        snap.entries.map((InstalledLoraEntry e) {
+      if (e.id == loraEntryId) {
+        return InstalledLoraEntry(
+          id: e.id,
+          modelEntryId: e.modelEntryId,
+          sourceUrlOrPath: e.sourceUrlOrPath,
+          displayLabel: nextLabel,
+          importedFromPicker: e.importedFromPicker,
+        );
+      }
+      return e;
+    }).toList();
+    await _loraRegistry.writeSnapshot(
+      LoraRegistrySnapshot(
+        entries: nextEntries,
+        activeLoraIdPerModel: snap.activeLoraIdPerModel,
+      ),
+    );
+  }
+
+  Future<void> setActiveLora(String? loraEntryId, String modelEntryId) async {
+    final LoraRegistrySnapshot snap = await _loraRegistry.readSnapshot();
+    final Map<String, String> nextActive =
+        Map<String, String>.from(snap.activeLoraIdPerModel);
+    if (loraEntryId == null) {
+      nextActive.remove(modelEntryId);
+    } else {
+      nextActive[modelEntryId] = loraEntryId;
+    }
+    await _loraRegistry.writeSnapshot(
+      LoraRegistrySnapshot(
+        entries: snap.entries,
+        activeLoraIdPerModel: nextActive,
+      ),
+    );
   }
 }

@@ -4,6 +4,7 @@ import 'dart:developer' as developer;
 import 'package:disastron/features/inference/data/model_download_resume_service.dart';
 import 'package:disastron/features/inference/data/model_registry_store.dart';
 import 'package:disastron/features/inference/data/pending_model_download_store.dart';
+import 'package:disastron/features/inference/domain/inference_model_descriptor.dart';
 import 'package:disastron/features/inference/domain/model_install_activity_kind.dart';
 import 'package:disastron/features/inference/domain/model_install_domain_error.dart';
 import 'package:disastron/features/inference/domain/model_operation_state.dart';
@@ -11,9 +12,9 @@ import 'package:disastron/features/inference/domain/predefined_models.dart'
     show
         PredefinedInferenceModel,
         modelFileTypeForUrl,
-        modelTypeForInferenceSource,
         presetInferenceModelById;
 import 'package:disastron/features/inference/presentation/huggingface_token_provider.dart';
+import 'package:disastron/features/inference/presentation/lora_provider.dart';
 import 'package:disastron/features/inference/presentation/model_file_export.dart';
 import 'package:disastron/features/inference/presentation/model_install_orchestrator.dart';
 import 'package:disastron/features/inference/presentation/model_registry_provider.dart';
@@ -68,6 +69,8 @@ class LocalGemmaModelUi {
       phase: LocalGemmaPhase.installing,
       progress: newProgress,
       activity: activity,
+      pendingDownloadUrl: pendingDownloadUrl,
+      pendingPresetId: pendingPresetId,
     );
   }
 
@@ -410,6 +413,13 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     }
     _restoreInFlight = true;
     try {
+      final ModelRegistryStore store = ModelRegistryStore();
+      await store.migrateFromLegacyIfNeeded();
+      final ModelRegistrySnapshot snap = await store.readSnapshot();
+      final String? activeId = snap.activeEntryId;
+      final InstalledModelEntry? entry =
+          activeId != null ? snap.entryById(activeId) : null;
+
       final ColdStartRestoreResult result =
           await _orchestrator.tryRestoreOnColdStart(
         onProgress: (int progress) {
@@ -419,9 +429,11 @@ class LocalGemmaModel extends _$LocalGemmaModel {
           state = state.withInstallProgress(progress);
         },
         onRestoreBegins: () {
-          state = const LocalGemmaModelUi(
+          state = LocalGemmaModelUi(
             phase: LocalGemmaPhase.installing,
             activity: ModelInstallActivityKind.restoreSaved,
+            pendingDownloadUrl: entry?.sourceUrlOrPath,
+            pendingPresetId: entry?.presetId,
           );
         },
       );
@@ -465,6 +477,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     final int epoch = _beginTrackedInstall(
       ModelInstallActivityKind.importLocalFile,
     );
+    state = state.copyWithPendingUrl(path);
     final CancelToken? cancelToken = _installCancelToken;
     try {
       await _orchestrator.installFromFile(
@@ -506,9 +519,11 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     ModelType? modelType,
     ModelFileType? fileType,
   }) async {
-    final ModelFileType resolvedFileType = fileType ?? modelFileTypeForUrl(url);
-    final ModelType resolvedModelType =
-        modelType ?? modelTypeForInferenceSource(url);
+    final InferenceModelDescriptor inferred =
+        InferenceModelDescriptor.fromUrlOrPath(url);
+    final ModelType resolvedModelType = modelType ?? inferred.modelType;
+    final ModelFileType resolvedFileType = fileType ?? inferred.fileType;
+    final String? presetId = inferred.presetId;
 
     final int epoch = _beginTrackedInstall(
       ModelInstallActivityKind.downloadNetwork,
@@ -517,8 +532,9 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       url: url,
       modelType: resolvedModelType,
       fileType: resolvedFileType,
+      presetId: presetId,
     );
-    state = state.copyWithPendingUrl(url);
+    state = state.copyWithPendingUrl(url, presetId: presetId);
 
     final CancelToken? cancelToken = _installCancelToken;
     try {
@@ -605,7 +621,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       modelType: model.modelType,
       fileType: model.fileType,
     );
-    state = state.copyWithPendingUrl(model.url);
+    state = state.copyWithPendingUrl(model.url, presetId: presetId);
 
     final CancelToken? cancelToken = _installCancelToken;
     try {
@@ -667,9 +683,19 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   }
 
   Future<void> switchToRegistryEntry(String entryId) async {
+    final ModelRegistrySnapshot snap =
+        await ref.read(modelRegistrySnapshotProvider.future);
+    final InstalledModelEntry? entry = snap.entryById(entryId);
+
     final int epoch = _beginTrackedInstall(
       ModelInstallActivityKind.activateExisting,
     );
+    if (entry != null) {
+      state = state.copyWithPendingUrl(
+        entry.sourceUrlOrPath,
+        presetId: entry.presetId,
+      );
+    }
     final CancelToken? cancelToken = _installCancelToken;
     try {
       final ModelInstallDomainError? err = await _orchestrator.activateEntry(
@@ -747,15 +773,97 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       );
     }
   }
+
+  Future<void> installLoraFromNetwork(
+    String url,
+    String modelEntryId, {
+    String? token,
+    void Function(int progress)? onProgress,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      await _orchestrator.installLoraFromNetwork(
+        url,
+        modelEntryId,
+        token: token,
+        onProgress: onProgress,
+        cancelToken: cancelToken,
+      );
+      _invalidateLoraRegistry();
+    } on Object catch (e) {
+      state = LocalGemmaModelUi(
+        phase: LocalGemmaPhase.error,
+        errorMessage: e.toString(),
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> installLoraFromFile(String path, String modelEntryId) async {
+    try {
+      await _orchestrator.installLoraFromFile(path, modelEntryId);
+      _invalidateLoraRegistry();
+    } on Object catch (e) {
+      state = LocalGemmaModelUi(
+        phase: LocalGemmaPhase.error,
+        errorMessage: e.toString(),
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> removeLoraEntry(String loraEntryId) async {
+    try {
+      await _orchestrator.removeLoraEntry(loraEntryId);
+      _invalidateLoraRegistry();
+    } on Object catch (e) {
+      state = LocalGemmaModelUi(
+        phase: LocalGemmaPhase.error,
+        errorMessage: e.toString(),
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> updateLoraLabel(String loraEntryId, String nextLabel) async {
+    try {
+      await _orchestrator.updateLoraLabel(loraEntryId, nextLabel);
+      _invalidateLoraRegistry();
+    } on Object catch (e) {
+      state = LocalGemmaModelUi(
+        phase: LocalGemmaPhase.error,
+        errorMessage: e.toString(),
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> setActiveLora(String? loraEntryId, String modelEntryId) async {
+    try {
+      await _orchestrator.setActiveLora(loraEntryId, modelEntryId);
+      _invalidateLoraRegistry();
+    } on Object catch (e) {
+      state = LocalGemmaModelUi(
+        phase: LocalGemmaPhase.error,
+        errorMessage: e.toString(),
+      );
+      rethrow;
+    }
+  }
+
+  void _invalidateLoraRegistry() {
+    ref.invalidate(loraRegistrySnapshotProvider);
+  }
 }
 
 extension _LocalGemmaModelUiPending on LocalGemmaModelUi {
-  LocalGemmaModelUi copyWithPendingUrl(String url) {
+  LocalGemmaModelUi copyWithPendingUrl(String url, {String? presetId}) {
     return LocalGemmaModelUi(
       phase: phase,
       progress: progress,
       activity: activity,
       pendingDownloadUrl: url,
+      pendingPresetId: presetId ?? pendingPresetId,
     );
   }
 }

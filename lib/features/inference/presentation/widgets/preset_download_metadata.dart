@@ -30,7 +30,7 @@ class PresetDownloadMetadataSubtitle extends StatelessWidget {
   }
 }
 
-/// Compact chips for size, access, and multimodal (preset picker).
+/// Compact chips for size, access, backend engine, multimodal, and LoRA support.
 class PresetDownloadMetadataChips extends StatelessWidget {
   const PresetDownloadMetadataChips({
     required this.model,
@@ -41,10 +41,13 @@ class PresetDownloadMetadataChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme cs = Theme.of(context).colorScheme;
     final List<Widget> chips = <Widget>[];
+
     if (model.sizeMb != null) {
       chips.add(_chip(context, '~${model.sizeMb} MB'));
     }
+
     chips.add(
       _chip(
         context,
@@ -54,8 +57,35 @@ class PresetDownloadMetadataChips extends StatelessWidget {
             : Icons.key_outlined,
       ),
     );
+
+    // Backend chip — LiteRT in primary color, MediaPipe in amber/secondary tint.
+    final InferenceBackend backend = model.resolvedBackend;
+    final bool isLiteRT = backend == InferenceBackend.litert;
+    chips.add(
+      _coloredChip(
+        context,
+        backend.displayLabel,
+        icon: isLiteRT ? Icons.memory_outlined : Icons.hub_outlined,
+        backgroundColor: isLiteRT ? cs.primaryContainer : cs.secondaryContainer,
+        foregroundColor:
+            isLiteRT ? cs.onPrimaryContainer : cs.onSecondaryContainer,
+      ),
+    );
+
     if (model.multimodal) {
       chips.add(_chip(context, 'Photos', icon: Icons.photo_outlined));
+    }
+
+    if (model.supportsLora) {
+      chips.add(
+        _coloredChip(
+          context,
+          'LoRA',
+          icon: Icons.bolt,
+          backgroundColor: cs.tertiaryContainer,
+          foregroundColor: cs.onTertiaryContainer,
+        ),
+      );
     }
 
     return Wrap(
@@ -75,6 +105,30 @@ class PresetDownloadMetadataChips extends StatelessWidget {
           ? Icon(icon, size: 14, color: Theme.of(context).colorScheme.primary)
           : null,
       label: Text(label, style: Theme.of(context).textTheme.labelSmall),
+    );
+  }
+
+  Widget _coloredChip(
+    BuildContext context,
+    String label, {
+    required IconData icon,
+    required Color backgroundColor,
+    required Color foregroundColor,
+  }) {
+    return Chip(
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: EdgeInsets.zero,
+      labelPadding: const EdgeInsets.symmetric(horizontal: 6),
+      backgroundColor: backgroundColor,
+      avatar: Icon(icon, size: 14, color: foregroundColor),
+      label: Text(
+        label,
+        style: Theme.of(context)
+            .textTheme
+            .labelSmall
+            ?.copyWith(color: foregroundColor, fontWeight: FontWeight.w600),
+      ),
     );
   }
 }

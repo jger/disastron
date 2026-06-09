@@ -39,6 +39,7 @@ class _AppAppBarState extends ConsumerState<AppAppBar> {
     final selectedTab = ref.watch(homeBottomNavIndexProvider);
     final searchActive = ref.watch(wikiSearchActiveProvider);
     final resetCallback = ref.watch(chatResetProvider);
+    final useCtx = ref.watch(useDisastronContextProvider);
     final fg = Theme.of(context).appBarTheme.foregroundColor ??
         Theme.of(context).colorScheme.onSurface;
 
@@ -120,10 +121,34 @@ class _AppAppBarState extends ConsumerState<AppAppBar> {
           ),
         ],
         if (selectedTab == 2 && resetCallback != null) ...[
-          IconButton(
-            tooltip: 'Reset chat',
-            icon: const Icon(Icons.restart_alt),
-            onPressed: resetCallback,
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Chat options',
+            onSelected: (value) {
+              if (value == 'toggle_context') {
+                ref.read(useDisastronContextProvider.notifier).state = !useCtx;
+              } else if (value == 'reset_chat') {
+                resetCallback();
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              CheckedPopupMenuItem<String>(
+                value: 'toggle_context',
+                checked: useCtx,
+                child: const Text('Use Disastron context'),
+              ),
+              const PopupMenuDivider(),
+              const PopupMenuItem<String>(
+                value: 'reset_chat',
+                child: Row(
+                  children: [
+                    Icon(Icons.restart_alt, size: 20),
+                    SizedBox(width: 12),
+                    Text('Reset chat'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ],

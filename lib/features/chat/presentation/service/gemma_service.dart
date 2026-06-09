@@ -37,10 +37,11 @@ class GemmaLocalService {
   /// when none is loaded; set [reloadInferenceWeights] on first load only.
   /// [supportImage] must match the active model capabilities (see registry).
   Future<void> init({
-    required String systemInstruction,
+    String? systemInstruction,
     bool reloadInferenceWeights = false,
     bool supportImage = false,
     int? maxNumImages,
+    String? loraPath,
   }) async {
     final bool visionFlagChanged =
         _lastInitSupportImage != null && _lastInitSupportImage != supportImage;
@@ -67,6 +68,7 @@ class GemmaLocalService {
     _chat = await _model!.createChat(
       systemInstruction: systemInstruction,
       supportImage: supportImage,
+      loraPath: loraPath,
     );
   }
 

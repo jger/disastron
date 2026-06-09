@@ -73,10 +73,12 @@ abstract final class PredefinedInferenceModelsLoader {
       description: _requiredString(map, 'description'),
       url: _requiredString(map, 'url'),
       modelType: _parseModelType(map['model_type']),
+      backend: _parseBackend(map['backend']),
       requiresToken: _optionalBool(map['requires_token']),
       sizeMb: _optionalPositiveInt(map['size_mb']),
       access: _parseAccess(map['access']),
       multimodal: _optionalBool(map['multimodal']) ?? false,
+      supportsLora: _optionalBool(map['supports_lora']) ?? false,
     );
   }
 
@@ -104,6 +106,23 @@ abstract final class PredefinedInferenceModelsLoader {
         return InferencePresetAccess.gated;
       default:
         throw FormatException('Unknown access "$raw"; use public or gated');
+    }
+  }
+
+  static InferenceBackend? _parseBackend(Object? raw) {
+    if (raw == null) return null;
+    if (raw is! String || raw.trim().isEmpty) {
+      throw const FormatException('backend must be "litert" or "mediapipe"');
+    }
+    switch (raw.trim().toLowerCase()) {
+      case 'litert':
+        return InferenceBackend.litert;
+      case 'mediapipe':
+        return InferenceBackend.mediapipe;
+      default:
+        throw FormatException(
+          'Unknown backend "$raw"; use litert or mediapipe',
+        );
     }
   }
 
