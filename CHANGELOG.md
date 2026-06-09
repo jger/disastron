@@ -2,6 +2,20 @@
 
 All notable changes will be documented in this file.
 
+# [1.5.0](https://github.com/jger/disastron/compare/v1.4.0...v1.5.0) (2026-06-09)
+
+
+### Bug Fixes
+
+* Chat warning banner ([51d3439](https://github.com/jger/disastron/commit/51d34397b704aa0ef942770ee00b64e7a98e876d))
+* chatResetProvider ([ec6edb1](https://github.com/jger/disastron/commit/ec6edb1a097e04155bf5cb6bdc71709e366a8f0a))
+* Fix uncomplete todo jsons ([73cfe70](https://github.com/jger/disastron/commit/73cfe7051d660d5b10a9232c33f9e7fe9c8962d4))
+
+
+### Features
+
+* add LoRA adapter management system with registry, providers, and UI sheets ([29e07cd](https://github.com/jger/disastron/commit/29e07cd7166ae066050f086aea7f6e63551d26c0))
+
 # [1.4.0](https://github.com/jger/disastron/compare/v1.3.0...v1.4.0) (2026-06-07)
 
 
