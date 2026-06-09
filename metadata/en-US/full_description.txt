@@ -1,9 +1,34 @@
-Disastron helps you stay calm and prepared when networks fail or you need answers without leaving the device.
+Disastron is an offline-first emergency readiness and assistance companion designed to keep you prepared, calm, and informed when networks fail or you need answers without leaving your device.
 
-Features include an offline wiki (CPR essentials, evacuation, floods, and more in multiple languages), emergency numbers by detected country, dashboard with day/night and typical local conditions, SOS Morse with torch/audio/vibration, todos, and on-device AI chat via downloadable Gemma models.
+Key Features:
 
-Important: wiki and chat output are for education only — not medical advice. Always call local emergency services when someone is hurt. Model downloads from Hugging Face require accepting each model's license terms; weights are not bundled in the app or this repository.
+• ON-DEVICE AI CHAT
+- Fully Offline: Chat with a local AI assistant powered by downloadable Gemma models.
+- Private: Running entirely on your device, ensuring your conversations stay completely private.
 
-Privacy: offline-first by design. Optional network use for model downloads and location when you grant OS permissions.
+• OFFLINE WIKI
+- Ready Guides: Access pre-bundled reference guides for CPR, extreme weather, and evacuations.
+- Multilingual: Read guides in several languages.
+- Offline Web Browser: Save and sync external web pages directly to your local storage.
+- Safe Storage: Downloaded pages are automatically sanitized (scripts removed) for secure offline reading.
 
-Open source under MIT. See CONTENT_ATTRIBUTION.md for wiki source licensing.
+• EMERGENCY DIRECTORY
+- Quick Support: Access critical emergency service numbers tailored to your region.
+- Smart Lookup: Automatically identifies local services using device GPS or detected country.
+
+• SOS TRANSMITTER
+- Multiple Outputs: Broadcast rescue signals using flashlight, screen flash, audio tones, and vibration.
+- Morse Encoding: Convert custom text messages into Morse code sequences.
+
+• READY DASHBOARD & TODOS
+- Actionable Checklist: Track emergency kit checklist tasks completely offline.
+- Sun Tracker: View precise sunrise and sunset times for your location.
+- Climate Estimates: View expected typical weather conditions calculated offline using GPS coordinates and historical climate databases.
+
+Important Information:
+Wiki content and AI assistant outputs are strictly for educational and preparation purposes and do not constitute professional medical advice. Always contact local emergency services in an immediate crisis. AI model weights are not pre-packaged with the application; downloading them requires accepting their respective license terms on Hugging Face.
+
+Privacy-First:
+Disastron operates offline by default. No data is collected or sent to external servers. Location and network permissions are optional and used solely for offline configuration, local climate estimation, and model downloads.
+
+Open source under the MIT License.
