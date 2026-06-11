@@ -27,8 +27,7 @@ class AppLocale extends _$AppLocale {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool initialChoiceDone =
         prefs.getBool(PrefsKeys.languageInitialDone) ?? false;
-    final bool termsAccepted =
-        prefs.getBool(PrefsKeys.termsAccepted) ?? false;
+    final bool termsAccepted = prefs.getBool(PrefsKeys.termsAccepted) ?? false;
     final String code =
         prefs.getString(PrefsKeys.localeCode) ?? AppLocales.codes.first;
     final String safe =
