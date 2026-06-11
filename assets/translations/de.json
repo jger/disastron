@@ -211,5 +211,22 @@
   "battery_state_full": "Voll",
   "battery_state_connectedNotCharging": "Angeschlossen, lädt nicht",
   "battery_state_unknown": "Unbekannt",
-  "chat_llm_warning": "Die KI auf dem Gerät kann Fehler machen. Überprüfen Sie wichtige Informationen immer anhand offizieller Quellen."
+  "chat_llm_warning": "Die KI auf dem Gerät kann Fehler machen. Überprüfen Sie wichtige Informationen immer anhand offizieller Quellen.",
+  "terms_title": "Nutzungsbedingungen & Haftungsausschluss",
+  "terms_message": "Bitte lesen und akzeptieren Sie die Bedingungen, um fortzufahren.",
+  "terms_intro": "Durch die Nutzung von Disastron akzeptieren Sie die Nutzungsbedingungen auf disastron.com/terms und stimmen zu, dass Sie die alleinige Verantwortung für Ihr Handeln tragen.",
+  "terms_doctors": "Diese App ist ein Offline-Bildungs- und Informationswerkzeug. Sie ersetzt KEINE medizinische Beratung, Ärzte, professionelle Diagnosen oder offizielle Rettungsdienste.",
+  "terms_chatbot": "Der Chatbot läuft vollständig auf Ihrem Gerät mit lokaler KI, die Fehler machen oder falsche Informationen generieren kann. Verlassen Sie sich bei kritischen Entscheidungen nicht darauf.",
+  "terms_view_link": "Vollständige Nutzungsbedingungen anzeigen (disastron.com/terms)",
+  "terms_checkbox": "Ich habe die Bedingungen und den Haftungsausschluss gelesen und akzeptiere sie",
+  "terms_decline": "Ablehnen",
+  "terms_accept": "Akzeptieren & Weiter",
+  "terms_section_1_title": "1. Eigenverantwortung des Nutzers",
+  "terms_section_1_body": "Sie verstehen und stimmen zu, dass Sie die alleinige Verantwortung für Ihre eigene Sicherheit, Vorsorge und Ihr Handeln tragen. Die App dient ausschließlich Informations- und Bildungszwecken. Sie müssen Ihr eigenes Urteil fällen und Informationen überprüfen, bevor Sie sich in kritischen Situationen oder Notfällen darauf verlassen.",
+  "terms_section_2_title": "2. Keine medizinische oder professionelle Beratung",
+  "terms_section_2_body": "Die App – einschließlich aller Offline-Wiki-Artikel, Checklisten und Anleitungen – stellt KEINE medizinische Beratung, medizinische Diagnose, Behandlungsempfehlung oder professionelle Beratung jeglicher Art dar. Die Inhalte dieser App sind kein Ersatz für zertifizierte Erste-Hilfe- oder HLW-Ausbildungen, professionelle medizinische Versorgung oder Beratung durch Ärzte sowie die Kontaktaufnahme mit offiziellen Rettungsdiensten (wie 112 oder lokalen Notrufen). Rufen Sie bei unmittelbarer Gefahr immer sofort den Notruf.",
+  "terms_section_3_title": "3. Haftungsausschluss für den On-Device-Chatbot",
+  "terms_section_3_body": "Der Offline-KI-Chatbot läuft vollständig auf Ihrem Gerät unter Verwendung lokaler Sprachmodelle. KI kann Fehler machen: Lokale Modelle neigen zu „Halluzinationen“ und können falsche, unvollständige, irreführende oder veraltete Informationen generieren. Verlassen Sie sich bei aktiven Notfalleinsätzen, medizinischen Eingriffen oder lebenssichernden Entscheidungen nicht auf Chatbot-Ausgaben. Gleichen Sie Informationen immer mit offiziellen Handbüchern und dem Rettungsdienst ab.",
+  "terms_section_4_title": "4. Haftungsbeschränkung",
+  "terms_section_4_body": "Soweit gesetzlich zulässig, wird die App „wie besehen“ und „wie verfügbar“ ohne Gewährleistung jeglicher Art bereitgestellt. Unter keinen Umständen haften der Entwickler oder die Mitwirkenden von Disastron für direkte, indirekte, zufällige, besondere oder Folgeschäden, einschließlich, aber nicht beschränkt auf Verletzungen, Todesfälle oder Sachschäden, die aus der Nutzung oder der Unfähigkeit zur Nutzung der App entstehen."
 }

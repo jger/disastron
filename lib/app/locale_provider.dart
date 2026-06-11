@@ -10,10 +10,12 @@ class AppLocaleState {
   const AppLocaleState({
     required this.localeCode,
     required this.initialChoiceDone,
+    required this.termsAccepted,
   });
 
   final String localeCode;
   final bool initialChoiceDone;
+  final bool termsAccepted;
 
   Locale get locale => AppLocales.localeFromCode(localeCode);
 }
@@ -25,6 +27,8 @@ class AppLocale extends _$AppLocale {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool initialChoiceDone =
         prefs.getBool(PrefsKeys.languageInitialDone) ?? false;
+    final bool termsAccepted =
+        prefs.getBool(PrefsKeys.termsAccepted) ?? false;
     final String code =
         prefs.getString(PrefsKeys.localeCode) ?? AppLocales.codes.first;
     final String safe =
@@ -32,6 +36,7 @@ class AppLocale extends _$AppLocale {
     return AppLocaleState(
       localeCode: safe,
       initialChoiceDone: initialChoiceDone,
+      termsAccepted: termsAccepted,
     );
   }
 
@@ -45,6 +50,7 @@ class AppLocale extends _$AppLocale {
       AppLocaleState(
         localeCode: safe,
         initialChoiceDone: cur.initialChoiceDone,
+        termsAccepted: cur.termsAccepted,
       ),
     );
   }
@@ -55,8 +61,26 @@ class AppLocale extends _$AppLocale {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(PrefsKeys.localeCode, safe);
     await prefs.setBool(PrefsKeys.languageInitialDone, true);
+    final AppLocaleState cur = state.value ?? await future;
     state = AsyncValue<AppLocaleState>.data(
-      AppLocaleState(localeCode: safe, initialChoiceDone: true),
+      AppLocaleState(
+        localeCode: safe,
+        initialChoiceDone: true,
+        termsAccepted: cur.termsAccepted,
+      ),
+    );
+  }
+
+  Future<void> acceptTerms() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(PrefsKeys.termsAccepted, true);
+    final AppLocaleState cur = state.value ?? await future;
+    state = AsyncValue<AppLocaleState>.data(
+      AppLocaleState(
+        localeCode: cur.localeCode,
+        initialChoiceDone: cur.initialChoiceDone,
+        termsAccepted: true,
+      ),
     );
   }
 }

@@ -211,5 +211,22 @@
   "battery_state_full": "Lleno",
   "battery_state_connectedNotCharging": "Conectado, no cargando",
   "battery_state_unknown": "Desconocido",
-  "chat_llm_warning": "La IA en el dispositivo puede cometer errores. Verifique siempre la información crítica con fuentes oficiales."
+  "chat_llm_warning": "La IA en el dispositivo puede cometer errores. Verifique siempre la información crítica con fuentes oficiales.",
+  "terms_title": "Condiciones de servicio y descargo de responsabilidad",
+  "terms_message": "Por favor lea y acepte los términos para continuar.",
+  "terms_intro": "Al usar Disastron, acepta las Condiciones de servicio en disastron.com/terms y acepta que es el único responsable de sus acciones.",
+  "terms_doctors": "Esta aplicación es una herramienta de información y educación sin conexión. NO reemplaza el consejo médico, médicos, diagnósticos profesionales ni servicios de emergencia oficiales.",
+  "terms_chatbot": "El chatbot funciona completamente en su dispositivo utilizando IA local, que puede cometer errores o generar información incorrecta. No confíe en él para decisiones críticas.",
+  "terms_view_link": "Ver las Condiciones de servicio completas (disastron.com/terms)",
+  "terms_checkbox": "He leído y acepto los términos y el descargo de responsabilidad",
+  "terms_decline": "Rechazar",
+  "terms_accept": "Aceptar y continuar",
+  "terms_section_1_title": "1. Responsabilidad del usuario",
+  "terms_section_1_body": "Usted comprende y acepta que es el único responsable de su propia seguridad, preparación y acciones. La aplicación se proporciona únicamente con fines informativos y educativos. Debe ejercer su propio juicio y verificar la información antes de confiar en ella en cualquier situación crítica o de emergencia.",
+  "terms_section_2_title": "2. No es consejo médico ni profesional",
+  "terms_section_2_body": "La aplicación —incluyendo todos los artículos de wiki, listas de verificación y guías sin conexión— NO constituye consejo médico, diagnóstico médico, recomendaciones de tratamiento ni asesoramiento profesional de ningún tipo. El contenido de esta aplicación no sustituye a: capacitación certificada en primeros auxilios o RCP, atención médica profesional o la guía de médicos, ni el contacto con los servicios de emergencia oficiales (como 911, 112 o los despachadores de emergencia locales). Siempre llame a sus servicios de emergencia locales de inmediato si usted o alguien más está en peligro.",
+  "terms_section_3_title": "3. Descargo de responsabilidad del chatbot de IA en el dispositivo",
+  "terms_section_3_body": "El chatbot de IA sin conexión funciona completamente en el dispositivo utilizando modelos de lenguaje locales. La IA puede cometer errores: los modelos locales son propensos a las 'alucinaciones' y pueden generar información incorrecta, incompleta, engañosa o desactualizada. No confíe en los resultados del chatbot para una respuesta de emergencia activa, procedimientos médicos o decisiones de seguridad de vida. Siempre coteje la información con manuales de fuentes oficiales y personal de emergencia local.",
+  "terms_section_4_title": "4. Limitación de responsabilidad",
+  "terms_section_4_body": "En la máxima medida permitida por la ley, la aplicación se proporciona 'tal cual' y 'según disponibilidad', sin garantía de ningún tipo. Bajo ninguna circunstancia el desarrollador o los colaboradores de Disastron serán responsables de ningún daño directo, indirecto, incidental, especial o consecuente, incluidos, entre otros, lesiones, pérdida de vidas o daños a la propiedad, que surjan de o en relación con su uso o la imposibilidad de usar la aplicación."
 }

@@ -4,6 +4,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:disastron/app/initial_language_dialog.dart';
 import 'package:disastron/app/locale_provider.dart';
+import 'package:disastron/app/terms_dialog.dart';
 import 'package:disastron/features/chat/presentation/chat_page.dart';
 import 'package:disastron/features/dashboard/presentation/dashboard_page.dart';
 import 'package:disastron/features/home_shell/presentation/home_tab_index_provider.dart';
@@ -24,7 +25,8 @@ class HomePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final int selectedIndex = ref.watch(homeBottomNavIndexProvider);
     final int todoBadgeCount = ref.watch(todoTabBadgeProvider);
-    final ObjectRef<bool> initialDialogScheduled = useRef(false);
+    final ObjectRef<bool> languageDialogScheduled = useRef(false);
+    final ObjectRef<bool> termsDialogScheduled = useRef(false);
     final AsyncValue<AppLocaleState> localeAsync = ref.watch(appLocaleProvider);
 
     useEffect(() {
@@ -32,19 +34,34 @@ class HomePage extends HookConsumerWidget {
         data: (AppLocaleState x) => x,
         orElse: () => null,
       );
-      if (s == null || s.initialChoiceDone || initialDialogScheduled.value) {
+      if (s == null) {
         return null;
       }
-      initialDialogScheduled.value = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (!context.mounted) {
-          return;
-        }
-        await showInitialLanguageDialog(
-          context,
-          ref,
-        );
-      });
+      if (!s.initialChoiceDone && !languageDialogScheduled.value) {
+        languageDialogScheduled.value = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!context.mounted) {
+            return;
+          }
+          await showInitialLanguageDialog(
+            context,
+            ref,
+          );
+        });
+      } else if (s.initialChoiceDone &&
+          !s.termsAccepted &&
+          !termsDialogScheduled.value) {
+        termsDialogScheduled.value = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!context.mounted) {
+            return;
+          }
+          await showTermsDialog(
+            context,
+            ref,
+          );
+        });
+      }
       return null;
     }, <Object?>[
       localeAsync,

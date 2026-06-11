@@ -211,5 +211,22 @@
   "battery_state_full": "Full",
   "battery_state_connectedNotCharging": "Connected, not charging",
   "battery_state_unknown": "Unknown",
-  "chat_llm_warning": "On-device AI can make mistakes. Always verify critical information with official sources."
+  "chat_llm_warning": "On-device AI can make mistakes. Always verify critical information with official sources.",
+  "terms_title": "Terms of Service & Disclaimer",
+  "terms_message": "Please read and accept the terms to continue.",
+  "terms_intro": "By using Disastron, you accept the Terms of Service at disastron.com/terms and agree that you are solely responsible for your actions.",
+  "terms_doctors": "This app is an offline educational and information tool. It does NOT replace medical advice, doctors, professional diagnoses, or official emergency services.",
+  "terms_chatbot": "The chatbot runs entirely on your device using local AI, which can make mistakes or generate incorrect information. Do not rely on it for critical decisions.",
+  "terms_view_link": "View full Terms of Service (disastron.com/terms)",
+  "terms_checkbox": "I read and accept the terms and disclaimer",
+  "terms_decline": "Decline",
+  "terms_accept": "Accept & Continue",
+  "terms_section_1_title": "1. User Responsibility",
+  "terms_section_1_body": "You understand and agree that you are solely responsible for your own safety, readiness, and actions. The app is provided for informational and educational purposes only. You must exercise your own judgment and verify information before relying on it in any critical or emergency situation.",
+  "terms_section_2_title": "2. Not Medical or Professional Advice",
+  "terms_section_2_body": "The app—including all offline wiki articles, checklists, and guides—does NOT constitute medical advice, medical diagnosis, treatment recommendations, or professional advice of any kind. The contents of this application are not a substitute for certified emergency first-aid or CPR training, professional medical care or guidance from doctors, or contacting official emergency services (such as 911, 112, or local dispatchers). Always call your local emergency services immediately if you or someone else is in danger.",
+  "terms_section_3_title": "3. On-Device AI Chatbot Disclaimer",
+  "terms_section_3_body": "The offline AI chatbot runs entirely on-device using local Large Language Models. AI can make mistakes: local models are prone to 'hallucinations' and can generate incorrect, incomplete, misleading, or outdated information. Do not rely on chatbot outputs for active emergency response, medical procedures, or life-safety decisions. Always cross-reference with official source manuals and local emergency personnel.",
+  "terms_section_4_title": "4. Limitation of Liability",
+  "terms_section_4_body": "To the maximum extent permitted by law, the app is provided 'as is' and 'as available,' without warranty of any kind. Under no circumstances shall the developer or contributors of Disastron be liable for any direct, indirect, incidental, special, or consequential damages, including but not limited to injury, loss of life, or property damage, arising out of or in connection with your use or inability to use the app."
 }

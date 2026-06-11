@@ -211,5 +211,22 @@
   "battery_state_full": "Plein",
   "battery_state_connectedNotCharging": "Branché, pas en charge",
   "battery_state_unknown": "Inconnu",
-  "chat_llm_warning": "L'IA sur l'appareil peut faire des erreurs. Vérifiez toujours les informations critiques avec des sources officielles."
+  "chat_llm_warning": "L'IA sur l'appareil peut faire des erreurs. Vérifiez toujours les informations critiques avec des sources officielles.",
+  "terms_title": "Conditions d'utilisation et clause de non-responsabilité",
+  "terms_message": "Veuillez lire et accepter les conditions pour continuer.",
+  "terms_intro": "En utilisant Disastron, vous acceptez les Conditions d'utilisation sur disastron.com/terms et acceptez que vous êtes seul responsable de vos actions.",
+  "terms_doctors": "Cette application est un outil éducatif et d'information hors ligne. Elle ne remplace PAS les conseils médicaux, les médecins, les diagnostics professionnels ou les services d'urgence officiels.",
+  "terms_chatbot": "Le chatbot fonctionne entièrement sur votre appareil à l'aide d'une IA locale, qui peut faire des erreurs ou générer des informations incorrectes. Ne vous y fiez pas pour des décisions critiques.",
+  "terms_view_link": "Voir l'intégralité des conditions d'utilisation (disastron.com/terms)",
+  "terms_checkbox": "J'ai lu et j'accepte les conditions et la clause de non-responsabilité",
+  "terms_decline": "Refuser",
+  "terms_accept": "Accepter et continuer",
+  "terms_section_1_title": "1. Responsabilité de l'utilisateur",
+  "terms_section_1_body": "Vous comprenez et acceptez que vous êtes seul responsable de votre propre sécurité, de votre préparation et de vos actions. L'application est fournie uniquement à des fins d'information et d'éducation. Vous devez faire preuve de discernement et vérifier les informations avant de vous y fier dans toute situation critique ou d'urgence.",
+  "terms_section_2_title": "2. Pas de conseil médical ou professionnel",
+  "terms_section_2_body": "L'application — y compris tous les articles de wiki hors ligne, listes de contrôle et guides — ne constitue PAS un conseil médical, un diagnostic médical, une recommandation de traitement ou un conseil professionnel de quelque nature que ce soit. Le contenu de cette application ne remplace pas une formation certifiée en secourisme ou en RCP, des soins médicaux professionnels ou les conseils de médecins, ni le contact avec les services d'urgence officiels (tels que le 15, le 18, le 112 ou vos répartiteurs d'urgence locaux). Appelez toujours immédiatement vos services d'urgence locaux si vous ou quelqu'un d'autre êtes en danger.",
+  "terms_section_3_title": "3. Clause de non-responsabilité concernant le chatbot IA",
+  "terms_section_3_body": "Le chatbot IA hors ligne fonctionne entièrement sur votre appareil en utilisant des modèles de langage locaux. L'IA peut faire des erreurs : les modèles locaux sont sujets à des « hallucinations » et peuvent générer des informations incorrectes, incomplètes, trompeuses ou obsolètes. Ne vous fiez pas aux réponses du chatbot pour les interventions d'urgence actives, les procédures médicales ou les décisions de sécurité vitale. Recoupez toujours avec les manuels de sources officielles et le personnel d'urgence local.",
+  "terms_section_4_title": "4. Limitation de responsabilité",
+  "terms_section_4_body": "Dans la mesure maximale permise par la loi, l'application est fournie « en l'état » et « selon la disponibilité », sans garantie d'aucune sorte. En aucun cas le développeur ou les contributeurs de Disastron ne pourront être tenus responsables de tout dommage direct, indirect, accidentel, spécial ou consécutif, y compris, mais sans s'y limiter, les blessures, la perte de vie ou les dommages matériels, résultant de ou liés à votre utilisation ou à votre incapacité à utiliser l'application."
 }
