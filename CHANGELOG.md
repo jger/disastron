@@ -2,6 +2,14 @@
 
 All notable changes will be documented in this file.
 
+## [1.5.1](https://github.com/jger/disastron/compare/v1.5.0...v1.5.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* implement terms and conditions dialog and acceptance flow upon app initialization ([e1356d1](https://github.com/jger/disastron/commit/e1356d1a0460aebc675e5420975b67a24f05c24f))
+* simplify termsAccepted variable assignment in locale provider ([61a5253](https://github.com/jger/disastron/commit/61a52532cef9257f5ffa10594e71166558e02809))
+
 # [1.5.0](https://github.com/jger/disastron/compare/v1.4.0...v1.5.0) (2026-06-09)
 
 
