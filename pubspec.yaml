@@ -303,11 +303,11 @@ flutter_launcher_icons:
   adaptive_icon_foreground: "assets/images/launch.png"
   adaptive_icon_foreground_inset: 0
   adaptive_icon_monochrome: "assets/images/launch.png"
-#    web:
-#      generate: true
-#      image_path: "path/to/image.png"
-#      background_color: "#hexcode"
-#      theme_color: "#hexcode"
+  web:
+    generate: true
+    image_path: "assets/images/icon_ios.png"
+    background_color: "#faf6ff"
+    theme_color: "#faf6ff"
 #    windows:
 #      generate: true
 #      image_path: "path/to/image.png"
