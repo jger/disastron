@@ -54,7 +54,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _container = ProviderScope.containerOf(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
-      unawaited(_ensureChatReady(reloadInferenceWeights: true));
     });
   }
 

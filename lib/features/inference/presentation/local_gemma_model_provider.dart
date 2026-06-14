@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
+import 'package:disastron/features/inference/data/huggingface_token_store.dart';
 import 'package:disastron/features/inference/data/model_download_resume_service.dart';
 import 'package:disastron/features/inference/data/model_registry_store.dart';
 import 'package:disastron/features/inference/data/pending_model_download_store.dart';
@@ -383,16 +384,21 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   @override
   LocalGemmaModelUi build() {
     final bool active = FlutterGemma.hasActiveModel();
-    if (!active) {
+    // On web, flutter_gemma restores _activeInferenceModel from SharedPreferences
+    // on initialize(), so hasActiveModel() may be true. But the OPFS blob URL is
+    // lost on every page reload and must be re-registered before getActiveModel()
+    // is called. Always run _tryRestoreModel() on web to ensure the URL is
+    // re-registered, and return notInstalled so chat waits for the restore.
+    if (!active || kIsWeb) {
       unawaited(
         _tryRestoreModel().then((_) => refreshPendingDownload()),
       );
-    } else if (active) {
-      unawaited(_orchestrator.reconcileActiveWithPluginIfPossible());
+      // On web, even when active=true the OPFS URL needs re-registration first.
+      // Return notInstalled so chat waits for restore to set state to ready.
+      return const LocalGemmaModelUi(phase: LocalGemmaPhase.notInstalled);
     }
-    return LocalGemmaModelUi(
-      phase: active ? LocalGemmaPhase.ready : LocalGemmaPhase.notInstalled,
-    );
+    unawaited(_orchestrator.reconcileActiveWithPluginIfPossible());
+    return const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
   }
 
   void refreshFromEngine() {
@@ -415,12 +421,17 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       unawaited(_orchestrator.reconcileActiveWithPluginIfPossible());
       _invalidateRegistry();
     } else {
+      unawaited(_tryRestoreModel());
       unawaited(refreshPendingDownload());
     }
   }
 
   Future<void> _tryRestoreModel() async {
-    if (FlutterGemma.hasActiveModel()) {
+    // On web the active model identity is persisted by flutter_gemma in
+    // SharedPreferences and restored during initialize(), so hasActiveModel()
+    // can be true even though the OPFS URL is not yet registered. Skip the
+    // early return on web so _installInstalledEntry re-registers the URL.
+    if (!kIsWeb && FlutterGemma.hasActiveModel()) {
       return;
     }
     if (_restoreInFlight) {
@@ -434,9 +445,11 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       final String? activeId = snap.activeEntryId;
       final InstalledModelEntry? entry =
           activeId != null ? snap.entryById(activeId) : null;
+      final String? hfToken = await HuggingfaceTokenStore().read();
 
       final ColdStartRestoreResult result =
           await _orchestrator.tryRestoreOnColdStart(
+        huggingFaceToken: hfToken,
         onProgress: (int progress) {
           if (state.activity != ModelInstallActivityKind.restoreSaved) {
             return;
@@ -717,9 +730,11 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     }
     final CancelToken? cancelToken = _installCancelToken;
     try {
+      final String? hfToken = await HuggingfaceTokenStore().read();
       final ModelInstallDomainError? err = await _orchestrator.activateEntry(
         entryId,
         cancelToken: cancelToken,
+        huggingFaceToken: hfToken,
         onProgress: (int progress) {
           if (!_isInstallEpochCurrent(epoch)) {
             return;

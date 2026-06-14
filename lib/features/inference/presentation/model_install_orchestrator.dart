@@ -1,8 +1,11 @@
+import 'dart:async' show unawaited;
 import 'dart:io' show File;
 
 /// Coordinates inference installs (network, file, preset): maps native errors to domain errors for UI.
 import 'package:disastron/features/inference/data/lora_registry_store.dart';
 import 'package:disastron/features/inference/data/model_registry_store.dart';
+import 'package:disastron/features/inference/data/web_opfs_model_cached.dart';
+import 'package:disastron/features/inference/data/web_storage_persist.dart';
 import 'package:disastron/features/inference/domain/inference_model_descriptor.dart';
 import 'package:disastron/features/inference/domain/model_install_domain_error.dart';
 import 'package:disastron/features/inference/domain/predefined_models.dart';
@@ -66,6 +69,7 @@ class ModelInstallOrchestrator {
     InstalledModelEntry entry, {
     required void Function(int progress) onProgress,
     CancelToken? cancelToken,
+    String? networkToken,
   }) async {
     var builder = FlutterGemma.installModel(
       modelType: entry.modelType,
@@ -82,7 +86,9 @@ class ModelInstallOrchestrator {
         return;
       }
       if (_isNetworkSource(entry.sourceUrlOrPath)) {
-        await builder.fromNetwork(entry.sourceUrlOrPath).install();
+        await builder
+            .fromNetwork(entry.sourceUrlOrPath, token: networkToken)
+            .install();
         return;
       }
       throw StateError(
@@ -205,8 +211,12 @@ class ModelInstallOrchestrator {
   Future<ColdStartRestoreResult> tryRestoreOnColdStart({
     required void Function(int progress) onProgress,
     void Function()? onRestoreBegins,
+    String? huggingFaceToken,
   }) async {
-    if (FlutterGemma.hasActiveModel()) {
+    // On web, flutter_gemma restores _activeInferenceModel from SharedPreferences
+    // but the OPFS blob URL is lost on reload. Continue so _installInstalledEntry
+    // re-registers it. On native, skip if the model is already loaded.
+    if (!kIsWeb && FlutterGemma.hasActiveModel()) {
       return const ColdStartRestoreResult.skipped();
     }
     await _registry.migrateFromLegacyIfNeeded();
@@ -221,12 +231,17 @@ class ModelInstallOrchestrator {
     }
     final String filename = basenameFromStored(entry.sourceUrlOrPath);
     final bool installed = await FlutterGemma.isModelInstalled(filename);
-    if (!installed) {
+    final bool opfsCached = kIsWeb && await isWebOpfsModelCached(filename);
+    if (!installed && !opfsCached) {
       return const ColdStartRestoreResult.skipped();
     }
     onRestoreBegins?.call();
     try {
-      await _installInstalledEntry(entry, onProgress: onProgress);
+      await _installInstalledEntry(
+        entry,
+        onProgress: onProgress,
+        networkToken: huggingFaceToken,
+      );
       return const ColdStartRestoreResult.success();
     } on Object catch (e) {
       return ColdStartRestoreResult.failure(mapModelInstallException(e));
@@ -237,6 +252,7 @@ class ModelInstallOrchestrator {
     String entryId, {
     required void Function(int progress) onProgress,
     CancelToken? cancelToken,
+    String? huggingFaceToken,
   }) async {
     await _registry.migrateFromLegacyIfNeeded();
     final ModelRegistrySnapshot snap = await _registry.readSnapshot();
@@ -249,7 +265,8 @@ class ModelInstallOrchestrator {
     }
     final String filename = basenameFromStored(entry.sourceUrlOrPath);
     final bool installed = await FlutterGemma.isModelInstalled(filename);
-    if (!installed) {
+    final bool opfsCached = kIsWeb && await isWebOpfsModelCached(filename);
+    if (!installed && !opfsCached) {
       return const ModelInstallDomainError(
         kind: ModelInstallDomainErrorKind.unknown,
         message: 'Model files missing; download or import again.',
@@ -260,6 +277,7 @@ class ModelInstallOrchestrator {
         entry,
         onProgress: onProgress,
         cancelToken: cancelToken,
+        networkToken: huggingFaceToken,
       );
       final ModelRegistrySnapshot next = ModelRegistrySnapshot(
         entries: snap.entries,
@@ -315,6 +333,9 @@ class ModelInstallOrchestrator {
       activeEntryId: entry.id,
     );
     await _registry.writeSnapshot(snap);
+    // Request persistent OPFS storage so the browser won't evict the model
+    // under disk pressure or Safari's 7-day ITP clearance.
+    unawaited(requestWebStoragePersistence());
   }
 
   /// Sync registry active entry when the plugin already has a model (e.g. after external init).
