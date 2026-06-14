@@ -21,6 +21,17 @@
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"
+        },
+        {
+            "name": "disastron web demo",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "deviceId": "chrome",
+            "toolArgs": [
+                "--wasm",
+                "--no-web-resources-cdn"
+            ]
         }
     ]
 }
