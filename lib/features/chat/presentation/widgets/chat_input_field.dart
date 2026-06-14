@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:disastron/features/chat/presentation/chat_handlers.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -22,9 +23,6 @@ class ChatInputField extends StatefulWidget {
 class ChatInputFieldState extends State<ChatInputField> {
   final TextEditingController _textController = TextEditingController();
   Uint8List? _pickedImageBytes;
-
-  static const String _unsupportedImageHint =
-      'Image input needs a multimodal model (e.g. Gemma 3n / Gemma 4 preset).';
 
   @override
   void dispose() {
@@ -60,7 +58,7 @@ class ChatInputFieldState extends State<ChatInputField> {
           children: <Widget>[
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Choose from gallery'),
+              title: Text('chat_gallery'.tr()),
               onTap: () {
                 Navigator.pop(ctx);
                 unawaited(_pickImage(ImageSource.gallery));
@@ -68,7 +66,7 @@ class ChatInputFieldState extends State<ChatInputField> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Take a photo'),
+              title: Text('chat_camera'.tr()),
               onTap: () {
                 Navigator.pop(ctx);
                 unawaited(_pickImage(ImageSource.camera));
@@ -127,7 +125,7 @@ class ChatInputFieldState extends State<ChatInputField> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.close, size: 20),
-                          tooltip: 'Remove image',
+                          tooltip: 'chat_remove_image'.tr(),
                           visualDensity: VisualDensity.compact,
                           onPressed: () =>
                               setState(() => _pickedImageBytes = null),
@@ -141,8 +139,8 @@ class ChatInputFieldState extends State<ChatInputField> {
               children: <Widget>[
                 IconButton(
                   tooltip: widget.isImageSupported
-                      ? 'Attach image'
-                      : _unsupportedImageHint,
+                      ? 'chat_attach_image'.tr()
+                      : 'chat_vision_model_required'.tr(),
                   icon: const Icon(Icons.image_outlined),
                   onPressed: widget.isImageSupported
                       ? () => unawaited(_showImageSourceSheet())
@@ -153,8 +151,8 @@ class ChatInputFieldState extends State<ChatInputField> {
                     controller: _textController,
                     onChanged: (_) => setState(() {}),
                     onSubmitted: (_) => _submit(),
-                    decoration: const InputDecoration.collapsed(
-                      hintText: 'Send a message',
+                    decoration: InputDecoration.collapsed(
+                      hintText: 'chat_hint'.tr(),
                     ),
                   ),
                 ),

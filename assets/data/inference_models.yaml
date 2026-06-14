@@ -3,6 +3,7 @@
 #
 # SSOT — default/smallest preset for dashboard download CTA and first-time install.
 # Must match exactly one models[].id below.
+# default_preset_id_web — default on Flutter web / PWA.
 #
 # Metadata (verified on Hugging Face):
 #   size_mb     — approximate download size
@@ -10,7 +11,9 @@
 #   backend     — litert | mediapipe (determines runtime engine; mediapipe supports dynamic LoRA)
 #   multimodal  — supports image input in chat when true
 #   supports_lora — model supports dynamic LoRA adapter loading (mediapipe only)
+#   platforms   — android | ios | web (omit = android + ios)
 default_preset_id: gemma4_e2b_litertlm
+default_preset_id_web: gemma4_e2b_web_task
 
 models:
   - id: gemma3_270m_q8
@@ -24,42 +27,20 @@ models:
     multimodal: false
     requires_token: true
     supports_lora: true
+    platforms: [android, ios]
 
-  # - id: gemma3_270m_q4
-  #   title: Gemma 3 270M IT (q4)
-  #   description: Ultra-small download; slightly lower quality than q8. Dynamic LoRA adapter support. Requires Hugging Face token.
-  #   url: https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q4_0-web.task
-  #   model_type: gemmaIt
-  #   backend: mediapipe
-  #   size_mb: 249
-  #   access: gated
-  #   multimodal: false
-  #   requires_token: true
-  #   supports_lora: true
-
-  # - id: gemma3_1b_int4
-  #   title: Gemma 3 1B IT (int4)
-  #   description: Balanced quality vs size. Dynamic LoRA adapter support. Requires Hugging Face token.
-  #   url: https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task
-  #   model_type: gemmaIt
-  #   backend: mediapipe
-  #   size_mb: 555
-  #   access: gated
-  #   multimodal: false
-  #   requires_token: true
-  #   supports_lora: true
-
-  # - id: gemma3n_e2b_int4
-  #   title: Gemma 3n E2B IT (int4)
-  #   description: Newer 3n family; multimodal; large download. Dynamic LoRA adapter support. Requires Hugging Face token.
-  #   url: https://huggingface.co/google/gemma-3n-E2B-it-litert-preview/resolve/main/gemma-3n-E2B-it-int4.task
-  #   model_type: gemmaIt
-  #   backend: mediapipe
-  #   size_mb: 2991
-  #   access: gated
-  #   multimodal: true
-  #   requires_token: true
-  #   supports_lora: true
+  - id: gemma3_270m_q4_web
+    title: Gemma 3 270M IT (q4, web)
+    description: Smallest web preset; MediaPipe WASM. Requires Hugging Face token.
+    url: https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q4_0-web.task
+    model_type: gemmaIt
+    backend: mediapipe
+    size_mb: 249
+    access: gated
+    multimodal: false
+    requires_token: true
+    supports_lora: true
+    platforms: [web]
 
   - id: gemma4_e2b_litertlm
     title: Gemma 4 E2B IT (LiteRT-LM)
@@ -71,6 +52,7 @@ models:
     access: public
     multimodal: true
     requires_token: false
+    platforms: [android, ios]
 
   - id: gemma4_e4b_litertlm
     title: Gemma 4 E4B IT (LiteRT-LM)
@@ -82,4 +64,40 @@ models:
     access: public
     multimodal: true
     requires_token: false
+    platforms: [android, ios]
 
+  - id: gemma4_e2b_web_task
+    title: Gemma 4 E2B IT (web, MediaPipe)
+    description: Multimodal on web via MediaPipe WASM; no HF token needed.
+    url: https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.task
+    model_type: gemma4
+    backend: mediapipe
+    size_mb: 2468
+    access: public
+    multimodal: true
+    requires_token: false
+    platforms: [web]
+
+  - id: gemma4_e2b_web_litertlm
+    title: Gemma 4 E2B IT (web, LiteRT-LM)
+    description: Text-only on web via LiteRT-LM WebGPU; no HF token needed.
+    url: https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.litertlm
+    model_type: gemma4
+    backend: litert
+    size_mb: 2468
+    access: public
+    multimodal: false
+    requires_token: false
+    platforms: [web]
+
+  - id: gemma4_e4b_web_litertlm
+    title: Gemma 4 E4B IT (web, LiteRT-LM)
+    description: Larger Gemma 4 text-only web preset; LiteRT-LM WebGPU.
+    url: https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it-web.litertlm
+    model_type: gemma4
+    backend: litert
+    size_mb: 3490
+    access: public
+    multimodal: false
+    requires_token: false
+    platforms: [web]

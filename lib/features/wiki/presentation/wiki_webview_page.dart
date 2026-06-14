@@ -226,8 +226,7 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
       } else {
         if (mounted) {
           setState(() {
-            _error =
-                'Offline content not found. Please download this page when online.';
+            _error = 'wiki_offline_not_found'.tr();
             _loading = false;
           });
         }
@@ -235,7 +234,9 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Failed to load offline content: $e';
+          _error = 'wiki_offline_error'.tr(
+            namedArgs: <String, String>{'error': '$e'},
+          );
           _loading = false;
         });
       }

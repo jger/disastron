@@ -69,6 +69,13 @@ class ModelInstallProgressPanel extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelLarge,
               ),
+            ] else ...<Widget>[
+              const SizedBox(height: 8),
+              Text(
+                '…',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
             ],
             const SizedBox(height: 16),
             Text(
@@ -123,6 +130,13 @@ class ModelInstallProgressPanel extends ConsumerWidget {
             if (ui.progress > 0 && ui.progress < 100)
               Text(
                 '${ui.progress}%',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+              )
+            else if (ui.progress == 0)
+              Text(
+                '…',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: scheme.onSurfaceVariant,
                     ),

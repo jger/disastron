@@ -115,21 +115,32 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   /// clamps failure sentinel -100% to 0%) so the stall timer is not reset while
   /// resume is pending on a dead WorkManager job.
   void _onNetworkInstallProgress(int epoch, int progress) {
-    if (!_isInstallEpochCurrent(epoch)) {
+    void apply() {
+      if (!_isInstallEpochCurrent(epoch)) {
+        return;
+      }
+      final int current = state.progress;
+      if (progress < current) {
+        developer.log(
+          'Ignoring regressive progress $progress% (current $current%) — '
+          'likely failure/resume sentinel; stall timer unchanged.',
+          name: 'LocalGemmaModel',
+        );
+        return;
+      }
+      if (!kIsWeb) {
+        _resetStallTimer(epoch);
+      }
+      unawaited(_updatePendingProgress(progress));
+      state = state.withInstallProgress(progress);
+    }
+
+    // JS interop progress callbacks may not schedule a frame on web.
+    if (kIsWeb) {
+      scheduleMicrotask(apply);
       return;
     }
-    final int current = state.progress;
-    if (progress < current) {
-      developer.log(
-        'Ignoring regressive progress $progress% (current $current%) — '
-        'likely failure/resume sentinel; stall timer unchanged.',
-        name: 'LocalGemmaModel',
-      );
-      return;
-    }
-    _resetStallTimer(epoch);
-    unawaited(_updatePendingProgress(progress));
-    state = state.withInstallProgress(progress);
+    apply();
   }
 
   /// Resets the stall-detection countdown. Call at install start and on every
@@ -372,7 +383,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   @override
   LocalGemmaModelUi build() {
     final bool active = FlutterGemma.hasActiveModel();
-    if (!active && !kIsWeb) {
+    if (!active) {
       unawaited(
         _tryRestoreModel().then((_) => refreshPendingDownload()),
       );
@@ -386,12 +397,19 @@ class LocalGemmaModel extends _$LocalGemmaModel {
 
   void refreshFromEngine() {
     if (state.phase == LocalGemmaPhase.installing) {
+      developer.log(
+        'refreshFromEngine skipped — installing',
+        name: 'disastron.chat_init',
+      );
       return;
     }
+    final bool active = FlutterGemma.hasActiveModel();
+    developer.log(
+      'refreshFromEngine hasActiveModel=$active phase=${state.phase}',
+      name: 'disastron.chat_init',
+    );
     state = LocalGemmaModelUi(
-      phase: FlutterGemma.hasActiveModel()
-          ? LocalGemmaPhase.ready
-          : LocalGemmaPhase.notInstalled,
+      phase: active ? LocalGemmaPhase.ready : LocalGemmaPhase.notInstalled,
     );
     if (FlutterGemma.hasActiveModel()) {
       unawaited(_orchestrator.reconcileActiveWithPluginIfPossible());
@@ -402,9 +420,6 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   }
 
   Future<void> _tryRestoreModel() async {
-    if (kIsWeb) {
-      return;
-    }
     if (FlutterGemma.hasActiveModel()) {
       return;
     }
@@ -542,8 +557,10 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       final String? effectiveToken = (trimmed != null && trimmed.isNotEmpty)
           ? trimmed
           : await ref.read(huggingfaceTokenProvider.future);
-      await _resumeService.cancelStaleTask(url);
-      _resetStallTimer(epoch);
+      if (!kIsWeb) {
+        await _resumeService.cancelStaleTask(url);
+        _resetStallTimer(epoch);
+      }
       await _orchestrator.installFromNetwork(
         url,
         token: effectiveToken,
@@ -629,8 +646,10 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       final String? effectiveToken = (trimmed != null && trimmed.isNotEmpty)
           ? trimmed
           : await ref.read(huggingfaceTokenProvider.future);
-      await _resumeService.cancelStaleTask(model.url);
-      _resetStallTimer(epoch);
+      if (!kIsWeb) {
+        await _resumeService.cancelStaleTask(model.url);
+        _resetStallTimer(epoch);
+      }
       await _orchestrator.installPreset(
         model,
         token: effectiveToken,

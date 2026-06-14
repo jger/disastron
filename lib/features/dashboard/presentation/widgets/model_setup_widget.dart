@@ -18,6 +18,7 @@ import 'package:disastron/features/inference/presentation/widgets/model_install_
 import 'package:disastron/features/inference/presentation/widgets/preset_download_metadata.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -509,9 +510,12 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       case ModelExportResultKind.cancelled:
         return;
       case ModelExportResultKind.failure:
-      case ModelExportResultKind.unsupported:
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result.message ?? 'model_save_failed'.tr())),
+        );
+      case ModelExportResultKind.unsupported:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('model_export_web_unavailable'.tr())),
         );
     }
   }
@@ -649,7 +653,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                             ),
                           if (supportsLora)
                             IconButton(
-                              tooltip: 'Manage LoRAs',
+                              tooltip: 'lora_manage_tooltip'.tr(),
                               icon: const Icon(Icons.bolt),
                               onPressed: () {
                                 LoraManagerSheet.show(
@@ -659,11 +663,12 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                                 );
                               },
                             ),
-                          IconButton(
-                            tooltip: 'model_save_copy_tooltip'.tr(),
-                            icon: const Icon(Icons.save_alt_outlined),
-                            onPressed: () => _exportEntry(e),
-                          ),
+                          if (!kIsWeb)
+                            IconButton(
+                              tooltip: 'model_save_copy_tooltip'.tr(),
+                              icon: const Icon(Icons.save_alt_outlined),
+                              onPressed: () => _exportEntry(e),
+                            ),
                           IconButton(
                             tooltip: 'model_remove_tooltip'.tr(),
                             icon: const Icon(Icons.delete_outline),
@@ -769,11 +774,11 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     AsyncValue<String?> tokenAsync,
   ) {
     final List<PredefinedInferenceModel> publicModels =
-        kPredefinedInferenceModels
+        kPredefinedInferenceModelsForPlatform
             .where((PredefinedInferenceModel m) => !m.requiresHuggingFaceToken)
             .toList();
     final List<PredefinedInferenceModel> gatedModels =
-        kPredefinedInferenceModels
+        kPredefinedInferenceModelsForPlatform
             .where((PredefinedInferenceModel m) => m.requiresHuggingFaceToken)
             .toList();
 

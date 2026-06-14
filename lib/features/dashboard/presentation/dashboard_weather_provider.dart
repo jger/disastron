@@ -5,6 +5,7 @@ import 'package:disastron/features/dashboard/data/offline_temperature_forecast.d
 import 'package:disastron/features/dashboard/domain/light_state_calculator.dart';
 import 'package:disastron/features/dashboard/domain/location_error_messages.dart';
 import 'package:disastron/features/dashboard/presentation/dashboard_device_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -90,7 +91,9 @@ Future<DashboardWeatherSnapshot> dashboardWeather(Ref ref) async {
       latitude: lat,
       longitude: lon,
       light: light,
-      forecastError: 'Climate data error: $e',
+      forecastError: 'weather_climate_error'.tr(
+        namedArgs: <String, String>{'error': '$e'},
+      ),
     );
   }
 }

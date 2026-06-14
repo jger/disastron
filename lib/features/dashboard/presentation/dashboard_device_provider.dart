@@ -148,12 +148,22 @@ Future<DashboardBatterySnapshot> dashboardBattery(Ref ref) async {
     // ignore
   }
 
-  // Set up timer to refresh every minute
-  if (!Platform.environment.containsKey('FLUTTER_TEST')) {
-    final timer = Timer(const Duration(minutes: 1), () {
-      ref.invalidateSelf();
-    });
+  // This block sets up periodic invalidation (refresh) for the battery provider:
+  // Unless the code is running in a Flutter unit test (where we want deterministic behavior),
+  // schedule a one-shot timer that will call `ref.invalidateSelf()` after 1 minute.
+  // This triggers the provider to refresh itself, which allows battery status to be kept up-to-date.
+  // The timer is properly disposed of by registering the cancel callback with `ref.onDispose`,
+  // ensuring no memory/resource leak if the provider gets disposed before the minute elapses.
+  // Platform.environment throws on web (dart:io stub). Use separate if-branches so
+  // dartdevc never compiles the Platform.environment access into the web code path.
+  if (kIsWeb) {
+    final timer = Timer(const Duration(minutes: 1), ref.invalidateSelf);
     ref.onDispose(timer.cancel);
+  } else {
+    if (!Platform.environment.containsKey('FLUTTER_TEST')) {
+      final timer = Timer(const Duration(minutes: 1), ref.invalidateSelf);
+      ref.onDispose(timer.cancel);
+    }
   }
   return DashboardBatterySnapshot(
     sampledAt: DateTime.now(),

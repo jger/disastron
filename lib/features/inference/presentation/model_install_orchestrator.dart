@@ -60,6 +60,40 @@ class ModelInstallOrchestrator {
     return p.join(dir, basenameFromStored(entry.sourceUrlOrPath));
   }
 
+  bool _isNetworkSource(String source) => source.contains('://');
+
+  Future<void> _installInstalledEntry(
+    InstalledModelEntry entry, {
+    required void Function(int progress) onProgress,
+    CancelToken? cancelToken,
+  }) async {
+    var builder = FlutterGemma.installModel(
+      modelType: entry.modelType,
+      fileType: entry.fileType,
+    ).withProgress(onProgress);
+    if (cancelToken != null) {
+      builder = builder.withCancelToken(cancelToken);
+    }
+
+    if (kIsWeb) {
+      if (entry.importedFromPicker &&
+          !_isNetworkSource(entry.sourceUrlOrPath)) {
+        await builder.fromFile(entry.sourceUrlOrPath).install();
+        return;
+      }
+      if (_isNetworkSource(entry.sourceUrlOrPath)) {
+        await builder.fromNetwork(entry.sourceUrlOrPath).install();
+        return;
+      }
+      throw StateError(
+        'Unsupported web model source: ${entry.sourceUrlOrPath}',
+      );
+    }
+
+    final String localPath = await _resolveLocalFilePath(entry);
+    await builder.fromFile(localPath).install();
+  }
+
   /// On-disk path for an installed entry, or null if missing / web.
   Future<String?> resolveExportableModelFilePath(String entryId) async {
     if (kIsWeb) {
@@ -172,9 +206,6 @@ class ModelInstallOrchestrator {
     required void Function(int progress) onProgress,
     void Function()? onRestoreBegins,
   }) async {
-    if (kIsWeb) {
-      return const ColdStartRestoreResult.skipped();
-    }
     if (FlutterGemma.hasActiveModel()) {
       return const ColdStartRestoreResult.skipped();
     }
@@ -195,11 +226,7 @@ class ModelInstallOrchestrator {
     }
     onRestoreBegins?.call();
     try {
-      final String localPath = await _resolveLocalFilePath(entry);
-      await FlutterGemma.installModel(
-        modelType: entry.modelType,
-        fileType: entry.fileType,
-      ).fromFile(localPath).withProgress(onProgress).install();
+      await _installInstalledEntry(entry, onProgress: onProgress);
       return const ColdStartRestoreResult.success();
     } on Object catch (e) {
       return ColdStartRestoreResult.failure(mapModelInstallException(e));
@@ -229,15 +256,11 @@ class ModelInstallOrchestrator {
       );
     }
     try {
-      final String localPath = await _resolveLocalFilePath(entry);
-      var builder = FlutterGemma.installModel(
-        modelType: entry.modelType,
-        fileType: entry.fileType,
-      ).fromFile(localPath).withProgress(onProgress);
-      if (cancelToken != null) {
-        builder = builder.withCancelToken(cancelToken);
-      }
-      await builder.install();
+      await _installInstalledEntry(
+        entry,
+        onProgress: onProgress,
+        cancelToken: cancelToken,
+      );
       final ModelRegistrySnapshot next = ModelRegistrySnapshot(
         entries: snap.entries,
         activeEntryId: entryId,

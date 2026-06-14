@@ -1,4 +1,5 @@
 import 'package:disastron/features/inference/domain/predefined_inference_model.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 PredefinedInferenceModelsCatalog? _catalog;
 
@@ -13,22 +14,37 @@ void _requireCatalogLoaded() {
   }
 }
 
+bool inferencePresetMatchesCurrentPlatform(PredefinedInferenceModel model) {
+  if (kIsWeb) {
+    return model.platforms.contains(InferencePresetPlatform.web);
+  }
+  return model.platforms.contains(InferencePresetPlatform.android) ||
+      model.platforms.contains(InferencePresetPlatform.ios);
+}
+
 /// Bundled preset catalog (from assets/data/inference_models.yaml).
 List<PredefinedInferenceModel> get kPredefinedInferenceModels {
   _requireCatalogLoaded();
   return _catalog!.models;
 }
 
+/// Presets offered on the current platform (web vs mobile).
+List<PredefinedInferenceModel> get kPredefinedInferenceModelsForPlatform {
+  return kPredefinedInferenceModels
+      .where(inferencePresetMatchesCurrentPlatform)
+      .toList(growable: false);
+}
+
 /// Default/smallest preset id — `default_preset_id` in inference_models.yaml (SSOT).
 String get kDefaultInferencePresetId {
   _requireCatalogLoaded();
-  return _catalog!.defaultPresetId;
+  return kIsWeb ? _catalog!.defaultPresetIdWeb : _catalog!.defaultPresetId;
 }
 
 /// Default/smallest preset model — resolved from YAML at load time.
 PredefinedInferenceModel get kDefaultInferencePreset {
   _requireCatalogLoaded();
-  return _catalog!.defaultPreset;
+  return kIsWeb ? _catalog!.defaultPresetWeb : _catalog!.defaultPreset;
 }
 
 PredefinedInferenceModel? presetInferenceModelById(String id) {

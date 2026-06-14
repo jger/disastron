@@ -494,8 +494,18 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                             ),
                             FilterChip(
                               label: Text('sos_audio'.tr()),
-                              selected: _audioAlerts,
+                              selected: !kIsWeb && _audioAlerts,
                               onSelected: (bool v) {
+                                if (kIsWeb) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'sos_audio_web_unavailable'.tr(),
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
                                 setState(() => _audioAlerts = v);
                                 if (v) {
                                   unawaited(_morseTone.ensureReady());

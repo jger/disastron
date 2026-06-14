@@ -1,3 +1,4 @@
+import 'package:disastron/features/chat/presentation/service/chat_init_debug_log.dart';
 import 'package:disastron/features/chat/presentation/service/chat_runtime_gateway.dart';
 import 'package:disastron/features/chat/presentation/service/xnnpack_cache_cleanup.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
@@ -43,9 +44,15 @@ class GemmaLocalService {
     int? maxNumImages,
     String? loraPath,
   }) async {
+    chatInitLog(
+      'GemmaLocalService.init start',
+      'reloadWeights=$reloadInferenceWeights supportImage=$supportImage '
+          'hasModel=${_model != null} hasChat=${_chat != null}',
+    );
     final bool visionFlagChanged =
         _lastInitSupportImage != null && _lastInitSupportImage != supportImage;
     if (_model != null && visionFlagChanged) {
+      chatInitLog('GemmaLocalService.init vision flag changed — closing model');
       await _chat?.close();
       _chat = null;
       await _model!.close();
@@ -55,21 +62,27 @@ class GemmaLocalService {
 
     if (_model == null) {
       if (reloadInferenceWeights) {
+        chatInitLog('GemmaLocalService.init clearing XNNPACK caches');
         await clearTfliteXnnpackWeightCaches();
       }
+      chatInitLog('GemmaLocalService.init getActiveModel…');
       _model = await _runtime.getActiveModel(
         maxTokens: 2048,
         supportImage: supportImage,
         maxNumImages: maxNumImages,
       );
+      chatInitLog('GemmaLocalService.init getActiveModel done');
     }
+    chatInitLog('GemmaLocalService.init closing prior chat session');
     await _chat?.close();
     _chat = null;
+    chatInitLog('GemmaLocalService.init createChat…');
     _chat = await _model!.createChat(
       systemInstruction: systemInstruction,
       supportImage: supportImage,
       loraPath: loraPath,
     );
+    chatInitLog('GemmaLocalService.init done');
   }
 
   Stream<ModelResponse> processMessageAsync(Message userMessage) async* {
@@ -90,11 +103,13 @@ class GemmaLocalService {
   }
 
   Future<void> close() async {
+    chatInitLog('GemmaLocalService.close start');
     _pendingDeviceContextSituation = null;
     _lastInitSupportImage = null;
     await _chat?.close();
     _chat = null;
     await _model?.close();
     _model = null;
+    chatInitLog('GemmaLocalService.close done');
   }
 }

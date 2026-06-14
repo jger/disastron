@@ -6,6 +6,7 @@ import 'package:disastron/core/preferences/prefs_keys.dart';
 import 'package:disastron/features/inference/data/huggingface_token_store.dart';
 import 'package:disastron/features/inference/data/model_download_resume_service.dart';
 import 'package:disastron/features/inference/data/predefined_models_loader.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,19 +20,33 @@ abstract final class AppBootstrap {
 
   static Future<void> initializeGemma() async {
     final String? hfToken = await HuggingfaceTokenStore().read();
-    await FlutterGemma.initialize(huggingFaceToken: hfToken);
+    await _initializeFlutterGemma(hfToken);
     await ModelDownloadResumeService.prepareOnStartup();
   }
 
   /// Re-initializes Gemma after the user saves or clears the HF token in settings.
   static Future<void> initializeGemmaWithToken(String? token) async {
     final String trimmed = token?.trim() ?? '';
-    if (trimmed.isEmpty) {
-      await FlutterGemma.initialize();
-    } else {
-      await FlutterGemma.initialize(huggingFaceToken: trimmed);
-    }
+    await _initializeFlutterGemma(trimmed.isEmpty ? null : trimmed);
     await ModelDownloadResumeService.prepareOnStartup();
+  }
+
+  static Future<void> _initializeFlutterGemma(String? hfToken) async {
+    if (!kIsWeb) {
+      await FlutterGemma.initialize(huggingFaceToken: hfToken);
+      return;
+    }
+    try {
+      await FlutterGemma.initialize(
+        huggingFaceToken: hfToken,
+        webStorageMode: WebStorageMode.streaming,
+      );
+    } on Object {
+      // Missing opfs_helper.js or OPFS unsupported — fall back to cache API.
+      await FlutterGemma.initialize(
+        huggingFaceToken: hfToken,
+      );
+    }
   }
 
   /// Locale code for EasyLocalization startLocale before ProviderScope runs.

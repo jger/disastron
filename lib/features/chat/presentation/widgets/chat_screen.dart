@@ -6,6 +6,7 @@ import 'package:disastron/features/chat/presentation/chat_handlers.dart';
 import 'package:disastron/features/chat/presentation/chat_reset_provider.dart';
 import 'package:disastron/features/chat/presentation/first_chat_accident_provider.dart';
 import 'package:disastron/features/chat/presentation/service/chat_dashboard_context.dart';
+import 'package:disastron/features/chat/presentation/service/chat_init_debug_log.dart';
 import 'package:disastron/features/chat/presentation/service/gemma_service.dart';
 import 'package:disastron/features/chat/presentation/service/todo_action_parser.dart';
 import 'package:disastron/features/chat/presentation/widgets/accident_chips_panel.dart';
@@ -44,6 +45,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   /// Cached container reference so we can safely clear chatResetProvider
   /// inside [dispose], where [ref] is no longer safe to use.
   late ProviderContainer _container;
+  int _ensureChatReadySeq = 0;
 
   @override
   void initState() {
@@ -64,15 +66,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.dispose();
   }
 
-  Future<String> _loadFreshSituationString() async {
+  /// Returns the device/weather situation block, or null on any error.
+  /// Null means "skip context injection" so errors are never leaked into chat.
+  Future<String?> _loadFreshSituationString() async {
     ref
       ..invalidate(dashboardLocationProvider)
       ..invalidate(dashboardBatteryProvider)
       ..invalidate(dashboardWeatherProvider);
     try {
       return await ref.read(chatDashboardSituationProvider.future);
-    } on Object catch (e) {
-      return formatChatDashboardSituationError(e);
+    } on Object {
+      return null;
     }
   }
 
@@ -96,8 +100,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!useCtx) {
       return;
     }
-    final String situation = await _loadFreshSituationString();
-    if (!mounted) {
+    final String? situation = await _loadFreshSituationString();
+    if (!mounted || situation == null) {
       return;
     }
     _gemma.setDeviceContextForNextUserMessage(situation);
@@ -106,8 +110,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void _markChatReady({
     required bool runtimeVisionEnabled,
     required bool showVisionFallbackSnack,
+    required int seq,
   }) {
-    if (!mounted) {
+    if (!mounted || seq != _ensureChatReadySeq) {
+      chatInitLog(
+        '_markChatReady#$seq ignored',
+        'mounted=$mounted superseded=${seq != _ensureChatReadySeq}',
+      );
       return;
     }
     setState(() {
@@ -123,11 +132,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           return;
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Image input disabled: vision engine could not start on this '
-              'device. Text chat still works.',
-            ),
+          SnackBar(
+            content: Text('chat_vision_fallback_snack'.tr()),
           ),
         );
       });
@@ -135,30 +141,52 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _ensureChatReady({required bool reloadInferenceWeights}) async {
-    if (!FlutterGemma.hasActiveModel()) {
-      return;
-    }
+    final int seq = ++_ensureChatReadySeq;
+    chatInitLog(
+      '_ensureChatReady#$seq start',
+      'reloadWeights=$reloadInferenceWeights '
+          'hasActiveModel=${FlutterGemma.hasActiveModel()} chatReady=$_chatReady',
+    );
     try {
+      if (!FlutterGemma.hasActiveModel()) {
+        chatInitLog('_ensureChatReady#$seq early return — no active model');
+        return;
+      }
       final bool useCtx = ref.read(useDisastronContextProvider);
       final String? system;
       if (useCtx) {
-        final String situation = await _loadFreshSituationString();
-        system = composeDisasterSystemInstruction(situation);
+        chatInitLog('_ensureChatReady#$seq loading device context…');
+        final String? situation = await _loadFreshSituationString();
+        chatInitLog(
+          '_ensureChatReady#$seq device context done',
+          situation == null ? 'null' : '${situation.length} chars',
+        );
+        system = situation != null
+            ? composeDisasterSystemInstruction(situation)
+            : kDisasterSystemInstruction.trim();
       } else {
         system = null;
       }
+      chatInitLog('_ensureChatReady#$seq loading registry…');
       final ModelRegistrySnapshot registry =
           await ref.read(modelRegistrySnapshotProvider.future);
       final bool visionRequested = activeRegistryEntrySupportsVision(registry);
+      chatInitLog(
+        '_ensureChatReady#$seq registry done',
+        'active=${registry.activeEntryId} vision=$visionRequested',
+      );
 
       final String? activeEntryId = registry.activeEntryId;
       String? loraPath;
       if (activeEntryId != null) {
+        chatInitLog('_ensureChatReady#$seq loading lora path…');
         loraPath = await ref.read(activeLoraPathProvider(activeEntryId).future);
+        chatInitLog('_ensureChatReady#$seq lora path', loraPath ?? 'none');
       }
 
       if (visionRequested) {
         try {
+          chatInitLog('_ensureChatReady#$seq gemma.init vision…');
           await _gemma.init(
             systemInstruction: system,
             reloadInferenceWeights: reloadInferenceWeights,
@@ -166,16 +194,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             maxNumImages: 1,
             loraPath: loraPath,
           );
+          chatInitLog('_ensureChatReady#$seq gemma.init vision done');
           _markChatReady(
             runtimeVisionEnabled: true,
             showVisionFallbackSnack: false,
+            seq: seq,
           );
+          chatInitLog('_ensureChatReady#$seq complete (vision)');
           return;
-        } on Object catch (_) {
+        } on Object catch (e, st) {
+          chatInitLog('_ensureChatReady#$seq vision init failed', e);
+          chatInitLog('_ensureChatReady#$seq vision stack', st);
           await _gemma.close();
           if (!mounted) {
+            chatInitLog(
+              '_ensureChatReady#$seq aborted — unmounted after vision fail',
+            );
             return;
           }
+          chatInitLog('_ensureChatReady#$seq gemma.init text fallback…');
           await _gemma.init(
             systemInstruction: system,
             loraPath: loraPath,
@@ -183,22 +220,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           _markChatReady(
             runtimeVisionEnabled: false,
             showVisionFallbackSnack: true,
+            seq: seq,
           );
+          chatInitLog('_ensureChatReady#$seq complete (text fallback)');
           return;
         }
       }
 
+      chatInitLog('_ensureChatReady#$seq gemma.init text…');
       await _gemma.init(
         systemInstruction: system,
         reloadInferenceWeights: reloadInferenceWeights,
         loraPath: loraPath,
       );
+      chatInitLog('_ensureChatReady#$seq gemma.init text done');
       _markChatReady(
         runtimeVisionEnabled: false,
         showVisionFallbackSnack: false,
+        seq: seq,
       );
-    } on Object catch (e) {
-      if (mounted) {
+      chatInitLog('_ensureChatReady#$seq complete (text)');
+    } on Object catch (e, st) {
+      chatInitLog('_ensureChatReady#$seq failed', e);
+      chatInitLog('_ensureChatReady#$seq stack', st);
+      if (mounted && seq == _ensureChatReadySeq) {
         setState(() {
           _chatReady = false;
           _runtimeImageSupportEnabled = false;
@@ -206,6 +251,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         });
         ref.read(chatResetProvider.notifier).state = null;
       }
+    } finally {
+      chatInitLog('_ensureChatReady#$seq end');
     }
   }
 
@@ -216,17 +263,28 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
     final String trimmedDisplay = result.displayText.trim();
     final String assistantBody = trimmedDisplay.isEmpty
-        ? (result.appliedCount > 0 ? '(Checklist updated.)' : '(No response)')
+        ? (result.appliedCount > 0
+            ? 'chat_checklist_updated'.tr()
+            : 'chat_no_response'.tr())
         : trimmedDisplay;
     setState(() {
       _messages.add(Message.text(text: assistantBody));
       if (result.appliedCount > 0) {
         final String hint = result.addedTodoCount > 0
-            ? ' ${result.addedTodoCount} new on Todos (tab badge).'
-            : ' Open the Todos tab to review.';
+            ? 'chat_checklist_new_badge'.tr(
+                namedArgs: <String, String>{
+                  'count': '${result.addedTodoCount}',
+                },
+              )
+            : 'chat_checklist_review'.tr();
         _messages.add(
           Message(
-            text: 'Checklist updated (${result.appliedCount} action(s)).$hint',
+            text: 'chat_checklist_summary'.tr(
+              namedArgs: <String, String>{
+                'count': '${result.appliedCount}',
+                'hint': hint,
+              },
+            ),
             type: MessageType.systemInfo,
           ),
         );
@@ -265,19 +323,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final bool? ok = await showDialog<bool>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
-        title: const Text('Reset chat?'),
-        content: const Text(
-          'All messages in this session will be cleared and the first-run '
-          'quick actions will appear again.',
-        ),
+        title: Text('chat_reset_title'.tr()),
+        content: Text('chat_reset_body'.tr()),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Reset'),
+            child: Text('chat_reset_confirm'.tr()),
           ),
         ],
       ),
@@ -327,10 +382,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ..listen<LocalGemmaModelUi>(
         localGemmaModelProvider,
         (LocalGemmaModelUi? previous, LocalGemmaModelUi next) {
+          chatInitLog(
+            'localGemmaModelProvider changed',
+            'prev=${previous?.phase} next=${next.phase} chatReady=$_chatReady',
+          );
           if (next.isReady && !_chatReady) {
             unawaited(_ensureChatReady(reloadInferenceWeights: true));
           }
           if (!next.isReady && _chatReady) {
+            chatInitLog('model not ready — closing gemma session');
             unawaited(_gemma.close());
             if (mounted) {
               setState(() {
@@ -379,12 +439,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: SelectableText('Chat init failed: $_initError'),
+                child: SelectableText(
+                  'chat_init_failed'.tr(
+                    namedArgs: <String, String>{'error': _initError!},
+                  ),
+                ),
               ),
             )
           else if (!_chatReady)
-            const LoadingWidget(
-              message: 'Starting offline assistant…',
+            LoadingWidget(
+              message: 'chat_starting'.tr(),
             )
           else
             Column(
@@ -430,15 +494,14 @@ class _NoModelBody extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'No on-device model yet. Open the Dashboard tab, then import a model file '
-              'or download one when you have a network connection.',
+              'chat_no_model_body'.tr(),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: onRefresh,
-              child: const Text('Check again'),
+              child: Text('chat_check_again'.tr()),
             ),
           ],
         ),

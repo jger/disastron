@@ -23,6 +23,13 @@ enum InferenceBackend {
   }
 }
 
+/// Target platform for a preset (from YAML `platforms`).
+enum InferencePresetPlatform {
+  android,
+  ios,
+  web,
+}
+
 /// Curated preset `.task` / `.litertlm` model (user can still paste any URL).
 class PredefinedInferenceModel {
   const PredefinedInferenceModel({
@@ -37,6 +44,10 @@ class PredefinedInferenceModel {
     this.access = InferencePresetAccess.gated,
     this.multimodal = false,
     this.supportsLora = false,
+    this.platforms = const <InferencePresetPlatform>[
+      InferencePresetPlatform.android,
+      InferencePresetPlatform.ios,
+    ],
   });
 
   final String id;
@@ -59,6 +70,9 @@ class PredefinedInferenceModel {
 
   /// When true, the model supports runtime dynamic LoRA loading.
   final bool supportsLora;
+
+  /// Platforms this preset is offered on (default mobile).
+  final List<InferencePresetPlatform> platforms;
 
   /// When non-null, overrides [inferenceModelTypeUsesHuggingFaceToken] for downloads.
   final bool? requiresToken;
@@ -103,14 +117,22 @@ class PredefinedInferenceModel {
 class PredefinedInferenceModelsCatalog {
   const PredefinedInferenceModelsCatalog({
     required this.defaultPresetId,
+    required this.defaultPresetIdWeb,
     required this.defaultPreset,
+    required this.defaultPresetWeb,
     required this.models,
   });
 
   /// `default_preset_id` from assets/data/inference_models.yaml.
   final String defaultPresetId;
 
+  /// `default_preset_id_web` from assets/data/inference_models.yaml.
+  final String defaultPresetIdWeb;
+
   /// Resolved entry for [defaultPresetId] (validated at parse time).
   final PredefinedInferenceModel defaultPreset;
+
+  /// Resolved entry for [defaultPresetIdWeb].
+  final PredefinedInferenceModel defaultPresetWeb;
   final List<PredefinedInferenceModel> models;
 }

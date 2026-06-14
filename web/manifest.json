@@ -1,11 +1,11 @@
 {
-    "name": "disastron",
-    "short_name": "disastron",
+    "name": "Disastron",
+    "short_name": "Disastron",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Flutter project with speed coding tools integrated",
+    "background_color": "#faf6ff",
+    "theme_color": "#faf6ff",
+    "description": "Offline-first emergency readiness app with on-device AI, offline wiki, and SOS tools.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

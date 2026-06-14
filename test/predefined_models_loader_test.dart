@@ -12,6 +12,7 @@ void main() {
     test('parses models and default_preset_id (SSOT)', () {
       const String yaml = '''
 default_preset_id: gemma3_270m_q8
+default_preset_id_web: gemma3_270m_q8
 models:
   - id: gemma3_270m_q8
     title: Gemma 3 270M IT (q8)
@@ -35,7 +36,9 @@ models:
           PredefinedInferenceModelsLoader.parseYaml(yaml);
 
       expect(catalog.defaultPresetId, 'gemma3_270m_q8');
+      expect(catalog.defaultPresetIdWeb, 'gemma3_270m_q8');
       expect(catalog.defaultPreset.id, 'gemma3_270m_q8');
+      expect(catalog.defaultPresetWeb.id, 'gemma3_270m_q8');
       expect(catalog.defaultPreset.title, 'Gemma 3 270M IT (q8)');
       expect(catalog.models, hasLength(2));
 
@@ -75,8 +78,12 @@ models:
       _ensureFlutterTestBinding();
       final catalog = await PredefinedInferenceModelsLoader.loadBundled();
       expect(catalog.defaultPresetId, 'gemma4_e2b_litertlm');
+      expect(catalog.defaultPresetIdWeb, 'gemma4_e2b_web_task');
       expect(catalog.defaultPreset.sizeMb, 2468);
-      expect(catalog.models.length, greaterThanOrEqualTo(2));
+      expect(catalog.defaultPresetWeb.sizeMb, 2468);
+      expect(catalog.defaultPresetWeb.access, InferencePresetAccess.public);
+      expect(catalog.defaultPresetWeb.requiresHuggingFaceToken, isFalse);
+      expect(catalog.models.length, greaterThanOrEqualTo(4));
       final public = catalog.models
           .where((m) => m.access == InferencePresetAccess.public)
           .toList();

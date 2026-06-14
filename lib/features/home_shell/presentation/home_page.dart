@@ -5,6 +5,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:disastron/app/initial_language_dialog.dart';
 import 'package:disastron/app/locale_provider.dart';
 import 'package:disastron/app/terms_dialog.dart';
+import 'package:disastron/app/web_pwa_notice_dialog.dart';
 import 'package:disastron/features/chat/presentation/chat_page.dart';
 import 'package:disastron/features/dashboard/presentation/dashboard_page.dart';
 import 'package:disastron/features/home_shell/presentation/home_tab_index_provider.dart';
@@ -13,6 +14,7 @@ import 'package:disastron/features/todos/presentation/todos_page.dart';
 import 'package:disastron/features/wiki/presentation/wiki_page.dart';
 import 'package:disastron/shared/widgets/app_scaffold.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -27,6 +29,7 @@ class HomePage extends HookConsumerWidget {
     final int todoBadgeCount = ref.watch(todoTabBadgeProvider);
     final ObjectRef<bool> languageDialogScheduled = useRef(false);
     final ObjectRef<bool> termsDialogScheduled = useRef(false);
+    final ObjectRef<bool> webPwaNoticeScheduled = useRef(false);
     final AsyncValue<AppLocaleState> localeAsync = ref.watch(appLocaleProvider);
 
     useEffect(() {
@@ -60,6 +63,17 @@ class HomePage extends HookConsumerWidget {
             context,
             ref,
           );
+        });
+      } else if (kIsWeb &&
+          s.initialChoiceDone &&
+          s.termsAccepted &&
+          !webPwaNoticeScheduled.value) {
+        webPwaNoticeScheduled.value = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!context.mounted) {
+            return;
+          }
+          await showWebPwaNoticeDialogIfNeeded(context);
         });
       }
       return null;

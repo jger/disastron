@@ -16,28 +16,39 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="Flutter project with speed coding tools integrated">
+  <meta name="description" content="Offline-first emergency readiness app with on-device AI, offline wiki, and SOS tools.">
+
+  <!-- flutter_gemma web: Cache API + OPFS (required for WebStorageMode.streaming) -->
+  <script src="cache_api.js"></script>
+  <script src="opfs_helper.js"></script>
+
+  <!-- MediaPipe GenAI for .task model inference -->
+  <script type="module">
+    import { FilesetResolver, LlmInference } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai@0.10.27';
+    window.FilesetResolver = FilesetResolver;
+    window.LlmInference = LlmInference;
+  </script>
+
+  <script type="module">
+    window.litertLmReady = (async () => {
+      const m = await import('https://cdn.jsdelivr.net/npm/@litert-lm/core@0.12.1/+esm');
+      window.Engine = m.Engine;
+      return m.Engine;
+    })();
+  </script>
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="disastron">
+  <meta name="apple-mobile-web-app-title" content="Disastron">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png">
 
-  <title>disastron</title>
+  <title>Disastron</title>
   <link rel="manifest" href="manifest.json">
 
-  <script>
-    // The value below is injected by flutter build, do not touch.
-    var serviceWorkerVersion = null;
-  </script>
-  <!-- This script adds the flutter initialization JS code -->
-  <script src="flutter.js" defer=""></script>
-  
-  
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
   
   
@@ -129,21 +140,5 @@
   </script>
 </head>
 <body>
-  <script>
-    window.addEventListener('load', function(ev) {
-      // Download main.dart.js
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine().then(function(appRunner) {
-            appRunner.runApp();
-          });
-        }
-      });
-    });
-  </script>
-
-
+  <script src="flutter_bootstrap.js" async></script>
 </body></html>

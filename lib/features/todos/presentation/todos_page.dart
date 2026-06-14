@@ -3,6 +3,7 @@
 
 import 'package:auto_route/auto_route.dart';
 import 'package:disastron/features/todos/presentation/emergency_todos_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,12 +22,12 @@ class TodosPage extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Text(
-            'Emergency checklist',
+            'todos_heading'.tr(),
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Items can be added here or by the assistant in Messages (via structured replies).',
+            'todos_subtitle'.tr(),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -38,7 +39,7 @@ class TodosPage extends ConsumerWidget {
                 if (list.isEmpty) {
                   return Center(
                     child: Text(
-                      'No items yet.',
+                      'todos_empty'.tr(),
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   );
@@ -51,7 +52,9 @@ class TodosPage extends ConsumerWidget {
                     return CheckboxListTile(
                       title: Text(t.title),
                       subtitle: Text(
-                        'id: ${t.id}',
+                        'todos_id_prefix'.tr(
+                          namedArgs: <String, String>{'id': t.id},
+                        ),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       value: t.done,
@@ -80,7 +83,7 @@ class TodosPage extends ConsumerWidget {
           FilledButton.icon(
             onPressed: () => _promptAdd(context, ref),
             icon: const Icon(Icons.add),
-            label: const Text('Add item'),
+            label: Text('todos_add'.tr()),
           ),
         ],
       ),
@@ -93,22 +96,21 @@ class TodosPage extends ConsumerWidget {
       builder: (BuildContext ctx) {
         final TextEditingController c = TextEditingController();
         return AlertDialog(
-          title: const Text('New checklist item'),
+          title: Text('todos_add_dialog_title'.tr()),
           content: TextField(
             controller: c,
             autofocus: true,
-            decoration:
-                const InputDecoration(hintText: 'Short actionable step'),
+            decoration: InputDecoration(hintText: 'todos_add_hint'.tr()),
             onSubmitted: (String s) => Navigator.pop(ctx, s),
           ),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text('cancel'.tr()),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, c.text),
-              child: const Text('Add'),
+              child: Text('todos_add_confirm'.tr()),
             ),
           ],
         );

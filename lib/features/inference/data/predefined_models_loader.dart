@@ -32,6 +32,8 @@ abstract final class PredefinedInferenceModelsLoader {
     }
 
     final String defaultId = _requiredString(decoded, 'default_preset_id');
+    final String defaultWebId =
+        _optionalString(decoded, 'default_preset_id_web') ?? defaultId;
     final Object? modelsNode = decoded['models'];
     if (modelsNode is! YamlList) {
       throw const FormatException(
@@ -58,10 +60,19 @@ abstract final class PredefinedInferenceModelsLoader {
         '$kInferenceModelsAssetPath',
       ),
     );
+    final PredefinedInferenceModel defaultPresetWeb = models.firstWhere(
+      (PredefinedInferenceModel m) => m.id == defaultWebId,
+      orElse: () => throw FormatException(
+        'default_preset_id_web "$defaultWebId" must match a model id in "models" at '
+        '$kInferenceModelsAssetPath',
+      ),
+    );
 
     return PredefinedInferenceModelsCatalog(
       defaultPresetId: defaultId,
+      defaultPresetIdWeb: defaultWebId,
       defaultPreset: defaultPreset,
+      defaultPresetWeb: defaultPresetWeb,
       models: List<PredefinedInferenceModel>.unmodifiable(models),
     );
   }
@@ -79,7 +90,50 @@ abstract final class PredefinedInferenceModelsLoader {
       access: _parseAccess(map['access']),
       multimodal: _optionalBool(map['multimodal']) ?? false,
       supportsLora: _optionalBool(map['supports_lora']) ?? false,
+      platforms: _parsePlatforms(map['platforms']),
     );
+  }
+
+  static List<InferencePresetPlatform> _parsePlatforms(Object? raw) {
+    if (raw == null) {
+      return const <InferencePresetPlatform>[
+        InferencePresetPlatform.android,
+        InferencePresetPlatform.ios,
+      ];
+    }
+    if (raw is! YamlList || raw.isEmpty) {
+      throw const FormatException(
+        'platforms must be a non-empty list of android, ios, or web',
+      );
+    }
+    final List<InferencePresetPlatform> out = <InferencePresetPlatform>[];
+    for (final Object? entry in raw) {
+      if (entry is! String || entry.trim().isEmpty) {
+        throw const FormatException('platforms entries must be strings');
+      }
+      switch (entry.trim().toLowerCase()) {
+        case 'android':
+          out.add(InferencePresetPlatform.android);
+        case 'ios':
+          out.add(InferencePresetPlatform.ios);
+        case 'web':
+          out.add(InferencePresetPlatform.web);
+        default:
+          throw FormatException('Unknown platform "$entry"');
+      }
+    }
+    return List<InferencePresetPlatform>.unmodifiable(out);
+  }
+
+  static String? _optionalString(YamlMap map, String key) {
+    final Object? value = map[key];
+    if (value == null) {
+      return null;
+    }
+    if (value is! String || value.trim().isEmpty) {
+      throw FormatException('Missing or empty "$key" in inference_models.yaml');
+    }
+    return value.trim();
   }
 
   static int? _optionalPositiveInt(Object? value) {

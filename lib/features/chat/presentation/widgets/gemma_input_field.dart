@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:disastron/features/chat/presentation/chat_handlers.dart';
 import 'package:disastron/features/chat/presentation/service/gemma_service.dart';
 import 'package:disastron/features/chat/presentation/widgets/chat_message.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 
@@ -57,7 +58,11 @@ class GemmaInputFieldState extends State<GemmaInputField> {
           setState(() {
             _isGenerating = false;
             _message = Message.text(
-              text: '${_message.text}\n[Error: $e]',
+              text: '${_message.text}\n${'chat_stream_error'.tr(
+                namedArgs: <String, String>{
+                  'error': '$e',
+                },
+              )}',
             );
           });
         }
@@ -99,7 +104,7 @@ class GemmaInputFieldState extends State<GemmaInputField> {
           Padding(
             padding: const EdgeInsets.only(bottom: 4, right: 4),
             child: IconButton(
-              tooltip: 'Stop generating',
+              tooltip: 'chat_stop_generating'.tr(),
               icon: Icon(
                 Icons.stop_circle_outlined,
                 size: 28,

@@ -14,4 +14,5 @@ abstract final class PrefsKeys {
   static const String toolPlacements = 'tool_placements_v1';
   static const String wikiYamlSyncBannerDismissed =
       'wiki_yaml_sync_banner_dismissed';
+  static const String webPwaNoticeShown = 'web_pwa_notice_shown_v1';
 }
