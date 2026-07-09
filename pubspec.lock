@@ -1566,10 +1566,10 @@ packages:
     dependency: "direct main"
     description:
       name: torch_light
-      sha256: a1397443a375c6991151547cb77361085df6cf8aa59999292e683db7385a0d15
+      sha256: "6a2659cf413d11b838540d15f2a18ead0e7736250cecdacb153cff654beb5c4a"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "2.0.0"
   typed_data:
     dependency: transitive
     description:
@@ -1851,5 +1851,5 @@ packages:
     source: hosted
     version: "2.2.4"
 sdks:
-  dart: ">=3.11.0 <4.0.0"
-  flutter: ">=3.41.0"
+  dart: ">=3.12.0 <4.0.0"
+  flutter: ">=3.44.0"
