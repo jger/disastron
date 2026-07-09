@@ -12,7 +12,5 @@ void showAppSnackBar(
   if (messenger == null) {
     return;
   }
-  messenger.showSnackBar(
-    SnackBar(content: Text(message), action: action),
-  );
+  messenger.showSnackBar(SnackBar(content: Text(message), action: action));
 }

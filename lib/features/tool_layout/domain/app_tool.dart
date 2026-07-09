@@ -3,23 +3,13 @@
 
 import 'package:flutter/material.dart';
 
-enum AppToolKind {
-  quickAction,
-  settings,
-  wikiArticle,
-}
+enum AppToolKind { quickAction, settings, wikiArticle }
 
-enum AppToolSurface {
-  dashboard,
-  drawer,
-}
+enum AppToolSurface { dashboard, drawer }
 
 /// Per-tool visibility on dashboard and drawer.
 class ToolPlacementFlags {
-  const ToolPlacementFlags({
-    required this.dashboard,
-    required this.drawer,
-  });
+  const ToolPlacementFlags({required this.dashboard, required this.drawer});
 
   factory ToolPlacementFlags.fromJson(Map<String, dynamic> json) {
     return ToolPlacementFlags(
@@ -31,10 +21,7 @@ class ToolPlacementFlags {
   final bool dashboard;
   final bool drawer;
 
-  ToolPlacementFlags copyWith({
-    bool? dashboard,
-    bool? drawer,
-  }) {
+  ToolPlacementFlags copyWith({bool? dashboard, bool? drawer}) {
     return ToolPlacementFlags(
       dashboard: dashboard ?? this.dashboard,
       drawer: drawer ?? this.drawer,
@@ -42,9 +29,9 @@ class ToolPlacementFlags {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'dashboard': dashboard,
-        'drawer': drawer,
-      };
+    'dashboard': dashboard,
+    'drawer': drawer,
+  };
 }
 
 /// Static metadata for a configurable tool (labels may be overridden at runtime for wiki).

@@ -23,16 +23,17 @@ final class SosMorseTone {
 
   static const AudioSessionConfiguration _sosSession =
       AudioSessionConfiguration(
-    avAudioSessionCategory: AVAudioSessionCategory.playback,
-    avAudioSessionCategoryOptions:
-        AVAudioSessionCategoryOptions.defaultToSpeaker,
-    avAudioSessionMode: AVAudioSessionMode.defaultMode,
-    androidAudioAttributes: AndroidAudioAttributes(
-      contentType: AndroidAudioContentType.sonification,
-      usage: AndroidAudioUsage.alarm,
-    ),
-    androidAudioFocusGainType: AndroidAudioFocusGainType.gainTransientExclusive,
-  );
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions:
+            AVAudioSessionCategoryOptions.defaultToSpeaker,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
+        androidAudioAttributes: AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.sonification,
+          usage: AndroidAudioUsage.alarm,
+        ),
+        androidAudioFocusGainType:
+            AndroidAudioFocusGainType.gainTransientExclusive,
+      );
 
   Future<void> _prepareMobileAudioSession() async {
     if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
@@ -43,10 +44,7 @@ final class SosMorseTone {
       if (_mobileAudioSessionHolders == 0) {
         _mobileAudioSessionBackup = session.configuration;
         await session.configure(_sosSession);
-        await session.setActive(
-          true,
-          fallbackConfiguration: _sosSession,
-        );
+        await session.setActive(true, fallbackConfiguration: _sosSession);
       }
       _mobileAudioSessionHolders++;
     } on Object {
@@ -87,17 +85,9 @@ final class SosMorseTone {
     try {
       await _prepareMobileAudioSession();
       if (!SoLoud.instance.isInitialized) {
-        await SoLoud.instance.init(
-          bufferSize: 4096,
-          channels: Channels.mono,
-        );
+        await SoLoud.instance.init(bufferSize: 4096, channels: Channels.mono);
       }
-      _sine = await SoLoud.instance.loadWaveform(
-        WaveForm.sin,
-        false,
-        0.22,
-        0,
-      );
+      _sine = await SoLoud.instance.loadWaveform(WaveForm.sin, false, 0.22, 0);
       SoLoud.instance.setWaveformFreq(_sine!, kSosMorseDitHz);
       _ready = true;
     } on Object {
@@ -114,11 +104,7 @@ final class SosMorseTone {
     }
     try {
       SoLoud.instance.setWaveformFreq(_sine!, frequencyHz);
-      _handle = SoLoud.instance.play(
-        _sine!,
-        volume: 0.45,
-        looping: true,
-      );
+      _handle = SoLoud.instance.play(_sine!, volume: 0.45, looping: true);
     } on Object {
       _handle = null;
       unawaited(SystemSound.play(SystemSoundType.alert));

@@ -19,12 +19,11 @@ class FlutterGemmaChatRuntimeGateway implements ChatRuntimeGateway {
     required int maxTokens,
     bool supportImage = false,
     int? maxNumImages,
-  }) =>
-      FlutterGemma.getActiveModel(
-        maxTokens: maxTokens,
-        supportImage: supportImage,
-        maxNumImages: maxNumImages,
-      );
+  }) => FlutterGemma.getActiveModel(
+    maxTokens: maxTokens,
+    supportImage: supportImage,
+    maxNumImages: maxNumImages,
+  );
 
   @override
   bool hasActiveModel() => FlutterGemma.hasActiveModel();

@@ -115,8 +115,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _initError = null;
       _runtimeImageSupportEnabled = runtimeVisionEnabled;
     });
-    ref.read(chatResetProvider.notifier).state =
-        () => unawaited(_confirmResetChat(context));
+    ref.read(chatResetProvider.notifier).state = () =>
+        unawaited(_confirmResetChat(context));
     if (showVisionFallbackSnack) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!context.mounted) {
@@ -147,8 +147,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       } else {
         system = null;
       }
-      final ModelRegistrySnapshot registry =
-          await ref.read(modelRegistrySnapshotProvider.future);
+      final ModelRegistrySnapshot registry = await ref.read(
+        modelRegistrySnapshotProvider.future,
+      );
       final bool visionRequested = activeRegistryEntrySupportsVision(registry);
 
       final String? activeEntryId = registry.activeEntryId;
@@ -176,10 +177,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           if (!mounted) {
             return;
           }
-          await _gemma.init(
-            systemInstruction: system,
-            loraPath: loraPath,
-          );
+          await _gemma.init(systemInstruction: system, loraPath: loraPath);
           _markChatReady(
             runtimeVisionEnabled: false,
             showVisionFallbackSnack: true,
@@ -324,39 +322,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
         );
       })
-      ..listen<LocalGemmaModelUi>(
-        localGemmaModelProvider,
-        (LocalGemmaModelUi? previous, LocalGemmaModelUi next) {
-          if (next.isReady && !_chatReady) {
-            unawaited(_ensureChatReady(reloadInferenceWeights: true));
+      ..listen<LocalGemmaModelUi>(localGemmaModelProvider, (
+        LocalGemmaModelUi? previous,
+        LocalGemmaModelUi next,
+      ) {
+        if (next.isReady && !_chatReady) {
+          unawaited(_ensureChatReady(reloadInferenceWeights: true));
+        }
+        if (!next.isReady && _chatReady) {
+          unawaited(_gemma.close());
+          if (mounted) {
+            setState(() {
+              _chatReady = false;
+              _runtimeImageSupportEnabled = false;
+              _messages.clear();
+              _initError = null;
+            });
+            ref.read(chatResetProvider.notifier).state = null;
           }
-          if (!next.isReady && _chatReady) {
-            unawaited(_gemma.close());
-            if (mounted) {
-              setState(() {
-                _chatReady = false;
-                _runtimeImageSupportEnabled = false;
-                _messages.clear();
-                _initError = null;
-              });
-              ref.read(chatResetProvider.notifier).state = null;
-            }
-          }
-        },
-      )
-      ..listen<bool>(
-        useDisastronContextProvider,
-        (bool? previous, bool next) {
-          if (previous != null && previous != next) {
-            unawaited(_performReset(reloadInferenceWeights: false));
-          }
-        },
-      );
+        }
+      })
+      ..listen<bool>(useDisastronContextProvider, (bool? previous, bool next) {
+        if (previous != null && previous != next) {
+          unawaited(_performReset(reloadInferenceWeights: false));
+        }
+      });
 
     final LocalGemmaModelUi modelUi = ref.watch(localGemmaModelProvider);
-    final AsyncValue<bool> accidentDone =
-        ref.watch(firstChatAccidentPromptProvider);
-    final bool showAccidentChips = modelUi.isReady &&
+    final AsyncValue<bool> accidentDone = ref.watch(
+      firstChatAccidentPromptProvider,
+    );
+    final bool showAccidentChips =
+        modelUi.isReady &&
         _chatReady &&
         accidentDone.hasValue &&
         accidentDone.requireValue == false &&
@@ -383,9 +380,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
             )
           else if (!_chatReady)
-            const LoadingWidget(
-              message: 'Starting offline assistant…',
-            )
+            const LoadingWidget(message: 'Starting offline assistant…')
           else
             Column(
               children: <Widget>[

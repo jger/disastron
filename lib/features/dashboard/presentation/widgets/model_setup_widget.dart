@@ -121,7 +121,9 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       return;
     }
     final ModelFileType fileType = modelFileTypeForUrl(url);
-    await ref.read(localGemmaModelProvider.notifier).installFromNetwork(
+    await ref
+        .read(localGemmaModelProvider.notifier)
+        .installFromNetwork(
           url,
           modelType: modelTypeForInferenceUrl(url),
           fileType: fileType,
@@ -136,9 +138,9 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     await ref.read(huggingfaceTokenProvider.notifier).save(t);
     if (mounted) {
       _tokenController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('model_hf_token_saved'.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('model_hf_token_saved'.tr())));
     }
   }
 
@@ -146,9 +148,9 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     await ref.read(huggingfaceTokenProvider.notifier).clear();
     if (mounted) {
       _tokenController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('model_token_cleared'.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('model_token_cleared'.tr())));
     }
   }
 
@@ -174,16 +176,18 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<LocalGemmaModelUi>(localGemmaModelProvider,
-        (LocalGemmaModelUi? previous, LocalGemmaModelUi next) {
+    ref.listen<LocalGemmaModelUi>(localGemmaModelProvider, (
+      LocalGemmaModelUi? previous,
+      LocalGemmaModelUi next,
+    ) {
       if (next.phase == LocalGemmaPhase.ready &&
           (previous == null || previous.phase != LocalGemmaPhase.ready)) {
         if (mounted) {
           setState(() => _showReplaceFlow = false);
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('model_ready_snack'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('model_ready_snack'.tr())));
       }
     });
 
@@ -291,8 +295,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                 child: Text(
                   'model_low_storage'.tr(),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             const SizedBox(height: 24),
@@ -310,14 +314,16 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                         _tokenController.clear();
                       }
                     }
-                    final LocalGemmaModel notifier =
-                        ref.read(localGemmaModelProvider.notifier);
+                    final LocalGemmaModel notifier = ref.read(
+                      localGemmaModelProvider.notifier,
+                    );
                     await notifier.resumePendingNetworkInstall();
                     if (!context.mounted) {
                       return;
                     }
-                    final LocalGemmaModelUi after =
-                        ref.read(localGemmaModelProvider);
+                    final LocalGemmaModelUi after = ref.read(
+                      localGemmaModelProvider,
+                    );
                     if (after.phase == LocalGemmaPhase.error &&
                         after.lastFailedDownloadUrl != null) {
                       await notifier.installFromNetwork(
@@ -376,8 +382,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             Text(
               'model_none_body'.tr(),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -460,8 +466,9 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               LinearProgressIndicator(
-                backgroundColor:
-                    Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                backgroundColor: Theme.of(
+                  ctx,
+                ).colorScheme.surfaceContainerHighest,
               ),
               const SizedBox(height: 12),
               Text(
@@ -472,8 +479,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               Text(
                 'model_save_background'.tr(),
                 style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -517,8 +524,9 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
   }
 
   Widget _installedPanel(BuildContext context) {
-    final AsyncValue<ModelRegistrySnapshot> reg =
-        ref.watch(modelRegistrySnapshotProvider);
+    final AsyncValue<ModelRegistrySnapshot> reg = ref.watch(
+      modelRegistrySnapshotProvider,
+    );
 
     return reg.when(
       loading: () => const Card(
@@ -530,10 +538,12 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       error: (Object e, StackTrace _) =>
           Text('model_list_error'.tr(args: <String>['$e'])),
       data: (ModelRegistrySnapshot snap) {
-        final ActiveInferenceModelSummary? summary =
-            readActiveInferenceSummary(registry: snap);
-        final LoraRegistrySnapshot? loraSnap =
-            ref.watch(loraRegistrySnapshotProvider).value;
+        final ActiveInferenceModelSummary? summary = readActiveInferenceSummary(
+          registry: snap,
+        );
+        final LoraRegistrySnapshot? loraSnap = ref
+            .watch(loraRegistrySnapshotProvider)
+            .value;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -571,10 +581,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                       SelectableText(
                         summary.detailLine,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ],
@@ -585,96 +593,93 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             if (snap.entries.isNotEmpty) ...<Widget>[
               Text(
                 'model_installed_heading'.tr(),
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
-              ...snap.entries.map(
-                (InstalledModelEntry e) {
-                  final InstalledLoraEntry? activeLora =
-                      loraSnap?.activeLoraForModel(e.id);
-                  final PredefinedInferenceModel? preset = e.presetId != null
-                      ? presetInferenceModelById(e.presetId!)
-                      : null;
-                  final bool supportsLora =
-                      e.importedFromPicker || (preset?.supportsLora ?? false);
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      title: Text(e.displayTitle),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            '${e.modelType.name} · ${e.fileType.name} · ${inferenceBackendForFileType(e.fileType).displayLabel}'
-                            '${e.presetId != null ? ' · preset' : ''}',
-                          ),
-                          if (activeLora != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Chip(
-                                label: Text('LoRA: ${activeLora.displayLabel}'),
-                                avatar: const Icon(Icons.bolt, size: 16),
-                                visualDensity: VisualDensity.compact,
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                              ),
+              ...snap.entries.map((InstalledModelEntry e) {
+                final InstalledLoraEntry? activeLora = loraSnap
+                    ?.activeLoraForModel(e.id);
+                final PredefinedInferenceModel? preset = e.presetId != null
+                    ? presetInferenceModelById(e.presetId!)
+                    : null;
+                final bool supportsLora =
+                    e.importedFromPicker || (preset?.supportsLora ?? false);
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    title: Text(e.displayTitle),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          '${e.modelType.name} · ${e.fileType.name} · ${inferenceBackendForFileType(e.fileType).displayLabel}'
+                          '${e.presetId != null ? ' · preset' : ''}',
+                        ),
+                        if (activeLora != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Chip(
+                              label: Text('LoRA: ${activeLora.displayLabel}'),
+                              avatar: const Icon(Icons.bolt, size: 16),
+                              visualDensity: VisualDensity.compact,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
                             ),
-                        ],
-                      ),
-                      isThreeLine: activeLora != null,
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          if (snap.activeEntryId == e.id)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: Text(
-                                'model_active_badge'.tr(),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelLarge
-                                    ?.copyWith(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                            )
-                          else
-                            TextButton(
-                              onPressed: () => _onUseEntry(e),
-                              child: Text('model_use'.tr()),
-                            ),
-                          if (supportsLora)
-                            IconButton(
-                              tooltip: 'Manage LoRAs',
-                              icon: const Icon(Icons.bolt),
-                              onPressed: () {
-                                LoraManagerSheet.show(
-                                  context,
-                                  e.id,
-                                  e.displayTitle,
-                                );
-                              },
-                            ),
-                          IconButton(
-                            tooltip: 'model_save_copy_tooltip'.tr(),
-                            icon: const Icon(Icons.save_alt_outlined),
-                            onPressed: () => _exportEntry(e),
                           ),
-                          IconButton(
-                            tooltip: 'model_remove_tooltip'.tr(),
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () => _confirmRemoveEntry(e),
-                          ),
-                        ],
-                      ),
+                      ],
                     ),
-                  );
-                },
-              ),
+                    isThreeLine: activeLora != null,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        if (snap.activeEntryId == e.id)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: Text(
+                              'model_active_badge'.tr(),
+                              style: Theme.of(context).textTheme.labelLarge
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          )
+                        else
+                          TextButton(
+                            onPressed: () => _onUseEntry(e),
+                            child: Text('model_use'.tr()),
+                          ),
+                        if (supportsLora)
+                          IconButton(
+                            tooltip: 'Manage LoRAs',
+                            icon: const Icon(Icons.bolt),
+                            onPressed: () {
+                              LoraManagerSheet.show(
+                                context,
+                                e.id,
+                                e.displayTitle,
+                              );
+                            },
+                          ),
+                        IconButton(
+                          tooltip: 'model_save_copy_tooltip'.tr(),
+                          icon: const Icon(Icons.save_alt_outlined),
+                          onPressed: () => _exportEntry(e),
+                        ),
+                        IconButton(
+                          tooltip: 'model_remove_tooltip'.tr(),
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () => _confirmRemoveEntry(e),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
               const SizedBox(height: 12),
             ],
             FilledButton.icon(
@@ -739,13 +744,11 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       subtitle: Text(
         saved ? 'model_hf_gated_uses_saved'.tr() : 'model_hf_not_required'.tr(),
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
       children: <Widget>[
-        SelectableText(
-          'model_hf_read_token'.tr(),
-        ),
+        SelectableText('model_hf_read_token'.tr()),
         const SizedBox(height: 8),
         if (saved) ...<Widget>[
           OutlinedButton(
@@ -764,10 +767,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     );
   }
 
-  Widget _presetTabBody(
-    BuildContext context,
-    AsyncValue<String?> tokenAsync,
-  ) {
+  Widget _presetTabBody(BuildContext context, AsyncValue<String?> tokenAsync) {
     final List<PredefinedInferenceModel> publicModels =
         kPredefinedInferenceModels
             .where((PredefinedInferenceModel m) => !m.requiresHuggingFaceToken)
@@ -806,28 +806,28 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               publicModels.isEmpty
                   ? 'model_preset_tap_gated'.tr()
                   : gatedModels.isEmpty
-                      ? 'model_preset_tap'.tr()
-                      : 'model_preset_tap_public'.tr(),
+                  ? 'model_preset_tap'.tr()
+                  : 'model_preset_tap_public'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 12),
             _optionalHfTokenSection(context, tokenAsync),
             const SizedBox(height: 16),
             Text(
               'model_available_downloads'.tr(),
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             if (publicModels.isNotEmpty) ...<Widget>[
               Text(
                 'model_public_presets'.tr(),
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               presetTiles(publicModels),
@@ -838,9 +838,9 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               const SizedBox(height: 12),
               Text(
                 'model_gated_presets'.tr(),
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               presetTiles(gatedModels),
@@ -861,8 +861,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             Text(
               'model_pick_file_help'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 16),
             FilledButton.icon(
@@ -886,8 +886,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             Text(
               'model_url_help'.tr(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 12),
             TextField(

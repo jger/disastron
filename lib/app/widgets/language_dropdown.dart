@@ -37,7 +37,7 @@ class LanguageDropdown extends ConsumerWidget {
         ),
       ),
       loading: () => const LinearProgressIndicator(),
-      error: (Object _, StackTrace __) => const SizedBox.shrink(),
+      error: (Object _, StackTrace _) => const SizedBox.shrink(),
     );
   }
 }

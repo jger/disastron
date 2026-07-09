@@ -94,8 +94,9 @@ class ModelDownloadResumeService {
       partialBytes = await file.length();
     }
 
-    final bool installed =
-        await FlutterGemma.isModelInstalled(pending.filename);
+    final bool installed = await FlutterGemma.isModelInstalled(
+      pending.filename,
+    );
     if (installed) {
       developer.log(
         'detectResumable: model already installed (${pending.filename})',
@@ -112,10 +113,7 @@ class ModelDownloadResumeService {
     try {
       task = await FileDownloader().taskForId(taskId);
     } on Object catch (e) {
-      developer.log(
-        'taskForId failed: $e',
-        name: 'ModelDownloadResumeService',
-      );
+      developer.log('taskForId failed: $e', name: 'ModelDownloadResumeService');
     }
 
     final bool hasPartialFile = fileExists && partialBytes > 0;

@@ -44,10 +44,12 @@ Future<void> openAppTool(
 }
 
 Future<void> _openCallHelp(BuildContext context, WidgetRef ref) async {
-  final DashboardDeviceSnapshot snap =
-      await ref.read(dashboardDeviceProvider.future);
-  final EmergencyNumbersPack pack =
-      await ref.read(emergencyNumbersPackProvider.future);
+  final DashboardDeviceSnapshot snap = await ref.read(
+    dashboardDeviceProvider.future,
+  );
+  final EmergencyNumbersPack pack = await ref.read(
+    emergencyNumbersPackProvider.future,
+  );
   final List<EmergencyNumberEntry> lines = pack.forCountry(snap.isoCountryCode);
 
   if (!context.mounted) {
@@ -76,8 +78,9 @@ Future<void> _openCallHelp(BuildContext context, WidgetRef ref) async {
           const SizedBox(height: 8),
           Text(
             snap.isoCountryCode != null
-                ? 'tool_layout_call_help_region'
-                    .tr(args: <String>[snap.isoCountryCode!])
+                ? 'tool_layout_call_help_region'.tr(
+                    args: <String>[snap.isoCountryCode!],
+                  )
                 : 'tool_layout_call_help_region_unknown'.tr(),
             style: Theme.of(ctx).textTheme.bodySmall,
           ),
@@ -85,11 +88,13 @@ Future<void> _openCallHelp(BuildContext context, WidgetRef ref) async {
           ListView.separated(
             shrinkWrap: true,
             itemCount: lines.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (BuildContext context, int i) {
               final EmergencyNumberEntry e = lines[i];
-              final String telDigits =
-                  e.number.replaceAll(RegExp(r'[^\d+]'), '');
+              final String telDigits = e.number.replaceAll(
+                RegExp(r'[^\d+]'),
+                '',
+              );
               return ListTile(
                 leading: const Icon(Icons.phone_in_talk),
                 title: Text(e.label),

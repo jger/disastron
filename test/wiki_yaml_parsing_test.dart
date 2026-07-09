@@ -6,8 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('wiki.yaml Bundled Assets Validation', () {
-    test('should successfully parse the bundled assets/wiki/wiki.yaml file',
-        () {
+    test('should successfully parse the bundled assets/wiki/wiki.yaml file', () {
       final file = File('assets/wiki/wiki.yaml');
       expect(
         file.existsSync(),

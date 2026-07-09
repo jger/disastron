@@ -11,9 +11,8 @@ Future<String?> showHuggingFaceTokenPasteDialog(
   return showDialog<String>(
     context: context,
     barrierDismissible: false,
-    builder: (BuildContext dialogContext) => _HuggingFaceTokenPasteDialog(
-      modelTitle: modelTitle,
-    ),
+    builder: (BuildContext dialogContext) =>
+        _HuggingFaceTokenPasteDialog(modelTitle: modelTitle),
   );
 }
 
@@ -55,8 +54,9 @@ class _HuggingFaceTokenPasteDialogState
             Text(
               widget.modelTitle == null
                   ? 'hf_token_gated_generic'.tr()
-                  : 'hf_token_gated_model'
-                      .tr(args: <String>[widget.modelTitle!]),
+                  : 'hf_token_gated_model'.tr(
+                      args: <String>[widget.modelTitle!],
+                    ),
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),

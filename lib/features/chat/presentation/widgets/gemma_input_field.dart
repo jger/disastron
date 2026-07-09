@@ -35,35 +35,34 @@ class GemmaInputFieldState extends State<GemmaInputField> {
 
   Future<void> _processMessages() async {
     setState(() => _isGenerating = true);
-    _subscription =
-        widget.gemmaService.processMessageAsync(widget.userMessage).listen(
-      (ModelResponse response) {
-        if (response is TextResponse) {
-          setState(() {
-            _message = Message.text(
-              text: '${_message.text}${response.token}',
-            );
-          });
-        }
-      },
-      onDone: () async {
-        if (mounted) {
-          setState(() => _isGenerating = false);
-        }
-        await widget.streamHandled(_message);
-      },
-      onError: (Object e, StackTrace st) async {
-        if (mounted) {
-          setState(() {
-            _isGenerating = false;
-            _message = Message.text(
-              text: '${_message.text}\n[Error: $e]',
-            );
-          });
-        }
-        await widget.streamHandled(_message);
-      },
-    );
+    _subscription = widget.gemmaService
+        .processMessageAsync(widget.userMessage)
+        .listen(
+          (ModelResponse response) {
+            if (response is TextResponse) {
+              setState(() {
+                _message = Message.text(
+                  text: '${_message.text}${response.token}',
+                );
+              });
+            }
+          },
+          onDone: () async {
+            if (mounted) {
+              setState(() => _isGenerating = false);
+            }
+            await widget.streamHandled(_message);
+          },
+          onError: (Object e, StackTrace st) async {
+            if (mounted) {
+              setState(() {
+                _isGenerating = false;
+                _message = Message.text(text: '${_message.text}\n[Error: $e]');
+              });
+            }
+            await widget.streamHandled(_message);
+          },
+        );
   }
 
   Future<void> _stopGeneration() async {
@@ -92,9 +91,7 @@ class GemmaInputFieldState extends State<GemmaInputField> {
     return Stack(
       alignment: Alignment.bottomRight,
       children: <Widget>[
-        SingleChildScrollView(
-          child: ChatMessageWidget(message: _message),
-        ),
+        SingleChildScrollView(child: ChatMessageWidget(message: _message)),
         if (_isGenerating)
           Padding(
             padding: const EdgeInsets.only(bottom: 4, right: 4),

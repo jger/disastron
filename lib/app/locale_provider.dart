@@ -30,8 +30,9 @@ class AppLocale extends _$AppLocale {
     final bool termsAccepted = prefs.getBool(PrefsKeys.termsAccepted) ?? false;
     final String code =
         prefs.getString(PrefsKeys.localeCode) ?? AppLocales.codes.first;
-    final String safe =
-        AppLocales.codes.contains(code) ? code : AppLocales.codes.first;
+    final String safe = AppLocales.codes.contains(code)
+        ? code
+        : AppLocales.codes.first;
     return AppLocaleState(
       localeCode: safe,
       initialChoiceDone: initialChoiceDone,
@@ -40,8 +41,9 @@ class AppLocale extends _$AppLocale {
   }
 
   Future<void> setLocaleCode(String code) async {
-    final String safe =
-        AppLocales.codes.contains(code) ? code : AppLocales.codes.first;
+    final String safe = AppLocales.codes.contains(code)
+        ? code
+        : AppLocales.codes.first;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(PrefsKeys.localeCode, safe);
     final AppLocaleState cur = state.value ?? await future;
@@ -55,8 +57,9 @@ class AppLocale extends _$AppLocale {
   }
 
   Future<void> completeInitialChoice(String code) async {
-    final String safe =
-        AppLocales.codes.contains(code) ? code : AppLocales.codes.first;
+    final String safe = AppLocales.codes.contains(code)
+        ? code
+        : AppLocales.codes.first;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(PrefsKeys.localeCode, safe);
     await prefs.setBool(PrefsKeys.languageInitialDone, true);

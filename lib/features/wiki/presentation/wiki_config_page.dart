@@ -46,8 +46,9 @@ class WikiConfigPage extends ConsumerWidget {
       ),
       body: sourcesAsync.when(
         data: (sources) {
-          final localSources =
-              sources.where((s) => s.locale == currentLocale).toList();
+          final localSources = sources
+              .where((s) => s.locale == currentLocale)
+              .toList();
 
           return localSources.isEmpty
               ? Center(
@@ -86,13 +87,11 @@ class WikiConfigPage extends ConsumerWidget {
                           children: [
                             SelectableText(
                               s.url,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
+                              style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                                   ),
                             ),
                             const SizedBox(height: 8),
@@ -106,15 +105,18 @@ class WikiConfigPage extends ConsumerWidget {
                                     source: s,
                                     currentLocale: currentLocale,
                                   ),
-                                  icon:
-                                      const Icon(Icons.edit_outlined, size: 18),
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    size: 18,
+                                  ),
                                   label: Text('wiki_edit'.tr()),
                                 ),
                                 const SizedBox(width: 8),
                                 TextButton.icon(
                                   style: TextButton.styleFrom(
-                                    foregroundColor:
-                                        Theme.of(context).colorScheme.error,
+                                    foregroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.error,
                                   ),
                                   onPressed: () =>
                                       _confirmDeleteSource(context, ref, s),
@@ -157,8 +159,9 @@ class WikiConfigPage extends ConsumerWidget {
     final isEdit = source != null;
     final urlController = TextEditingController(text: source?.url ?? '');
     final titleController = TextEditingController(text: source?.title ?? '');
-    final categoryController =
-        TextEditingController(text: source?.category ?? '');
+    final categoryController = TextEditingController(
+      text: source?.category ?? '',
+    );
     String selectedLocale = source?.locale ?? currentLocale;
 
     final formKey = GlobalKey<FormState>();
@@ -260,10 +263,9 @@ class WikiConfigPage extends ConsumerWidget {
                 );
 
                 if (isEdit) {
-                  await ref.read(wikiSourcesProvider.notifier).updateSource(
-                        source.url,
-                        inputSource,
-                      );
+                  await ref
+                      .read(wikiSourcesProvider.notifier)
+                      .updateSource(source.url, inputSource);
                 } else {
                   await ref
                       .read(wikiSourcesProvider.notifier)
@@ -372,9 +374,9 @@ class WikiConfigPage extends ConsumerWidget {
       ref.invalidate(wikiDownloadProvider);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('wiki_import_success'.tr())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('wiki_import_success'.tr())));
       }
     } catch (e) {
       if (context.mounted) {

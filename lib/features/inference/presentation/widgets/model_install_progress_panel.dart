@@ -81,16 +81,13 @@ class ModelInstallProgressPanel extends ConsumerWidget {
               Text(
                 status.subtitle!,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
               ),
             ],
             const SizedBox(height: 24),
-            TextButton(
-              onPressed: onCancel,
-              child: Text('cancel'.tr()),
-            ),
+            TextButton(onPressed: onCancel, child: Text('cancel'.tr())),
           ],
         );
     }
@@ -115,17 +112,17 @@ class ModelInstallProgressPanel extends ConsumerWidget {
               child: Text(
                 status.title,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: scheme.onSurface,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: scheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             if (ui.progress > 0 && ui.progress < 100)
               Text(
                 '${ui.progress}%',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
           ],
         ),
@@ -133,9 +130,9 @@ class ModelInstallProgressPanel extends ConsumerWidget {
           const SizedBox(height: 6),
           Text(
             status.subtitle!,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
         const SizedBox(height: 10),
@@ -149,10 +146,7 @@ class ModelInstallProgressPanel extends ConsumerWidget {
         const SizedBox(height: 8),
         Align(
           alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: onCancel,
-            child: Text('cancel'.tr()),
-          ),
+          child: TextButton(onPressed: onCancel, child: Text('cancel'.tr())),
         ),
       ],
     );

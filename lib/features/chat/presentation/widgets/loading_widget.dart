@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 
 class LoadingWidget extends StatelessWidget {
-  const LoadingWidget({
-    required this.message,
-    this.progress,
-    super.key,
-  });
+  const LoadingWidget({required this.message, this.progress, super.key});
   final String message;
   final int? progress;
 

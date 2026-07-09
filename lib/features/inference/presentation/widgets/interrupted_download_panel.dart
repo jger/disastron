@@ -5,10 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Resume or discard a network download interrupted by cancel, app kill, or network loss.
 class InterruptedDownloadPanel extends ConsumerWidget {
-  const InterruptedDownloadPanel({
-    super.key,
-    this.compact = false,
-  });
+  const InterruptedDownloadPanel({super.key, this.compact = false});
 
   final bool compact;
 
@@ -48,9 +45,9 @@ class InterruptedDownloadPanel extends ConsumerWidget {
                       child: Text(
                         copy.title,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: scheme.onTertiaryContainer,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          color: scheme.onTertiaryContainer,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -60,8 +57,8 @@ class InterruptedDownloadPanel extends ConsumerWidget {
                   Text(
                     copy.subtitle!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: scheme.onTertiaryContainer,
-                        ),
+                      color: scheme.onTertiaryContainer,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 10),
@@ -102,9 +99,9 @@ class InterruptedDownloadPanel extends ConsumerWidget {
           Text(
             copy.subtitle!,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
         const SizedBox(height: 24),

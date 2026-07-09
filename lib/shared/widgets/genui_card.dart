@@ -37,20 +37,20 @@ class GenUiCard extends StatelessWidget {
                       child: Text(
                         title!,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  if (trailing != null) trailing!,
+                  ?trailing,
                 ],
               ),
             if (subtitle != null) ...<Widget>[
               const SizedBox(height: 4),
               Text(
                 subtitle!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
               ),
             ],
             const SizedBox(height: 8),

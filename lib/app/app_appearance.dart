@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// In-app appearance (not system); includes dedicated high-contrast themes.
-enum AppAppearanceMode {
-  light,
-  dark,
-  lightHighContrast,
-  darkHighContrast,
-}
+enum AppAppearanceMode { light, dark, lightHighContrast, darkHighContrast }
 
 extension AppAppearanceModeX on AppAppearanceMode {
   bool get isDark =>

@@ -18,8 +18,9 @@ class WikiDownloaderService {
     // 1. Resolve local paths
     final docDir = await getApplicationDocumentsDirectory();
     final urlHash = pageUrl.hashCode.toUnsigned(32).toRadixString(16);
-    final targetDir =
-        Directory('${docDir.path}/wiki_offline_downloads/$urlHash');
+    final targetDir = Directory(
+      '${docDir.path}/wiki_offline_downloads/$urlHash',
+    );
     final resourcesDir = Directory('${targetDir.path}/resources');
 
     // Recreate clean directories
@@ -69,7 +70,8 @@ class WikiDownloaderService {
     final images = document.querySelectorAll('img');
     for (final img in images) {
       // Wikipedia often uses data-src, data-lazy-src or data-original for lazy loaded images
-      final String? src = img.attributes['data-src'] ??
+      final String? src =
+          img.attributes['data-src'] ??
           img.attributes['data-lazy-src'] ??
           img.attributes['data-original'] ??
           img.attributes['src'];
@@ -201,8 +203,9 @@ class WikiDownloaderService {
   Future<void> deleteOfflinePage(String pageUrl) async {
     final docDir = await getApplicationDocumentsDirectory();
     final urlHash = pageUrl.hashCode.toUnsigned(32).toRadixString(16);
-    final targetDir =
-        Directory('${docDir.path}/wiki_offline_downloads/$urlHash');
+    final targetDir = Directory(
+      '${docDir.path}/wiki_offline_downloads/$urlHash',
+    );
     if (targetDir.existsSync()) {
       await targetDir.delete(recursive: true);
     }
@@ -212,8 +215,9 @@ class WikiDownloaderService {
   Future<bool> isPageDownloaded(String pageUrl) async {
     final docDir = await getApplicationDocumentsDirectory();
     final urlHash = pageUrl.hashCode.toUnsigned(32).toRadixString(16);
-    final htmlFile =
-        File('${docDir.path}/wiki_offline_downloads/$urlHash/index.html');
+    final htmlFile = File(
+      '${docDir.path}/wiki_offline_downloads/$urlHash/index.html',
+    );
     return htmlFile.existsSync();
   }
 
@@ -222,8 +226,9 @@ class WikiDownloaderService {
     try {
       final docDir = await getApplicationDocumentsDirectory();
       final urlHash = pageUrl.hashCode.toUnsigned(32).toRadixString(16);
-      final targetDir =
-          Directory('${docDir.path}/wiki_offline_downloads/$urlHash');
+      final targetDir = Directory(
+        '${docDir.path}/wiki_offline_downloads/$urlHash',
+      );
       if (!targetDir.existsSync()) {
         return 0.0;
       }

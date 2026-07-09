@@ -12,8 +12,8 @@ Thank you for helping improve Disastron. Pull requests are welcome.
 
 Requirements:
 
-- Flutter **3.44.0** (see [`.fvmrc`](.fvmrc); [FVM](https://fvm.app/) recommended)
-- Dart SDK `>=3.5.0 <4.0.0`
+- Flutter **3.44.5** (see [`.fvmrc`](.fvmrc); [FVM](https://fvm.app/) recommended)
+- Dart SDK `>=3.11.0 <4.0.0`
 
 ```bash
 cd disastron   # your clone of this repository

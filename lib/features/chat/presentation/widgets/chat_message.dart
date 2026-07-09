@@ -37,13 +37,12 @@ class ChatMessageWidget extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment:
-            message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: message.isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: <Widget>[
           if (message.isUser) const SizedBox() else _buildAvatar(),
-          const SizedBox(
-            width: 10,
-          ),
+          const SizedBox(width: 10),
           Flexible(
             child: Container(
               constraints: BoxConstraints(
@@ -101,9 +100,7 @@ class ChatMessageWidget extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(
-            width: 10,
-          ),
+          const SizedBox(width: 10),
           if (message.isUser) _buildAvatar() else const SizedBox(),
         ],
       ),
@@ -117,7 +114,7 @@ class ChatMessageWidget extends StatelessWidget {
   }
 
   Widget _circled(String image) => CircleAvatar(
-        backgroundColor: Colors.transparent,
-        foregroundImage: AssetImage(image),
-      );
+    backgroundColor: Colors.transparent,
+    foregroundImage: AssetImage(image),
+  );
 }

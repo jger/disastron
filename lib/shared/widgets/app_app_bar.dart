@@ -40,7 +40,8 @@ class _AppAppBarState extends ConsumerState<AppAppBar> {
     final searchActive = ref.watch(wikiSearchActiveProvider);
     final resetCallback = ref.watch(chatResetProvider);
     final useCtx = ref.watch(useDisastronContextProvider);
-    final fg = Theme.of(context).appBarTheme.foregroundColor ??
+    final fg =
+        Theme.of(context).appBarTheme.foregroundColor ??
         Theme.of(context).colorScheme.onSurface;
 
     final bool isWikiTab = selectedTab == 3;
@@ -52,7 +53,6 @@ class _AppAppBarState extends ConsumerState<AppAppBar> {
           _searchController.text = next;
         }
       })
-
       // Reset search active and query when tab changes away from wiki
       ..listen<int>(homeBottomNavIndexProvider, (prev, next) {
         if (next != 3 && searchActive) {
@@ -80,10 +80,7 @@ class _AppAppBarState extends ConsumerState<AppAppBar> {
             hintText: 'wiki_search_hint'.tr(),
             border: InputBorder.none,
           ),
-          style: TextStyle(
-            color: fg,
-            fontSize: 18,
-          ),
+          style: TextStyle(color: fg, fontSize: 18),
           onChanged: (text) {
             ref.read(wikiSearchQueryProvider.notifier).state = text;
           },

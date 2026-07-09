@@ -15,11 +15,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 @RoutePage()
 class WikiWebviewPage extends ConsumerStatefulWidget {
-  const WikiWebviewPage({
-    required this.url,
-    required this.title,
-    super.key,
-  });
+  const WikiWebviewPage({required this.url, required this.title, super.key});
   final String url;
   final String title;
 
@@ -148,8 +144,9 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
 
             if (matchingSource.url.isNotEmpty) {
               final docDir = await getApplicationDocumentsDirectory();
-              final urlHash =
-                  matchingSource.url.hashCode.toUnsigned(32).toRadixString(16);
+              final urlHash = matchingSource.url.hashCode
+                  .toUnsigned(32)
+                  .toRadixString(16);
               final localFile = File(
                 '${docDir.path}/wiki_offline_downloads/$urlHash/index.html',
               );
@@ -189,8 +186,9 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
       if (connectivityResult.contains(ConnectivityResult.none)) {
         return false;
       }
-      final result = await InternetAddress.lookup('google.com')
-          .timeout(const Duration(seconds: 3));
+      final result = await InternetAddress.lookup(
+        'google.com',
+      ).timeout(const Duration(seconds: 3));
       return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
     } catch (_) {
       return false;
@@ -249,8 +247,9 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
       final String pageUrl = _activeUrl;
 
       final titleController = TextEditingController(text: pageTitle);
-      final categoryController =
-          TextEditingController(text: _lastKnownCategory);
+      final categoryController = TextEditingController(
+        text: _lastKnownCategory,
+      );
       final formKey = GlobalKey<FormState>();
 
       if (!mounted) return;
@@ -372,8 +371,9 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
             nextStatus == WikiDownloadStatus.downloaded) {
           final docDir = await getApplicationDocumentsDirectory();
           final urlHash = _activeUrl.hashCode.toUnsigned(32).toRadixString(16);
-          final localFile =
-              File('${docDir.path}/wiki_offline_downloads/$urlHash/index.html');
+          final localFile = File(
+            '${docDir.path}/wiki_offline_downloads/$urlHash/index.html',
+          );
 
           if (localFile.existsSync() && mounted) {
             setState(() {
@@ -415,9 +415,7 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
                           Text(
                             _error!,
                             textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge
+                            style: Theme.of(context).textTheme.bodyLarge
                                 ?.copyWith(
                                   color: Theme.of(context).colorScheme.error,
                                 ),
@@ -429,9 +427,7 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
                 else
                   WebViewWidget(controller: _controller),
                 if (_loading && _error == null)
-                  const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  const Center(child: CircularProgressIndicator()),
               ],
             ),
           ),
@@ -466,9 +462,9 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
                     )
                   : 'wiki_online_banner_title'.tr(),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           if (status == WikiDownloadStatus.downloading)
@@ -484,8 +480,10 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
           else
             FilledButton.icon(
               style: FilledButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 backgroundColor: Theme.of(context).colorScheme.primary,
@@ -531,8 +529,9 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
           } else {
             final activeUri = Uri.tryParse(_activeUrl);
             if (activeUri != null) {
-              final baseScheme =
-                  activeUri.scheme.isNotEmpty ? activeUri.scheme : 'https';
+              final baseScheme = activeUri.scheme.isNotEmpty
+                  ? activeUri.scheme
+                  : 'https';
               final baseHost = activeUri.host;
               reconstructedUrl =
                   '$baseScheme://$baseHost${uri.path}${uri.query.isNotEmpty ? '?${uri.query}' : ''}';
@@ -543,12 +542,8 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
           final cleanedReconstructed = reconstructedUrl.split('#').first;
           final match = sources.firstWhere(
             (s) => s.url.split('#').first == cleanedReconstructed,
-            orElse: () => const WikiSource(
-              url: '',
-              title: '',
-              category: '',
-              locale: '',
-            ),
+            orElse: () =>
+                const WikiSource(url: '', title: '', category: '', locale: ''),
           );
           return match.url.isNotEmpty ? match : null;
         }
@@ -558,12 +553,8 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
 
     final match = sources.firstWhere(
       (s) => s.url.split('#').first == cleanedUrl,
-      orElse: () => const WikiSource(
-        url: '',
-        title: '',
-        category: '',
-        locale: '',
-      ),
+      orElse: () =>
+          const WikiSource(url: '', title: '', category: '', locale: ''),
     );
     return match.url.isNotEmpty ? match : null;
   }

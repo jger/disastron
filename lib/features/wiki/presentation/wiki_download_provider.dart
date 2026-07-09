@@ -5,12 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'wiki_download_provider.g.dart';
 
-enum WikiDownloadStatus {
-  notDownloaded,
-  downloading,
-  downloaded,
-  failed,
-}
+enum WikiDownloadStatus { notDownloaded, downloading, downloaded, failed }
 
 class WikiDownloadState {
   const WikiDownloadState({

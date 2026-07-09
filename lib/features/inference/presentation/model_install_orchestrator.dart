@@ -13,8 +13,9 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 String basenameFromStored(String urlOrPath) {
-  final Uri uri =
-      urlOrPath.contains('://') ? Uri.parse(urlOrPath) : Uri.file(urlOrPath);
+  final Uri uri = urlOrPath.contains('://')
+      ? Uri.parse(urlOrPath)
+      : Uri.file(urlOrPath);
   if (uri.pathSegments.isEmpty) {
     return urlOrPath;
   }
@@ -22,17 +23,14 @@ String basenameFromStored(String urlOrPath) {
 }
 
 class ColdStartRestoreResult {
-  const ColdStartRestoreResult._({
-    required this.attempted,
-    this.error,
-  });
+  const ColdStartRestoreResult._({required this.attempted, this.error});
 
   const ColdStartRestoreResult.skipped() : this._(attempted: false);
 
   const ColdStartRestoreResult.success() : this._(attempted: true);
 
   ColdStartRestoreResult.failure(ModelInstallDomainError err)
-      : this._(attempted: true, error: err);
+    : this._(attempted: true, error: err);
 
   final bool attempted;
   final ModelInstallDomainError? error;
@@ -41,7 +39,7 @@ class ColdStartRestoreResult {
 /// Install / activate / remove inference models (delegates IO to [FlutterGemma]).
 class ModelInstallOrchestrator {
   ModelInstallOrchestrator({required ModelRegistryStore registry})
-      : _registry = registry;
+    : _registry = registry;
 
   final ModelRegistryStore _registry;
   final LoraRegistryStore _loraRegistry = LoraRegistryStore();
@@ -83,8 +81,9 @@ class ModelInstallOrchestrator {
     void Function(int progress)? onProgress,
     CancelToken? cancelToken,
   }) async {
-    final InferenceModelDescriptor d =
-        InferenceModelDescriptor.fromUrlOrPath(path);
+    final InferenceModelDescriptor d = InferenceModelDescriptor.fromUrlOrPath(
+      path,
+    );
     final String id = _entryIdForFilePath(path);
     final String title = d.displayTitle ?? basenameFromStored(path);
     var builder = FlutterGemma.installModel(
@@ -124,8 +123,9 @@ class ModelInstallOrchestrator {
     final ModelType resolvedType = modelType ?? inferred.modelType;
     final ModelFileType resolvedFile = fileType ?? inferred.fileType;
     final String? presetId = inferred.presetId;
-    final String id =
-        presetId != null ? _entryIdForPreset(presetId) : _entryIdForUrl(url);
+    final String id = presetId != null
+        ? _entryIdForPreset(presetId)
+        : _entryIdForUrl(url);
     final String title = inferred.displayTitle ?? basenameFromStored(url);
 
     var netBuilder = FlutterGemma.installModel(
@@ -268,14 +268,17 @@ class ModelInstallOrchestrator {
     } on Object catch (e) {
       return mapModelInstallException(e);
     }
-    final List<InstalledModelEntry> nextEntries =
-        snap.entries.where((InstalledModelEntry e) => e.id != entryId).toList();
+    final List<InstalledModelEntry> nextEntries = snap.entries
+        .where((InstalledModelEntry e) => e.id != entryId)
+        .toList();
     String? nextActive = snap.activeEntryId;
     if (nextActive == entryId) {
       nextActive = null;
     }
-    snap =
-        ModelRegistrySnapshot(entries: nextEntries, activeEntryId: nextActive);
+    snap = ModelRegistrySnapshot(
+      entries: nextEntries,
+      activeEntryId: nextActive,
+    );
     await _registry.writeSnapshot(snap);
     return null;
   }
@@ -287,10 +290,7 @@ class ModelInstallOrchestrator {
       ...snap.entries.where((InstalledModelEntry e) => e.id != entry.id),
       entry,
     ];
-    snap = ModelRegistrySnapshot(
-      entries: list,
-      activeEntryId: entry.id,
-    );
+    snap = ModelRegistrySnapshot(entries: list, activeEntryId: entry.id);
     await _registry.writeSnapshot(snap);
   }
 
@@ -301,13 +301,15 @@ class ModelInstallOrchestrator {
     }
     await _registry.migrateFromLegacyIfNeeded();
     final ModelRegistrySnapshot snap = await _registry.readSnapshot();
-    final InferenceModelSpec? spec = FlutterGemmaPlugin
-        .instance.modelManager.activeInferenceModel as InferenceModelSpec?;
+    final InferenceModelSpec? spec =
+        FlutterGemmaPlugin.instance.modelManager.activeInferenceModel
+            as InferenceModelSpec?;
     if (spec == null) {
       return;
     }
-    final String? fname =
-        spec.files.isNotEmpty ? spec.files.first.filename : null;
+    final String? fname = spec.files.isNotEmpty
+        ? spec.files.first.filename
+        : null;
     if (fname == null) {
       return;
     }
@@ -320,10 +322,7 @@ class ModelInstallOrchestrator {
     }
     if (match != null && snap.activeEntryId != match.id) {
       await _registry.writeSnapshot(
-        ModelRegistrySnapshot(
-          entries: snap.entries,
-          activeEntryId: match.id,
-        ),
+        ModelRegistrySnapshot(entries: snap.entries, activeEntryId: match.id),
       );
     }
   }
@@ -348,11 +347,11 @@ class ModelInstallOrchestrator {
     if (onProgress != null) {
       await for (final progress
           in ServiceRegistry.instance.downloadService.downloadWithProgress(
-        url,
-        targetPath,
-        token: token,
-        cancelToken: cancelToken,
-      )) {
+            url,
+            targetPath,
+            token: token,
+            cancelToken: cancelToken,
+          )) {
         onProgress(progress);
       }
     } else {
@@ -375,8 +374,9 @@ class ModelInstallOrchestrator {
       ...snap.entries.where((InstalledLoraEntry e) => e.id != loraEntryId),
       entry,
     ];
-    final Map<String, String> nextActive =
-        Map<String, String>.from(snap.activeLoraIdPerModel);
+    final Map<String, String> nextActive = Map<String, String>.from(
+      snap.activeLoraIdPerModel,
+    );
     nextActive[modelEntryId] = loraEntryId;
 
     await _loraRegistry.writeSnapshot(
@@ -402,8 +402,9 @@ class ModelInstallOrchestrator {
       ...snap.entries.where((InstalledLoraEntry e) => e.id != loraEntryId),
       entry,
     ];
-    final Map<String, String> nextActive =
-        Map<String, String>.from(snap.activeLoraIdPerModel);
+    final Map<String, String> nextActive = Map<String, String>.from(
+      snap.activeLoraIdPerModel,
+    );
     nextActive[modelEntryId] = loraEntryId;
 
     await _loraRegistry.writeSnapshot(
@@ -434,9 +435,9 @@ class ModelInstallOrchestrator {
     final List<InstalledLoraEntry> nextEntries = snap.entries
         .where((InstalledLoraEntry e) => e.id != loraEntryId)
         .toList();
-    final Map<String, String> nextActive =
-        Map<String, String>.from(snap.activeLoraIdPerModel)
-          ..removeWhere((String k, String v) => v == loraEntryId);
+    final Map<String, String> nextActive = Map<String, String>.from(
+      snap.activeLoraIdPerModel,
+    )..removeWhere((String k, String v) => v == loraEntryId);
 
     await _loraRegistry.writeSnapshot(
       LoraRegistrySnapshot(
@@ -448,8 +449,9 @@ class ModelInstallOrchestrator {
 
   Future<void> updateLoraLabel(String loraEntryId, String nextLabel) async {
     final LoraRegistrySnapshot snap = await _loraRegistry.readSnapshot();
-    final List<InstalledLoraEntry> nextEntries =
-        snap.entries.map((InstalledLoraEntry e) {
+    final List<InstalledLoraEntry> nextEntries = snap.entries.map((
+      InstalledLoraEntry e,
+    ) {
       if (e.id == loraEntryId) {
         return InstalledLoraEntry(
           id: e.id,
@@ -471,8 +473,9 @@ class ModelInstallOrchestrator {
 
   Future<void> setActiveLora(String? loraEntryId, String modelEntryId) async {
     final LoraRegistrySnapshot snap = await _loraRegistry.readSnapshot();
-    final Map<String, String> nextActive =
-        Map<String, String>.from(snap.activeLoraIdPerModel);
+    final Map<String, String> nextActive = Map<String, String>.from(
+      snap.activeLoraIdPerModel,
+    );
     if (loraEntryId == null) {
       nextActive.remove(modelEntryId);
     } else {

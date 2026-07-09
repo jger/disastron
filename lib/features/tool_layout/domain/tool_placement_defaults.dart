@@ -9,18 +9,12 @@ Map<String, ToolPlacementFlags> buildToolPlacementDefaults() {
   final Map<String, ToolPlacementFlags> map = <String, ToolPlacementFlags>{};
 
   for (final String id in AppToolCatalog.quickActionIds) {
-    map[id] = const ToolPlacementFlags(
-      dashboard: true,
-      drawer: false,
-    );
+    map[id] = const ToolPlacementFlags(dashboard: true, drawer: false);
   }
 
   for (final String id in AppToolCatalog.wikiArticleIds) {
     final bool onDashboard = id == 'karpa_cpr' || id == 'trip_planning';
-    map[id] = ToolPlacementFlags(
-      dashboard: onDashboard,
-      drawer: false,
-    );
+    map[id] = ToolPlacementFlags(dashboard: onDashboard, drawer: false);
   }
 
   return map;

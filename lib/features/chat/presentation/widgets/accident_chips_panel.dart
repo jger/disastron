@@ -2,10 +2,7 @@ import 'package:disastron/shared/widgets/genui_card.dart';
 import 'package:flutter/material.dart';
 
 class AccidentChipOption {
-  const AccidentChipOption({
-    required this.label,
-    required this.prompt,
-  });
+  const AccidentChipOption({required this.label, required this.prompt});
 
   final String label;
   final String prompt;

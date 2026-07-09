@@ -10,22 +10,22 @@ class WikiSource {
   });
 
   factory WikiSource.fromMap(Map<dynamic, dynamic> map) => WikiSource(
-        url: map['url']?.toString() ?? '',
-        title: map['title']?.toString() ?? '',
-        category: map['category']?.toString() ?? '',
-        locale: map['locale']?.toString() ?? 'en',
-      );
+    url: map['url']?.toString() ?? '',
+    title: map['title']?.toString() ?? '',
+    category: map['category']?.toString() ?? '',
+    locale: map['locale']?.toString() ?? 'en',
+  );
   final String url;
   final String title;
   final String category;
   final String locale;
 
   Map<String, String> toMap() => {
-        'url': url,
-        'title': title,
-        'category': category,
-        'locale': locale,
-      };
+    'url': url,
+    'title': title,
+    'category': category,
+    'locale': locale,
+  };
 
   WikiSource copyWith({
     String? url,

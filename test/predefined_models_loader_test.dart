@@ -43,10 +43,7 @@ models:
       expect(catalog.defaultPreset.sizeMb, 304);
       expect(catalog.defaultPreset.multimodal, isTrue);
       expect(catalog.defaultPreset.requiresHuggingFaceToken, isTrue);
-      expect(
-        catalog.defaultPreset.downloadMetadataLine,
-        contains('304 MB'),
-      );
+      expect(catalog.defaultPreset.downloadMetadataLine, contains('304 MB'));
 
       final PredefinedInferenceModel gemma4 = catalog.models[1];
       expect(gemma4.modelType, ModelType.gemma4);

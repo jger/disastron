@@ -38,20 +38,22 @@ Checklist created.
       );
     });
 
-    test('Missing closing tag with trailing explanation text (JSON recovery)',
-        () {
-      const String text = '''
+    test(
+      'Missing closing tag with trailing explanation text (JSON recovery)',
+      () {
+        const String text = '''
 Here are the steps:
 [[TODOS]]
 {"ops":[{"op":"add","title":"Elevate the injured area"}]}
 ----
 Let me know if you need more help!''';
-      final parsed = parseTodoBlock(text);
-      expect(parsed.displayText, equals('Here are the steps:'));
-      expect(parsed.ops, hasLength(1));
-      expect(parsed.ops.first['op'], equals('add'));
-      expect(parsed.ops.first['title'], equals('Elevate the injured area'));
-    });
+        final parsed = parseTodoBlock(text);
+        expect(parsed.displayText, equals('Here are the steps:'));
+        expect(parsed.ops, hasLength(1));
+        expect(parsed.ops.first['op'], equals('add'));
+        expect(parsed.ops.first['title'], equals('Elevate the injured area'));
+      },
+    );
 
     test('Empty or no block case', () {
       const String text = 'Hello world, no checklist here.';

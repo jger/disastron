@@ -96,7 +96,8 @@ Future<DashboardLocationSnapshot> dashboardLocation(Ref ref) async {
       if (!serviceOn) {
         locErr = DashboardLocationErrors.servicesDisabled;
       } else {
-        final Position pos = await Geolocator.getLastKnownPosition() ??
+        final Position pos =
+            await Geolocator.getLastKnownPosition() ??
             await Geolocator.getCurrentPosition(
               locationSettings: const LocationSettings(
                 accuracy: LocationAccuracy.medium,
@@ -107,10 +108,9 @@ Future<DashboardLocationSnapshot> dashboardLocation(Ref ref) async {
         lon = pos.longitude;
 
         try {
-          final List<Placemark> marks = await placemarkFromCoordinates(
-            lat,
-            lon,
-          ).timeout(const Duration(seconds: 2));
+          final List<Placemark> marks = await Geocoding()
+              .placemarkFromCoordinates(lat, lon)
+              .timeout(const Duration(seconds: 2));
           if (marks.isNotEmpty) {
             final Placemark p = marks.first;
             iso = p.isoCountryCode;

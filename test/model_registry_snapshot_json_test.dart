@@ -16,8 +16,9 @@ void main() {
       entries: <InstalledModelEntry>[entry],
       activeEntryId: 'preset:test',
     );
-    final ModelRegistrySnapshot back =
-        ModelRegistrySnapshot.fromJson(snap.toJson());
+    final ModelRegistrySnapshot back = ModelRegistrySnapshot.fromJson(
+      snap.toJson(),
+    );
     expect(back.activeEntryId, snap.activeEntryId);
     expect(back.entries.length, 1);
     expect(back.entries.single.id, entry.id);

@@ -32,8 +32,10 @@ abstract final class WikiPackLoader {
     for (final String id in manifest.articleIds) {
       articles.add(await _loadArticle(locale: locale, id: id));
     }
-    final Map<String, String> svgLabels =
-        await _loadSvgLabels(locale: locale, manifest: manifest);
+    final Map<String, String> svgLabels = await _loadSvgLabels(
+      locale: locale,
+      manifest: manifest,
+    );
     return WikiPack(articles: articles, svgLabels: svgLabels);
   }
 
@@ -47,8 +49,9 @@ abstract final class WikiPackLoader {
     if (articlesNode is! YamlList) {
       throw const FormatException('Expected "articles" list in wiki manifest');
     }
-    final List<String> articleIds =
-        articlesNode.map((Object? e) => e.toString()).toList(growable: false);
+    final List<String> articleIds = articlesNode
+        .map((Object? e) => e.toString())
+        .toList(growable: false);
 
     final List<_SvgAssetEntry> svgAssets = <_SvgAssetEntry>[];
     final Object? svgNode = decoded['svg_assets'];
@@ -105,7 +108,8 @@ abstract final class WikiPackLoader {
     required String labelsPath,
   }) async {
     final String? raw = await _tryLoadLocaleAsset(locale, labelsPath);
-    final String? content = raw ??
+    final String? content =
+        raw ??
         (locale == kWikiLocaleFallback
             ? null
             : await _tryLoadLocaleAsset(kWikiLocaleFallback, labelsPath));
@@ -117,10 +121,8 @@ abstract final class WikiPackLoader {
       throw FormatException('Expected JSON object at wiki $labelsPath');
     }
     return decoded.map(
-      (String key, dynamic value) => MapEntry<String, String>(
-        key,
-        value.toString(),
-      ),
+      (String key, dynamic value) =>
+          MapEntry<String, String>(key, value.toString()),
     );
   }
 
@@ -168,10 +170,7 @@ abstract final class WikiPackLoader {
 }
 
 final class _WikiManifest {
-  const _WikiManifest({
-    required this.articleIds,
-    required this.svgAssets,
-  });
+  const _WikiManifest({required this.articleIds, required this.svgAssets});
 
   final List<String> articleIds;
   final List<_SvgAssetEntry> svgAssets;

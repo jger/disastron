@@ -25,11 +25,7 @@ Future<void> main() async {
       path: 'assets/translations',
       fallbackLocale: AppLocales.localeFromCode(AppLocales.codes.first),
       startLocale: AppLocales.localeFromCode(startCode),
-      child: const ProviderScope(
-        child: LocaleEasyBridge(
-          child: MyApp(),
-        ),
-      ),
+      child: const ProviderScope(child: LocaleEasyBridge(child: MyApp())),
     ),
   );
 }
@@ -41,8 +37,9 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
-    final AsyncValue<AppAppearanceMode> appearance =
-        ref.watch(appAppearanceProvider);
+    final AsyncValue<AppAppearanceMode> appearance = ref.watch(
+      appAppearanceProvider,
+    );
     final ThemeData lightFallback = themeForAppearance(AppAppearanceMode.light);
     final ThemeData darkFallback = themeForAppearance(AppAppearanceMode.dark);
     return appearance.when(
@@ -78,7 +75,7 @@ class MyApp extends ConsumerWidget {
         themeMode: ThemeMode.dark,
         home: const SizedBox.shrink(),
       ),
-      error: (Object _, StackTrace __) => MaterialApp(
+      error: (Object _, StackTrace _) => MaterialApp(
         debugShowCheckedModeBanner: false,
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,

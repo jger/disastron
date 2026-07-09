@@ -25,14 +25,14 @@ class PendingModelDownload {
   final DateTime updatedAt;
 
   Map<String, Object?> toJson() => <String, Object?>{
-        'url': url,
-        'filename': filename,
-        if (presetId != null) 'presetId': presetId,
-        'modelType': modelType.name,
-        'fileType': fileType.name,
-        'lastProgress': lastProgress,
-        'updatedAt': updatedAt.toIso8601String(),
-      };
+    'url': url,
+    'filename': filename,
+    if (presetId != null) 'presetId': presetId,
+    'modelType': modelType.name,
+    'fileType': fileType.name,
+    'lastProgress': lastProgress,
+    'updatedAt': updatedAt.toIso8601String(),
+  };
 
   static PendingModelDownload? fromJson(Map<String, dynamic> json) {
     final String? url = json['url'] as String?;

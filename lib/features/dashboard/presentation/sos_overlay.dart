@@ -20,7 +20,7 @@ Future<void> openSosOverlay(BuildContext context) {
     PageRouteBuilder<void>(
       opaque: false,
       barrierColor: Colors.black54,
-      pageBuilder: (BuildContext context, _, __) => const _SosOverlayPage(),
+      pageBuilder: (BuildContext context, _, _) => const _SosOverlayPage(),
     ),
   );
 }
@@ -63,9 +63,10 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   /// Slider 0 = slow ([kSosMorseUnitMsSlow] ms dit), 1 = fast (dit floored).
   double _speed = 0.5;
 
-  int get _unitMs => (kSosMorseUnitMsSlow -
-          _speed * (kSosMorseUnitMsSlow - kSosMorseUnitMsFastFloor))
-      .round();
+  int get _unitMs =>
+      (kSosMorseUnitMsSlow -
+              _speed * (kSosMorseUnitMsSlow - kSosMorseUnitMsFastFloor))
+          .round();
 
   late final TextEditingController _msgController;
 
@@ -345,8 +346,10 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
 
   Future<void> _applyComputedSequence(int ticket) async {
     final String text = _msgController.text;
-    final List<SosMorseToken> seq =
-        await compute(_sosBuildSequenceForCompute, text);
+    final List<SosMorseToken> seq = await compute(
+      _sosBuildSequenceForCompute,
+      text,
+    );
     if (!mounted || ticket != _sequenceBuildTicket) {
       return;
     }
@@ -375,8 +378,9 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme scheme = theme.colorScheme;
-    final Color fg =
-        _surfaceLit ? Colors.black : Theme.of(context).colorScheme.surface;
+    final Color fg = _surfaceLit
+        ? Colors.black
+        : Theme.of(context).colorScheme.surface;
     final Color bg = _surfaceLit ? Colors.white : Colors.black;
     final int wpm = _unitMs > 0 ? (1200 / _unitMs).round() : 0;
 
@@ -476,10 +480,7 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                                     setState(() => _speed = v),
                               ),
                             ),
-                            Text(
-                              '~$wpm',
-                              style: theme.textTheme.labelMedium,
-                            ),
+                            Text('~$wpm', style: theme.textTheme.labelMedium),
                           ],
                         ),
                         Wrap(
@@ -570,8 +571,9 @@ class _SosOverlayPageState extends State<_SosOverlayPage> {
                           )
                         else
                           FilledButton(
-                            onPressed:
-                                _sequence.isEmpty ? null : _startTransmit,
+                            onPressed: _sequence.isEmpty
+                                ? null
+                                : _startTransmit,
                             child: Text('sos_start'.tr()),
                           ),
                         TextButton(

@@ -90,8 +90,9 @@ ModelFileType modelFileTypeForPath(String path) {
 
 @Riverpod(keepAlive: true)
 class LocalGemmaModel extends _$LocalGemmaModel {
-  final ModelInstallOrchestrator _orchestrator =
-      ModelInstallOrchestrator(registry: ModelRegistryStore());
+  final ModelInstallOrchestrator _orchestrator = ModelInstallOrchestrator(
+    registry: ModelRegistryStore(),
+  );
   final PendingModelDownloadStore _pendingStore = PendingModelDownloadStore();
   final ModelDownloadResumeService _resumeService =
       const ModelDownloadResumeService();
@@ -210,8 +211,9 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   }
 
   Future<void> _applyInterruptedState(PendingModelDownload pending) async {
-    final ResumableDownloadSnapshot snap =
-        await _resumeService.detectResumable(pending);
+    final ResumableDownloadSnapshot snap = await _resumeService.detectResumable(
+      pending,
+    );
     if (!snap.resumable) {
       await _clearPendingDownload();
       _syncUiToEngine();
@@ -264,8 +266,8 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         }
         return;
       }
-      final ResumableDownloadSnapshot snap =
-          await _resumeService.detectResumable(pending);
+      final ResumableDownloadSnapshot snap = await _resumeService
+          .detectResumable(pending);
       if (!snap.resumable) {
         await _clearPendingDownload();
         if (state.phase == LocalGemmaPhase.downloadInterrupted) {
@@ -373,9 +375,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   LocalGemmaModelUi build() {
     final bool active = FlutterGemma.hasActiveModel();
     if (!active && !kIsWeb) {
-      unawaited(
-        _tryRestoreModel().then((_) => refreshPendingDownload()),
-      );
+      unawaited(_tryRestoreModel().then((_) => refreshPendingDownload()));
     } else if (active) {
       unawaited(_orchestrator.reconcileActiveWithPluginIfPossible());
     }
@@ -417,26 +417,27 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       await store.migrateFromLegacyIfNeeded();
       final ModelRegistrySnapshot snap = await store.readSnapshot();
       final String? activeId = snap.activeEntryId;
-      final InstalledModelEntry? entry =
-          activeId != null ? snap.entryById(activeId) : null;
+      final InstalledModelEntry? entry = activeId != null
+          ? snap.entryById(activeId)
+          : null;
 
-      final ColdStartRestoreResult result =
-          await _orchestrator.tryRestoreOnColdStart(
-        onProgress: (int progress) {
-          if (state.activity != ModelInstallActivityKind.restoreSaved) {
-            return;
-          }
-          state = state.withInstallProgress(progress);
-        },
-        onRestoreBegins: () {
-          state = LocalGemmaModelUi(
-            phase: LocalGemmaPhase.installing,
-            activity: ModelInstallActivityKind.restoreSaved,
-            pendingDownloadUrl: entry?.sourceUrlOrPath,
-            pendingPresetId: entry?.presetId,
+      final ColdStartRestoreResult result = await _orchestrator
+          .tryRestoreOnColdStart(
+            onProgress: (int progress) {
+              if (state.activity != ModelInstallActivityKind.restoreSaved) {
+                return;
+              }
+              state = state.withInstallProgress(progress);
+            },
+            onRestoreBegins: () {
+              state = LocalGemmaModelUi(
+                phase: LocalGemmaPhase.installing,
+                activity: ModelInstallActivityKind.restoreSaved,
+                pendingDownloadUrl: entry?.sourceUrlOrPath,
+                pendingPresetId: entry?.presetId,
+              );
+            },
           );
-        },
-      );
       if (!result.attempted) {
         if (state.activity == ModelInstallActivityKind.restoreSaved) {
           state = LocalGemmaModelUi(
@@ -568,18 +569,20 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         await _maybeTransitionToInterrupted(url);
         return;
       }
-      final ModelInstallDomainError mapped =
-          mapModelInstallException(e, downloadUrl: url);
+      final ModelInstallDomainError mapped = mapModelInstallException(
+        e,
+        downloadUrl: url,
+      );
       // Only network errors (timeouts, drops) leave a valid partial file worth
       // resuming. Auth/storage/compatibility/unknown errors will fail again on
       // retry, so skip detectResumable to avoid showing "Resume" for a 403 that
       // would loop indefinitely.
       if (mapped.kind == ModelInstallDomainErrorKind.network && !kIsWeb) {
-        final PendingModelDownload? pendingAfterError =
-            await _pendingStore.read();
+        final PendingModelDownload? pendingAfterError = await _pendingStore
+            .read();
         if (pendingAfterError != null) {
-          final ResumableDownloadSnapshot snap =
-              await _resumeService.detectResumable(pendingAfterError);
+          final ResumableDownloadSnapshot snap = await _resumeService
+              .detectResumable(pendingAfterError);
           if (snap.resumable) {
             await _applyInterruptedState(pendingAfterError);
             return;
@@ -600,10 +603,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     }
   }
 
-  Future<void> installPresetById(
-    String presetId, {
-    String? token,
-  }) async {
+  Future<void> installPresetById(String presetId, {String? token}) async {
     final PredefinedInferenceModel? model = presetInferenceModelById(presetId);
     if (model == null) {
       state = LocalGemmaModelUi(
@@ -653,15 +653,17 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         await _maybeTransitionToInterrupted(model.url);
         return;
       }
-      final ModelInstallDomainError mapped =
-          mapModelInstallException(e, downloadUrl: model.url);
+      final ModelInstallDomainError mapped = mapModelInstallException(
+        e,
+        downloadUrl: model.url,
+      );
       // Only network errors leave a valid partial file. Auth/storage/etc. will
       // fail the same way on retry, so bypass detectResumable entirely.
       if (mapped.kind == ModelInstallDomainErrorKind.network && !kIsWeb) {
         final PendingModelDownload? pending = await _pendingStore.read();
         if (pending != null) {
-          final ResumableDownloadSnapshot snap =
-              await _resumeService.detectResumable(pending);
+          final ResumableDownloadSnapshot snap = await _resumeService
+              .detectResumable(pending);
           if (snap.resumable) {
             await _applyInterruptedState(pending);
             return;
@@ -683,8 +685,9 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   }
 
   Future<void> switchToRegistryEntry(String entryId) async {
-    final ModelRegistrySnapshot snap =
-        await ref.read(modelRegistrySnapshotProvider.future);
+    final ModelRegistrySnapshot snap = await ref.read(
+      modelRegistrySnapshotProvider.future,
+    );
     final InstalledModelEntry? entry = snap.entryById(entryId);
 
     final int epoch = _beginTrackedInstall(
@@ -745,8 +748,9 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     if (kIsWeb) {
       return ModelExportResult.unsupported();
     }
-    final String? path =
-        await _orchestrator.resolveExportableModelFilePath(entryId);
+    final String? path = await _orchestrator.resolveExportableModelFilePath(
+      entryId,
+    );
     if (path == null) {
       return ModelExportResult.failure('Model file not found.');
     }
@@ -755,8 +759,9 @@ class LocalGemmaModel extends _$LocalGemmaModel {
 
   Future<void> removeRegistryEntry(String entryId) async {
     try {
-      final ModelInstallDomainError? err =
-          await _orchestrator.removeEntry(entryId);
+      final ModelInstallDomainError? err = await _orchestrator.removeEntry(
+        entryId,
+      );
       if (err != null) {
         state = LocalGemmaModelUi(
           phase: LocalGemmaPhase.error,
