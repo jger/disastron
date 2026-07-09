@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2024-2026 Jannis Gerardis
+
 import 'package:disastron/features/chat/presentation/service/chat_runtime_gateway.dart';
 import 'package:disastron/features/chat/presentation/service/xnnpack_cache_cleanup.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';

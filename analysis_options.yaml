@@ -23,12 +23,6 @@ analyzer:
     - "lib/app/core/icons/*"
     - "lib/generated/**"
 
-  plugins:
-    - custom_lint
-
-custom_lint:
-  enable_all_lint_rules: true
-
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

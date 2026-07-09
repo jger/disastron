@@ -48,7 +48,7 @@ Dataset pipeline, n8n synthesis workflows, and Gemma 4 E2B LoRA training live in
 
 ## Development
 
-Requirements: Flutter **3.44.0** ([`.fvmrc`](.fvmrc)), Dart `>=3.5.0`.
+Requirements: Flutter **3.44.5** ([`.fvmrc`](.fvmrc)), Dart `>=3.11.0`.
 
 ```bash
 cd disastron   # your clone of this repository
