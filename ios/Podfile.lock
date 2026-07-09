@@ -1,6 +1,6 @@
 PODS:
   - Flutter (1.0.0)
-  - flutter_gemma (0.16.4):
+  - flutter_gemma_mediapipe (1.0.4):
     - Flutter
     - MediaPipeTasksGenAI (= 0.10.33)
     - MediaPipeTasksGenAIC (= 0.10.33)
@@ -12,7 +12,7 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - flutter_gemma (from `.symlinks/plugins/flutter_gemma/ios`)
+  - flutter_gemma_mediapipe (from `.symlinks/plugins/flutter_gemma_mediapipe/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
 
 SPEC REPOS:
@@ -23,14 +23,14 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
-  flutter_gemma:
-    :path: ".symlinks/plugins/flutter_gemma/ios"
+  flutter_gemma_mediapipe:
+    :path: ".symlinks/plugins/flutter_gemma_mediapipe/ios"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  flutter_gemma: 08f68b25d109fdfaef4e59108047b41ebc2941f4
+  flutter_gemma_mediapipe: 9f914ffd91280c77be1026cd6ced94dc8647d4f5
   MediaPipeTasksGenAI: 8eed8e6d03fe26d30c4205cb5295ec7b394432ad
   MediaPipeTasksGenAIC: cb098ecea44e248efe8fe7e2f62b4cb0df781802
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d

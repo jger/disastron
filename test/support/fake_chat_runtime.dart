@@ -42,6 +42,8 @@ class FakeInferenceModel extends InferenceModel {
   /// Chats handed out by [createChat], in order.
   final List<FakeInferenceChat> chats = <FakeInferenceChat>[];
 
+  final List<void Function()> _closeListeners = <void Function()>[];
+
   int closeCount = 0;
 
   @override
@@ -68,7 +70,14 @@ class FakeInferenceModel extends InferenceModel {
     String? systemInstruction,
     bool enableThinking = false,
     List<Tool> tools = const <Tool>[],
+    int? maxOutputTokens,
   }) => throw UnimplementedError('FakeInferenceModel does not open sessions');
+
+  /// Core registers a listener here to reset its singleton bookkeeping when an
+  /// engine-built model closes. Fired by [close].
+  @override
+  void addCloseListener(void Function() listener) =>
+      _closeListeners.add(listener);
 
   @override
   Future<InferenceChat> createChat({
@@ -87,6 +96,7 @@ class FakeInferenceModel extends InferenceModel {
     ToolChoice toolChoice = ToolChoice.auto,
     int? maxFunctionBufferLength,
     String? systemInstruction,
+    int? maxOutputTokens,
   }) async {
     createChatCalls.add((
       systemInstruction: systemInstruction,
@@ -100,7 +110,12 @@ class FakeInferenceModel extends InferenceModel {
   }
 
   @override
-  Future<void> close() async => closeCount++;
+  Future<void> close() async {
+    closeCount++;
+    for (final void Function() listener in _closeListeners) {
+      listener();
+    }
+  }
 }
 
 /// Stand-in for [ChatRuntimeGateway]. Hands out a fresh [FakeInferenceModel]
