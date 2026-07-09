@@ -42,7 +42,7 @@ dependencies:
     sdk: flutter
   flutter_gemma: ^0.16.4
   flutter_hooks: ^0.21.2
-  geocoding: ^4.0.0
+  geocoding: ^5.0.0
   geolocator: ^14.0.2
   flutter_markdown: ^0.7.7+1
   flutter_riverpod: ^3.3.1
