@@ -35,7 +35,7 @@ dependencies:
   background_downloader: ^9.5.5
   auto_route: ^11.1.0
   battery_plus: ^7.1.0
-  connectivity_plus: ^6.1.4
+  connectivity_plus: ^7.2.0
   cupertino_icons: ^1.0.8
   file_picker: ^11.0.2
   flutter:
