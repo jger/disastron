@@ -23,8 +23,9 @@ void main() {
       lastProgress: 42,
       updatedAt: DateTime.utc(2026, 5, 21),
     );
-    final PendingModelDownload? decoded =
-        PendingModelDownload.fromJson(pending.toJson());
+    final PendingModelDownload? decoded = PendingModelDownload.fromJson(
+      pending.toJson(),
+    );
     expect(decoded, isNotNull);
     expect(decoded!.url, pending.url);
     expect(decoded.filename, pending.filename);

@@ -61,10 +61,8 @@ class WikiPage extends HookConsumerWidget {
                       Text(
                         'wiki_subtitle'.tr(),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -89,9 +87,8 @@ class WikiPage extends HookConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (Object e, StackTrace _) => Center(
-        child: Text('wiki_load_error'.tr(args: <String>['$e'])),
-      ),
+      error: (Object e, StackTrace _) =>
+          Center(child: Text('wiki_load_error'.tr(args: <String>['$e']))),
     );
   }
 
@@ -229,8 +226,9 @@ class WikiPage extends HookConsumerWidget {
     return [
       sourcesAsync.when(
         data: (sources) {
-          final localSources =
-              sources.where((s) => s.locale == locale).toList();
+          final localSources = sources
+              .where((s) => s.locale == locale)
+              .toList();
 
           if (localSources.isEmpty) {
             return Column(
@@ -292,8 +290,8 @@ class WikiPage extends HookConsumerWidget {
                   Text(
                     'wiki_web_sources_title'.tr(args: [locale.toUpperCase()]),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Row(
                     children: [
@@ -302,7 +300,8 @@ class WikiPage extends HookConsumerWidget {
                         icon: const Icon(Icons.cloud_download_outlined),
                         onPressed: () {
                           for (final s in localSources) {
-                            final status = downloads[s.url]?.status ??
+                            final status =
+                                downloads[s.url]?.status ??
                                 WikiDownloadStatus.notDownloaded;
                             if (status == WikiDownloadStatus.notDownloaded ||
                                 status == WikiDownloadStatus.failed) {
@@ -352,13 +351,14 @@ class WikiPage extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Padding(
-                        padding:
-                            const EdgeInsets.only(top: 8, bottom: 8, left: 4),
+                        padding: const EdgeInsets.only(
+                          top: 8,
+                          bottom: 8,
+                          left: 4,
+                        ),
                         child: Text(
                           category,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
+                          style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.primary,
@@ -437,10 +437,9 @@ class WikiPage extends HookConsumerWidget {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isDownloaded
-                  ? Theme.of(context)
-                      .colorScheme
-                      .primaryContainer
-                      .withValues(alpha: 0.3)
+                  ? Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer.withValues(alpha: 0.3)
                   : Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(12),
             ),
@@ -461,9 +460,9 @@ class WikiPage extends HookConsumerWidget {
                 Text(
                   s.title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.2,
-                      ),
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Row(
@@ -471,29 +470,24 @@ class WikiPage extends HookConsumerWidget {
                     Text(
                       host,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     if (isDownloaded) ...[
                       const SizedBox(width: 8),
                       Text(
                         '•',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '${dlState.sizeMB.toStringAsFixed(2)} MB',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ],
@@ -514,9 +508,9 @@ class WikiPage extends HookConsumerWidget {
                         ? '${'wiki_download_failed'.tr()} (${dlState.error})'
                         : 'wiki_download_failed'.tr(),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.error,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      color: Theme.of(context).colorScheme.error,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ],
@@ -586,10 +580,12 @@ class WikiPage extends HookConsumerWidget {
                         ),
                         FilledButton(
                           style: FilledButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.error,
-                            foregroundColor:
-                                Theme.of(context).colorScheme.onError,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.onError,
                           ),
                           onPressed: () => Navigator.pop(ctx, true),
                           child: Text('remove'.tr()),
@@ -674,9 +670,9 @@ class WikiPage extends HookConsumerWidget {
                     child: Text(
                       'wiki_download_hint_title'.tr(),
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: onContainer,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: onContainer,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -704,16 +700,16 @@ class WikiPage extends HookConsumerWidget {
                 if (parts.length < 2) {
                   return Text(
                     text,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: onContainer,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: onContainer),
                   );
                 }
                 return RichText(
                   text: TextSpan(
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: onContainer,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: onContainer),
                     children: [
                       TextSpan(text: parts[0]),
                       WidgetSpan(

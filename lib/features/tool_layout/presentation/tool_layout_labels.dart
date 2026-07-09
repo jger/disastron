@@ -7,19 +7,13 @@ import 'package:disastron/features/wiki/presentation/wiki_models.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class ToolLayoutLabels {
-  const ToolLayoutLabels({
-    required this.title,
-    this.subtitle,
-  });
+  const ToolLayoutLabels({required this.title, this.subtitle});
 
   final String title;
   final String? subtitle;
 }
 
-ToolLayoutLabels labelsForTool(
-  String toolId, {
-  WikiPack? wikiPack,
-}) {
+ToolLayoutLabels labelsForTool(String toolId, {WikiPack? wikiPack}) {
   final AppToolDefinition def = AppToolCatalog.definitionFor(toolId);
   if (def.titleKey != null) {
     return ToolLayoutLabels(

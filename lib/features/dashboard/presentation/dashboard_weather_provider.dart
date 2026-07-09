@@ -46,8 +46,9 @@ class DashboardWeatherSnapshot {
 
 @riverpod
 Future<DashboardWeatherSnapshot> dashboardWeather(Ref ref) async {
-  final DashboardDeviceSnapshot device =
-      await ref.watch(dashboardDeviceProvider.future);
+  final DashboardDeviceSnapshot device = await ref.watch(
+    dashboardDeviceProvider.future,
+  );
   final DateTime nowLocal = DateTime.now();
 
   if (!device.hasFix) {

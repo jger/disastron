@@ -40,12 +40,12 @@ class InstalledLoraEntry {
   final bool importedFromPicker;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'modelEntryId': modelEntryId,
-        'sourceUrlOrPath': sourceUrlOrPath,
-        'displayLabel': displayLabel,
-        'importedFromPicker': importedFromPicker,
-      };
+    'id': id,
+    'modelEntryId': modelEntryId,
+    'sourceUrlOrPath': sourceUrlOrPath,
+    'displayLabel': displayLabel,
+    'importedFromPicker': importedFromPicker,
+  };
 }
 
 /// Full on-device LoRA library: entries + one active LoRA per base model.
@@ -59,7 +59,7 @@ class LoraRegistrySnapshot {
     final List<dynamic> raw = j['entries'] as List<dynamic>? ?? <dynamic>[];
     final Map<String, dynamic> activeRaw =
         j['activeLoraIdPerModel'] as Map<String, dynamic>? ??
-            <String, dynamic>{};
+        <String, dynamic>{};
     return LoraRegistrySnapshot(
       entries: raw
           .map(
@@ -102,10 +102,10 @@ class LoraRegistrySnapshot {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'v': 1,
-        'entries': entries.map((InstalledLoraEntry e) => e.toJson()).toList(),
-        'activeLoraIdPerModel': activeLoraIdPerModel,
-      };
+    'v': 1,
+    'entries': entries.map((InstalledLoraEntry e) => e.toJson()).toList(),
+    'activeLoraIdPerModel': activeLoraIdPerModel,
+  };
 }
 
 /// SharedPreferences-backed persistence for LoRA entries.
@@ -126,9 +126,6 @@ class LoraRegistryStore {
 
   Future<void> writeSnapshot(LoraRegistrySnapshot snapshot) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _kLoraRegistryJsonKey,
-      jsonEncode(snapshot.toJson()),
-    );
+    await prefs.setString(_kLoraRegistryJsonKey, jsonEncode(snapshot.toJson()));
   }
 }

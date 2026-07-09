@@ -19,8 +19,8 @@ class ToolLayoutSettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<Map<String, ToolPlacementFlags>> placementsAsync =
-        ref.watch(toolPlacementsProvider);
+    final AsyncValue<Map<String, ToolPlacementFlags>> placementsAsync = ref
+        .watch(toolPlacementsProvider);
     final AsyncValue<WikiPack> wikiAsync = ref.watch(wikiPackProvider);
 
     return Scaffold(
@@ -43,14 +43,11 @@ class ToolLayoutSettingsPage extends ConsumerWidget {
       body: placementsAsync.when(
         data: (Map<String, ToolPlacementFlags> placements) {
           return wikiAsync.when(
-            data: (WikiPack wikiPack) => _ToolLayoutTable(
-              placements: placements,
-              wikiPack: wikiPack,
-            ),
+            data: (WikiPack wikiPack) =>
+                _ToolLayoutTable(placements: placements, wikiPack: wikiPack),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (Object e, StackTrace _) => Center(
-              child: Text('wiki_load_error'.tr(args: <String>['$e'])),
-            ),
+            error: (Object e, StackTrace _) =>
+                Center(child: Text('wiki_load_error'.tr(args: <String>['$e']))),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -61,10 +58,7 @@ class ToolLayoutSettingsPage extends ConsumerWidget {
 }
 
 class _ToolLayoutTable extends ConsumerWidget {
-  const _ToolLayoutTable({
-    required this.placements,
-    required this.wikiPack,
-  });
+  const _ToolLayoutTable({required this.placements, required this.wikiPack});
 
   final Map<String, ToolPlacementFlags> placements;
   final WikiPack wikiPack;
@@ -87,9 +81,7 @@ class _ToolLayoutTable extends ConsumerWidget {
           },
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border: TableBorder(
-            horizontalInside: BorderSide(
-              color: Theme.of(context).dividerColor,
-            ),
+            horizontalInside: BorderSide(color: Theme.of(context).dividerColor),
           ),
           children: <TableRow>[
             TableRow(
@@ -100,17 +92,9 @@ class _ToolLayoutTable extends ConsumerWidget {
               ],
             ),
             _sectionRow(context, 'tool_layout_section_quick'.tr()),
-            ..._rowsForIds(
-              context,
-              ref,
-              AppToolCatalog.quickActionIds,
-            ),
+            ..._rowsForIds(context, ref, AppToolCatalog.quickActionIds),
             _sectionRow(context, 'tool_layout_section_wiki'.tr()),
-            ..._rowsForIds(
-              context,
-              ref,
-              AppToolCatalog.wikiArticleIds,
-            ),
+            ..._rowsForIds(context, ref, AppToolCatalog.wikiArticleIds),
           ],
         ),
       ],
@@ -120,10 +104,7 @@ class _ToolLayoutTable extends ConsumerWidget {
   Widget _headerCell(BuildContext context, String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.labelLarge,
-      ),
+      child: Text(text, style: Theme.of(context).textTheme.labelLarge),
     );
   }
 
@@ -132,10 +113,7 @@ class _ToolLayoutTable extends ConsumerWidget {
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.only(top: 16, bottom: 4),
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
+          child: Text(title, style: Theme.of(context).textTheme.titleSmall),
         ),
         const SizedBox.shrink(),
         const SizedBox.shrink(),
@@ -149,12 +127,10 @@ class _ToolLayoutTable extends ConsumerWidget {
     List<String> ids,
   ) {
     return ids.map((String toolId) {
-      final ToolPlacementFlags flags = placements[toolId] ??
+      final ToolPlacementFlags flags =
+          placements[toolId] ??
           const ToolPlacementFlags(dashboard: false, drawer: false);
-      final ToolLayoutLabels labels = labelsForTool(
-        toolId,
-        wikiPack: wikiPack,
-      );
+      final ToolLayoutLabels labels = labelsForTool(toolId, wikiPack: wikiPack);
       return TableRow(
         children: <Widget>[
           Padding(
@@ -167,8 +143,8 @@ class _ToolLayoutTable extends ConsumerWidget {
                   Text(
                     labels.subtitle!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
               ],
             ),
@@ -205,19 +181,16 @@ class _ToolLayoutTable extends ConsumerWidget {
     AppToolSurface surface,
     bool value,
   ) async {
-    final ToolPlacementValidation result =
-        await ref.read(toolPlacementsProvider.notifier).setPlacement(
-              toolId: toolId,
-              surface: surface,
-              value: value,
-            );
+    final ToolPlacementValidation result = await ref
+        .read(toolPlacementsProvider.notifier)
+        .setPlacement(toolId: toolId, surface: surface, value: value);
     if (!context.mounted) {
       return;
     }
     if (!result.isOk && result.messageKey != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.messageKey!.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result.messageKey!.tr())));
     }
   }
 }

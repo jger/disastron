@@ -3,19 +3,14 @@ import 'package:flutter/material.dart';
 
 /// Subtitle for preset list tiles: description + download metadata line.
 class PresetDownloadMetadataSubtitle extends StatelessWidget {
-  const PresetDownloadMetadataSubtitle({
-    required this.model,
-    super.key,
-  });
+  const PresetDownloadMetadataSubtitle({required this.model, super.key});
 
   final PredefinedInferenceModel model;
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle? metaStyle =
-        Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            );
+    final TextStyle? metaStyle = Theme.of(context).textTheme.bodySmall
+        ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,10 +27,7 @@ class PresetDownloadMetadataSubtitle extends StatelessWidget {
 
 /// Compact chips for size, access, backend engine, multimodal, and LoRA support.
 class PresetDownloadMetadataChips extends StatelessWidget {
-  const PresetDownloadMetadataChips({
-    required this.model,
-    super.key,
-  });
+  const PresetDownloadMetadataChips({required this.model, super.key});
 
   final PredefinedInferenceModel model;
 
@@ -67,8 +59,9 @@ class PresetDownloadMetadataChips extends StatelessWidget {
         backend.displayLabel,
         icon: isLiteRT ? Icons.memory_outlined : Icons.hub_outlined,
         backgroundColor: isLiteRT ? cs.primaryContainer : cs.secondaryContainer,
-        foregroundColor:
-            isLiteRT ? cs.onPrimaryContainer : cs.onSecondaryContainer,
+        foregroundColor: isLiteRT
+            ? cs.onPrimaryContainer
+            : cs.onSecondaryContainer,
       ),
     );
 
@@ -88,11 +81,7 @@ class PresetDownloadMetadataChips extends StatelessWidget {
       );
     }
 
-    return Wrap(
-      spacing: 6,
-      runSpacing: 4,
-      children: chips,
-    );
+    return Wrap(spacing: 6, runSpacing: 4, children: chips);
   }
 
   Widget _chip(BuildContext context, String label, {IconData? icon}) {
@@ -124,10 +113,10 @@ class PresetDownloadMetadataChips extends StatelessWidget {
       avatar: Icon(icon, size: 14, color: foregroundColor),
       label: Text(
         label,
-        style: Theme.of(context)
-            .textTheme
-            .labelSmall
-            ?.copyWith(color: foregroundColor, fontWeight: FontWeight.w600),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: foregroundColor,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

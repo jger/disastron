@@ -43,10 +43,7 @@ class HomePage extends HookConsumerWidget {
           if (!context.mounted) {
             return;
           }
-          await showInitialLanguageDialog(
-            context,
-            ref,
-          );
+          await showInitialLanguageDialog(context, ref);
         });
       } else if (s.initialChoiceDone &&
           !s.termsAccepted &&
@@ -56,16 +53,11 @@ class HomePage extends HookConsumerWidget {
           if (!context.mounted) {
             return;
           }
-          await showTermsDialog(
-            context,
-            ref,
-          );
+          await showTermsDialog(context, ref);
         });
       }
       return null;
-    }, <Object?>[
-      localeAsync,
-    ]);
+    }, <Object?>[localeAsync]);
 
     final String tabLocale = localeAsync.maybeWhen(
       data: (AppLocaleState s) => s.localeCode,
@@ -108,9 +100,7 @@ class HomePage extends HookConsumerWidget {
           NavigationDestination(
             icon: Badge(
               isLabelVisible: todoBadgeCount > 0,
-              label: Text(
-                todoBadgeCount > 99 ? '99+' : '$todoBadgeCount',
-              ),
+              label: Text(todoBadgeCount > 99 ? '99+' : '$todoBadgeCount'),
               child: const Icon(Icons.checklist_rounded),
             ),
             label: 'nav_todos'.tr(),

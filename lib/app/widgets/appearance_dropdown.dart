@@ -11,8 +11,9 @@ class AppearanceDropdown extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<AppAppearanceMode> appearanceAsync =
-        ref.watch(appAppearanceProvider);
+    final AsyncValue<AppAppearanceMode> appearanceAsync = ref.watch(
+      appAppearanceProvider,
+    );
     return appearanceAsync.when(
       data: (AppAppearanceMode mode) => InputDecorator(
         decoration: InputDecoration(
@@ -42,7 +43,7 @@ class AppearanceDropdown extends ConsumerWidget {
         ),
       ),
       loading: () => const LinearProgressIndicator(),
-      error: (Object _, StackTrace __) => const SizedBox.shrink(),
+      error: (Object _, StackTrace _) => const SizedBox.shrink(),
     );
   }
 }

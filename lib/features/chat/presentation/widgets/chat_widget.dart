@@ -58,9 +58,7 @@ class ChatListWidget extends StatelessWidget {
         } else {
           final int messageIndex = index - 2 - chipExtra;
           final Message message = messages.reversed.toList()[messageIndex];
-          return ChatMessageWidget(
-            message: message,
-          );
+          return ChatMessageWidget(message: message);
         }
         return const SizedBox.shrink();
       },

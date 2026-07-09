@@ -6,5 +6,6 @@ import 'package:flutter_riverpod/legacy.dart';
 
 const int kHomeTabIndexChat = 2;
 
-final StateProvider<int> homeBottomNavIndexProvider =
-    StateProvider<int>((Ref ref) => 0);
+final StateProvider<int> homeBottomNavIndexProvider = StateProvider<int>(
+  (Ref ref) => 0,
+);

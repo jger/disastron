@@ -58,8 +58,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer>
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<Map<String, ToolPlacementFlags>> placementsAsync =
-        ref.watch(toolPlacementsProvider);
+    final AsyncValue<Map<String, ToolPlacementFlags>> placementsAsync = ref
+        .watch(toolPlacementsProvider);
     final AsyncValue<WikiPack> wikiAsync = ref.watch(wikiPackProvider);
 
     return Drawer(
@@ -120,17 +120,14 @@ class _AppDrawerState extends ConsumerState<AppDrawer>
           ...placementsAsync.when(
             data: (Map<String, ToolPlacementFlags> placements) {
               return wikiAsync.when(
-                data: (WikiPack wikiPack) => _drawerShortcutTiles(
-                  context,
-                  placements,
-                  wikiPack,
-                ),
+                data: (WikiPack wikiPack) =>
+                    _drawerShortcutTiles(context, placements, wikiPack),
                 loading: () => <Widget>[],
-                error: (_, __) => <Widget>[],
+                error: (_, _) => <Widget>[],
               );
             },
             loading: () => <Widget>[],
-            error: (_, __) => <Widget>[],
+            error: (_, _) => <Widget>[],
           ),
           ..._drawerConfigurationTiles(context),
           if (_versionLabel != null) ...<Widget>[
@@ -143,8 +140,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer>
                   _versionLabel!,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),

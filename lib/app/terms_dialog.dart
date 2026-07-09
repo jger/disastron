@@ -75,9 +75,9 @@ class _TermsDialogContentState extends State<_TermsDialogContent> {
               if (!widget.onlyView) ...<Widget>[
                 Text(
                   'terms_message'.tr(),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 12),
               ],
@@ -86,9 +86,7 @@ class _TermsDialogContentState extends State<_TermsDialogContent> {
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: colorScheme.outlineVariant,
-                  ),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 child: Scrollbar(
                   controller: _scrollController,
@@ -99,40 +97,28 @@ class _TermsDialogContentState extends State<_TermsDialogContent> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        _sectionHeader(
-                          context,
-                          'terms_section_1_title'.tr(),
-                        ),
+                        _sectionHeader(context, 'terms_section_1_title'.tr()),
                         const SizedBox(height: 4),
                         Text(
                           'terms_section_1_body'.tr(),
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         const SizedBox(height: 12),
-                        _sectionHeader(
-                          context,
-                          'terms_section_2_title'.tr(),
-                        ),
+                        _sectionHeader(context, 'terms_section_2_title'.tr()),
                         const SizedBox(height: 4),
                         Text(
                           'terms_section_2_body'.tr(),
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         const SizedBox(height: 12),
-                        _sectionHeader(
-                          context,
-                          'terms_section_3_title'.tr(),
-                        ),
+                        _sectionHeader(context, 'terms_section_3_title'.tr()),
                         const SizedBox(height: 4),
                         Text(
                           'terms_section_3_body'.tr(),
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         const SizedBox(height: 12),
-                        _sectionHeader(
-                          context,
-                          'terms_section_4_title'.tr(),
-                        ),
+                        _sectionHeader(context, 'terms_section_4_title'.tr()),
                         const SizedBox(height: 4),
                         Text(
                           'terms_section_4_body'.tr(),
@@ -148,10 +134,7 @@ class _TermsDialogContentState extends State<_TermsDialogContent> {
                 onTap: () async {
                   final Uri uri = Uri.parse('https://disastron.com/terms');
                   unawaited(
-                    launchUrl(
-                      uri,
-                      mode: LaunchMode.externalApplication,
-                    ),
+                    launchUrl(uri, mode: LaunchMode.externalApplication),
                   );
                 },
                 borderRadius: BorderRadius.circular(8),
@@ -203,10 +186,7 @@ class _TermsDialogContentState extends State<_TermsDialogContent> {
       ),
       actions: <Widget>[
         if (widget.onlyView)
-          TextButton(
-            onPressed: widget.onDismiss,
-            child: Text('close'.tr()),
-          )
+          TextButton(onPressed: widget.onDismiss, child: Text('close'.tr()))
         else ...<Widget>[
           TextButton(
             onPressed: () async {
@@ -236,8 +216,8 @@ class _TermsDialogContentState extends State<_TermsDialogContent> {
 Widget _sectionHeader(BuildContext context, String title) {
   return Text(
     title,
-    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.bold,
-        ),
+    style: Theme.of(
+      context,
+    ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
   );
 }

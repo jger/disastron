@@ -12,23 +12,25 @@ class DashboardWeatherCard extends ConsumerWidget {
     if (t == null) {
       return '—';
     }
-    return MaterialLocalizations.of(context).formatTimeOfDay(
-      TimeOfDay.fromDateTime(t),
-    );
+    return MaterialLocalizations.of(
+      context,
+    ).formatTimeOfDay(TimeOfDay.fromDateTime(t));
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<DashboardWeatherSnapshot> async =
-        ref.watch(dashboardWeatherProvider);
+    final AsyncValue<DashboardWeatherSnapshot> async = ref.watch(
+      dashboardWeatherProvider,
+    );
 
     return async.when(
       data: (DashboardWeatherSnapshot s) {
         final ThemeData theme = Theme.of(context);
         final ColorScheme cs = theme.colorScheme;
         final TextStyle small =
-            (theme.textTheme.bodySmall ?? theme.textTheme.bodyMedium!)
-                .copyWith(color: cs.onSurfaceVariant);
+            (theme.textTheme.bodySmall ?? theme.textTheme.bodyMedium!).copyWith(
+              color: cs.onSurfaceVariant,
+            );
 
         if (!s.hasFix) {
           return Card(
@@ -62,10 +64,7 @@ class DashboardWeatherCard extends ConsumerWidget {
                     style: theme.textTheme.bodySmall?.copyWith(color: cs.error),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'location_gps_hint'.tr(),
-                    style: small,
-                  ),
+                  Text('location_gps_hint'.tr(), style: small),
                 ],
               ),
             ),
@@ -80,17 +79,18 @@ class DashboardWeatherCard extends ConsumerWidget {
         final String phaseLabel = polarNight
             ? 'Polar night'
             : polarDay
-                ? 'Polar day'
-                : isDay
-                    ? 'Day'
-                    : 'Night';
+            ? 'Polar day'
+            : isDay
+            ? 'Day'
+            : 'Night';
 
         final IconData phaseIcon = polarDay || (!polarNight && isDay)
             ? Icons.wb_sunny_outlined
             : Icons.nights_stay_outlined;
 
-        final Color phaseColor =
-            polarDay || (!polarNight && isDay) ? cs.primary : cs.tertiary;
+        final Color phaseColor = polarDay || (!polarNight && isDay)
+            ? cs.primary
+            : cs.tertiary;
 
         final MaterialLocalizations loc = MaterialLocalizations.of(context);
 
@@ -212,10 +212,7 @@ class DashboardWeatherCard extends ConsumerWidget {
       loading: () => const Card(
         child: Padding(
           padding: EdgeInsets.fromLTRB(12, 10, 12, 10),
-          child: SizedBox(
-            height: 2,
-            child: LinearProgressIndicator(),
-          ),
+          child: SizedBox(height: 2, child: LinearProgressIndicator()),
         ),
       ),
       error: (Object e, StackTrace st) => Card(
@@ -224,8 +221,8 @@ class DashboardWeatherCard extends ConsumerWidget {
           child: Text(
             'Conditions error: $e',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
+              color: Theme.of(context).colorScheme.error,
+            ),
           ),
         ),
       ),

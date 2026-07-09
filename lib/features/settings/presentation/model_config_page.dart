@@ -9,15 +9,10 @@ class ModelConfigPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Offline model'),
-      ),
+      appBar: AppBar(title: const Text('Offline model')),
       body: const SingleChildScrollView(
         padding: EdgeInsets.all(16),
-        child: ModelSetupWidget(
-          showAppearance: false,
-          wrapInScrollView: false,
-        ),
+        child: ModelSetupWidget(showAppearance: false, wrapInScrollView: false),
       ),
     );
   }

@@ -29,10 +29,7 @@ class EmergencyTodo {
   final bool done;
   final int createdAtMs;
 
-  EmergencyTodo copyWith({
-    String? title,
-    bool? done,
-  }) {
+  EmergencyTodo copyWith({String? title, bool? done}) {
     return EmergencyTodo(
       id: id,
       title: title ?? this.title,
@@ -42,11 +39,11 @@ class EmergencyTodo {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'title': title,
-        'done': done,
-        'createdAtMs': createdAtMs,
-      };
+    'id': id,
+    'title': title,
+    'done': done,
+    'createdAtMs': createdAtMs,
+  };
 }
 
 @Riverpod(keepAlive: true)
@@ -96,9 +93,7 @@ class EmergencyTodos extends _$EmergencyTodos {
     final List<EmergencyTodo> list = _current();
     await _save(
       list
-          .map(
-            (EmergencyTodo e) => e.id == id ? e.copyWith(done: done) : e,
-          )
+          .map((EmergencyTodo e) => e.id == id ? e.copyWith(done: done) : e)
           .toList(),
     );
   }
@@ -133,9 +128,7 @@ class EmergencyTodos extends _$EmergencyTodos {
           continue;
         }
         next = next
-            .map(
-              (EmergencyTodo e) => e.id == id ? e.copyWith(done: done) : e,
-            )
+            .map((EmergencyTodo e) => e.id == id ? e.copyWith(done: done) : e)
             .toList();
       } else if (kind == 'remove') {
         final String? id = op['id'] as String?;

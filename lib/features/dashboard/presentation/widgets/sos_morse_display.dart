@@ -36,8 +36,9 @@ class SosMorseDisplay extends StatelessWidget {
     if (msg.isEmpty) {
       return Text(
         'Enter A–Z / 0–9',
-        style:
-            theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: scheme.onSurfaceVariant,
+        ),
       );
     }
 

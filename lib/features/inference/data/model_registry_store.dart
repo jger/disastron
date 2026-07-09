@@ -22,10 +22,12 @@ class InstalledModelEntry {
     return InstalledModelEntry(
       id: j['id']! as String,
       sourceUrlOrPath: j['sourceUrlOrPath']! as String,
-      modelType: ModelType.values
-          .firstWhere((ModelType e) => e.name == j['modelType']! as String),
-      fileType: ModelFileType.values
-          .firstWhere((ModelFileType e) => e.name == j['fileType']! as String),
+      modelType: ModelType.values.firstWhere(
+        (ModelType e) => e.name == j['modelType']! as String,
+      ),
+      fileType: ModelFileType.values.firstWhere(
+        (ModelFileType e) => e.name == j['fileType']! as String,
+      ),
       displayTitle: j['displayTitle']! as String,
       presetId: j['presetId'] as String?,
       importedFromPicker: j['importedFromPicker'] as bool? ?? false,
@@ -41,21 +43,18 @@ class InstalledModelEntry {
   final bool importedFromPicker;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'sourceUrlOrPath': sourceUrlOrPath,
-        'modelType': modelType.name,
-        'fileType': fileType.name,
-        'displayTitle': displayTitle,
-        if (presetId != null) 'presetId': presetId,
-        'importedFromPicker': importedFromPicker,
-      };
+    'id': id,
+    'sourceUrlOrPath': sourceUrlOrPath,
+    'modelType': modelType.name,
+    'fileType': fileType.name,
+    'displayTitle': displayTitle,
+    if (presetId != null) 'presetId': presetId,
+    'importedFromPicker': importedFromPicker,
+  };
 }
 
 class ModelRegistrySnapshot {
-  const ModelRegistrySnapshot({
-    required this.entries,
-    this.activeEntryId,
-  });
+  const ModelRegistrySnapshot({required this.entries, this.activeEntryId});
 
   factory ModelRegistrySnapshot.fromJson(Map<String, dynamic> j) {
     final List<dynamic> raw = j['entries'] as List<dynamic>? ?? <dynamic>[];
@@ -83,10 +82,10 @@ class ModelRegistrySnapshot {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'v': 1,
-        'entries': entries.map((InstalledModelEntry e) => e.toJson()).toList(),
-        if (activeEntryId != null) 'activeEntryId': activeEntryId,
-      };
+    'v': 1,
+    'entries': entries.map((InstalledModelEntry e) => e.toJson()).toList(),
+    if (activeEntryId != null) 'activeEntryId': activeEntryId,
+  };
 }
 
 class ModelRegistryStore {
@@ -106,10 +105,7 @@ class ModelRegistryStore {
 
   Future<void> writeSnapshot(ModelRegistrySnapshot snapshot) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      _kRegistryJsonKey,
-      jsonEncode(snapshot.toJson()),
-    );
+    await prefs.setString(_kRegistryJsonKey, jsonEncode(snapshot.toJson()));
   }
 
   /// One-time migration from [ModelInstallPrefs] single-record storage.
@@ -141,8 +137,9 @@ class ModelRegistryStore {
   }
 
   String _titleFromLegacySource(String urlOrPath) {
-    final Uri uri =
-        urlOrPath.contains('://') ? Uri.parse(urlOrPath) : Uri.file(urlOrPath);
+    final Uri uri = urlOrPath.contains('://')
+        ? Uri.parse(urlOrPath)
+        : Uri.file(urlOrPath);
     if (uri.pathSegments.isNotEmpty) {
       return uri.pathSegments.last;
     }

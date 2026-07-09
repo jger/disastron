@@ -47,7 +47,8 @@ class ToolPlacements extends _$ToolPlacements {
       return validation;
     }
 
-    final ToolPlacementFlags existing = current[toolId] ??
+    final ToolPlacementFlags existing =
+        current[toolId] ??
         const ToolPlacementFlags(dashboard: false, drawer: false);
     final ToolPlacementFlags updated = switch (surface) {
       AppToolSurface.dashboard => existing.copyWith(dashboard: value),
@@ -58,10 +59,7 @@ class ToolPlacements extends _$ToolPlacements {
         Map<String, ToolPlacementFlags>.from(current)..[toolId] = updated;
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      PrefsKeys.toolPlacements,
-      encodeToolPlacements(next),
-    );
+    await prefs.setString(PrefsKeys.toolPlacements, encodeToolPlacements(next));
     state = AsyncValue<Map<String, ToolPlacementFlags>>.data(next);
     return validation;
   }

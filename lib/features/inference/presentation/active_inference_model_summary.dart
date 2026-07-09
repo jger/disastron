@@ -48,8 +48,9 @@ ActiveInferenceModelSummary? readActiveInferenceSummary({
   if (registry == null || registry.activeEntryId == null) {
     return plugin;
   }
-  final InstalledModelEntry? entry =
-      registry.entryById(registry.activeEntryId!);
+  final InstalledModelEntry? entry = registry.entryById(
+    registry.activeEntryId!,
+  );
   if (entry == null) {
     return plugin;
   }

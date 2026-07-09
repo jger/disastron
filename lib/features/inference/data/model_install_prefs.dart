@@ -39,10 +39,12 @@ class ModelInstallPrefs {
       return null;
     }
     try {
-      final ModelType modelType =
-          ModelType.values.firstWhere((ModelType e) => e.name == modelTypeName);
-      final ModelFileType fileType = ModelFileType.values
-          .firstWhere((ModelFileType e) => e.name == fileTypeName);
+      final ModelType modelType = ModelType.values.firstWhere(
+        (ModelType e) => e.name == modelTypeName,
+      );
+      final ModelFileType fileType = ModelFileType.values.firstWhere(
+        (ModelFileType e) => e.name == fileTypeName,
+      );
       return ModelInstallRecord(
         urlOrPath: urlOrPath,
         modelType: modelType,

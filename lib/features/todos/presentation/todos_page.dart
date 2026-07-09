@@ -12,8 +12,9 @@ class TodosPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<EmergencyTodo>> async =
-        ref.watch(emergencyTodosProvider);
+    final AsyncValue<List<EmergencyTodo>> async = ref.watch(
+      emergencyTodosProvider,
+    );
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -28,8 +29,8 @@ class TodosPage extends ConsumerWidget {
           Text(
             'Items can be added here or by the assistant in Messages (via structured replies).',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 12),
           Expanded(
@@ -45,7 +46,7 @@ class TodosPage extends ConsumerWidget {
                 }
                 return ListView.separated(
                   itemCount: list.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  separatorBuilder: (_, _) => const Divider(height: 1),
                   itemBuilder: (BuildContext context, int i) {
                     final EmergencyTodo t = list[i];
                     return CheckboxListTile(
@@ -97,8 +98,9 @@ class TodosPage extends ConsumerWidget {
           content: TextField(
             controller: c,
             autofocus: true,
-            decoration:
-                const InputDecoration(hintText: 'Short actionable step'),
+            decoration: const InputDecoration(
+              hintText: 'Short actionable step',
+            ),
             onSubmitted: (String s) => Navigator.pop(ctx, s),
           ),
           actions: <Widget>[

@@ -35,8 +35,12 @@ LightStateResult computeLightState({
   required double latitudeDeg,
   required double longitudeDeg,
 }) {
-  final DateTime localNoon =
-      DateTime(nowLocal.year, nowLocal.month, nowLocal.day, 12);
+  final DateTime localNoon = DateTime(
+    nowLocal.year,
+    nowLocal.month,
+    nowLocal.day,
+    12,
+  );
 
   final double lon = longitudeDeg;
   final double lat = latitudeDeg;
@@ -51,14 +55,16 @@ LightStateResult computeLightState({
   final double gamma =
       2 * math.pi / 365 * (dayOfYearUtc - 1 + (utcHour - 12) / 24);
 
-  final double eqtime = 229.18 *
+  final double eqtime =
+      229.18 *
       (0.000075 +
           0.001868 * math.cos(gamma) -
           0.032077 * math.sin(gamma) -
           0.014615 * math.cos(2 * gamma) -
           0.040849 * math.sin(2 * gamma));
 
-  final double declRad = 0.006918 -
+  final double declRad =
+      0.006918 -
       0.399912 * math.cos(gamma) +
       0.070257 * math.sin(gamma) -
       0.006758 * math.cos(2 * gamma) +
@@ -67,10 +73,12 @@ LightStateResult computeLightState({
       0.001480 * math.sin(3 * gamma);
 
   const double zenithOfficialDeg = 90.83333333333333;
-  final double cosZen =
-      math.cos(zenithOfficialDeg * math.pi / 180); // ≈ -0.01454 with refraction
+  final double cosZen = math.cos(
+    zenithOfficialDeg * math.pi / 180,
+  ); // ≈ -0.01454 with refraction
 
-  final double cosH = (cosZen - math.sin(latRad) * math.sin(declRad)) /
+  final double cosH =
+      (cosZen - math.sin(latRad) * math.sin(declRad)) /
       (math.cos(latRad) * math.cos(declRad));
 
   if (cosH > 1) {
@@ -103,8 +111,11 @@ LightStateResult computeLightState({
   final double sunriseUtcMin = 720 - 4 * (lon + haDeg) - eqtime;
   final double sunsetUtcMin = 720 - 4 * (lon - haDeg) - eqtime;
 
-  final DateTime utcMidnight =
-      DateTime.utc(utcNoon.year, utcNoon.month, utcNoon.day);
+  final DateTime utcMidnight = DateTime.utc(
+    utcNoon.year,
+    utcNoon.month,
+    utcNoon.day,
+  );
   final DateTime sunriseUtc = utcMidnight.add(
     Duration(milliseconds: (sunriseUtcMin * 60 * 1000).round()),
   );

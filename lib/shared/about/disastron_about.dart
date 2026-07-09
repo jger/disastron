@@ -15,8 +15,9 @@ Future<void> showDisastronAbout(
 }) {
   final String year = DateTime.now().year.toString();
   final String buildNumber = packageInfo.buildNumber;
-  final String versionTemplate =
-      buildNumber.isEmpty ? '{{ version }}' : '{{ version }}+{{ buildNumber }}';
+  final String versionTemplate = buildNumber.isEmpty
+      ? '{{ version }}'
+      : '{{ version }}+{{ buildNumber }}';
 
   return showAboutPage(
     context: context,

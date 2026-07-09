@@ -47,22 +47,20 @@ class _HcBatteryTipBannerState extends ConsumerState<_HcBatteryTipBanner> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(
-      appAppearanceProvider,
-      (
-        AsyncValue<AppAppearanceMode>? previous,
-        AsyncValue<AppAppearanceMode> next,
-      ) {
-        next.whenData((AppAppearanceMode m) {
-          if (m != AppAppearanceMode.darkHighContrast && mounted) {
-            setState(() => _dismissed = false);
-          }
-        });
-      },
-    );
+    ref.listen(appAppearanceProvider, (
+      AsyncValue<AppAppearanceMode>? previous,
+      AsyncValue<AppAppearanceMode> next,
+    ) {
+      next.whenData((AppAppearanceMode m) {
+        if (m != AppAppearanceMode.darkHighContrast && mounted) {
+          setState(() => _dismissed = false);
+        }
+      });
+    });
 
-    final AsyncValue<AppAppearanceMode> appearance =
-        ref.watch(appAppearanceProvider);
+    final AsyncValue<AppAppearanceMode> appearance = ref.watch(
+      appAppearanceProvider,
+    );
 
     return appearance.when(
       data: (AppAppearanceMode m) {
@@ -79,17 +77,14 @@ class _HcBatteryTipBannerState extends ConsumerState<_HcBatteryTipBanner> {
               padding: const EdgeInsets.fromLTRB(10, 6, 4, 6),
               child: Row(
                 children: <Widget>[
-                  Icon(
-                    Icons.battery_saver_outlined,
-                    color: onSec,
-                  ),
+                  Icon(Icons.battery_saver_outlined, color: onSec),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'battery_tip_body'.tr(),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: onSec,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: onSec),
                     ),
                   ),
                   TextButton(
@@ -107,9 +102,9 @@ class _HcBatteryTipBannerState extends ConsumerState<_HcBatteryTipBanner> {
                     },
                     child: Text(
                       'light_mode'.tr(),
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: onSec,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.labelLarge?.copyWith(color: onSec),
                     ),
                   ),
                   IconButton(
@@ -129,7 +124,7 @@ class _HcBatteryTipBannerState extends ConsumerState<_HcBatteryTipBanner> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }
@@ -177,9 +172,9 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                     child: Text(
                       'no_offline_model_title'.tr(),
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: onC,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: onC,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -187,22 +182,20 @@ class _NoOfflineModelBanner extends ConsumerWidget {
               const SizedBox(height: 6),
               Text(
                 'no_offline_model_body'.tr(
-                  namedArgs: <String, String>{
-                    'preset': m.title,
-                  },
+                  namedArgs: <String, String>{'preset': m.title},
                 ),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: onC,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: onC),
               ),
               const SizedBox(height: 8),
               PresetDownloadMetadataChips(model: m),
               const SizedBox(height: 4),
               Text(
                 m.downloadMetadataLine,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: onC,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: onC),
               ),
               const SizedBox(height: 10),
               Wrap(
@@ -222,10 +215,10 @@ class _NoOfflineModelBanner extends ConsumerWidget {
                       }
                       final bool ok =
                           await coordinateInferenceNetworkInstallPreflight(
-                        context: context,
-                        ref: ref,
-                        model: m,
-                      );
+                            context: context,
+                            ref: ref,
+                            model: m,
+                          );
                       if (!ok || !context.mounted) {
                         return;
                       }
@@ -357,9 +350,9 @@ class _NoOfflineWikiBannerState extends ConsumerState<_NoOfflineWikiBanner> {
                       child: Text(
                         'no_offline_wiki_title'.tr(),
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: onC,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          color: onC,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -380,9 +373,9 @@ class _NoOfflineWikiBannerState extends ConsumerState<_NoOfflineWikiBanner> {
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Text(
                   'no_offline_wiki_body'.tr(),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: onC,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: onC),
                 ),
               ),
               const SizedBox(height: 10),
@@ -460,8 +453,8 @@ class _DashboardToolGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<Map<String, ToolPlacementFlags>> placementsAsync =
-        ref.watch(toolPlacementsProvider);
+    final AsyncValue<Map<String, ToolPlacementFlags>> placementsAsync = ref
+        .watch(toolPlacementsProvider);
     final AsyncValue<WikiPack> wikiAsync = ref.watch(wikiPackProvider);
 
     return placementsAsync.when(
@@ -480,8 +473,9 @@ class _DashboardToolGrid extends ConsumerWidget {
                 final double w = c.maxWidth;
                 final int cols = w >= 520 ? 3 : 2;
                 final List<Widget> cards = toolIds.map((String toolId) {
-                  final AppToolDefinition def =
-                      AppToolCatalog.definitionFor(toolId);
+                  final AppToolDefinition def = AppToolCatalog.definitionFor(
+                    toolId,
+                  );
                   final ToolLayoutLabels labels = labelsForTool(
                     toolId,
                     wikiPack: wikiPack,
@@ -509,14 +503,14 @@ class _DashboardToolGrid extends ConsumerWidget {
             height: 120,
             child: Center(child: CircularProgressIndicator()),
           ),
-          error: (_, __) => const SizedBox.shrink(),
+          error: (_, _) => const SizedBox.shrink(),
         );
       },
       loading: () => const SizedBox(
         height: 120,
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }
@@ -526,8 +520,9 @@ class _DashboardStatusCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<DashboardDeviceSnapshot> async =
-        ref.watch(dashboardDeviceProvider);
+    final AsyncValue<DashboardDeviceSnapshot> async = ref.watch(
+      dashboardDeviceProvider,
+    );
 
     return async.when(
       data: (DashboardDeviceSnapshot s) => _StatusExpansionTile(snapshot: s),
@@ -543,8 +538,8 @@ class _DashboardStatusCard extends ConsumerWidget {
           child: Text(
             'Status error: $e',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
+              color: Theme.of(context).colorScheme.error,
+            ),
           ),
         ),
       ),
@@ -563,8 +558,9 @@ class _StatusExpansionTile extends StatelessWidget {
   }
 
   String _shortSummary(BuildContext context) {
-    final String bat =
-        snapshot.batteryPercent != null ? '${snapshot.batteryPercent}%' : '—';
+    final String bat = snapshot.batteryPercent != null
+        ? '${snapshot.batteryPercent}%'
+        : '—';
     final String place = <String?>[
       snapshot.locality,
       snapshot.isoCountryCode,
@@ -611,8 +607,8 @@ class _StatusExpansionTile extends StatelessWidget {
         subtitle: Text(
           'Tap for device details and conditions',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         children: <Widget>[
           Padding(
@@ -656,16 +652,16 @@ class _StatusExpansionTile extends StatelessWidget {
                   Text(
                     snapshot.locationError!.tr(),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 ],
                 const Divider(height: 28),
                 Text(
                   'Day / night',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 const DashboardWeatherCard(),
@@ -687,14 +683,8 @@ class _StatusExpansionTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                k,
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-              Text(
-                v,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+              Text(k, style: Theme.of(context).textTheme.labelMedium),
+              Text(v, style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),

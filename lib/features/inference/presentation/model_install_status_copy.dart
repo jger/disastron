@@ -3,10 +3,7 @@ import 'package:disastron/features/inference/domain/predefined_models.dart';
 import 'package:disastron/features/inference/presentation/local_gemma_model_provider.dart';
 
 class InstallStatusCopy {
-  const InstallStatusCopy({
-    required this.title,
-    this.subtitle,
-  });
+  const InstallStatusCopy({required this.title, this.subtitle});
 
   final String title;
   final String? subtitle;
@@ -14,16 +11,18 @@ class InstallStatusCopy {
 
 String _modelDisplayName(LocalGemmaModelUi ui) {
   if (ui.pendingPresetId != null) {
-    final PredefinedInferenceModel? model =
-        presetInferenceModelById(ui.pendingPresetId!);
+    final PredefinedInferenceModel? model = presetInferenceModelById(
+      ui.pendingPresetId!,
+    );
     if (model != null) {
       return model.title;
     }
   }
   if (ui.pendingDownloadUrl != null) {
     final String urlOrPath = ui.pendingDownloadUrl!;
-    final Uri uri =
-        urlOrPath.contains('://') ? Uri.parse(urlOrPath) : Uri.file(urlOrPath);
+    final Uri uri = urlOrPath.contains('://')
+        ? Uri.parse(urlOrPath)
+        : Uri.file(urlOrPath);
     if (uri.pathSegments.isNotEmpty) {
       return uri.pathSegments.last;
     }

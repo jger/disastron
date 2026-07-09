@@ -7,16 +7,10 @@ import 'package:disastron/features/tool_layout/domain/app_tool.dart';
 import 'package:disastron/features/tool_layout/domain/app_tool_catalog.dart';
 import 'package:disastron/features/tool_layout/domain/tool_placement_defaults.dart';
 
-enum ToolPlacementValidationCode {
-  ok,
-  mustKeepOneSurface,
-}
+enum ToolPlacementValidationCode { ok, mustKeepOneSurface }
 
 class ToolPlacementValidation {
-  const ToolPlacementValidation({
-    required this.code,
-    this.messageKey,
-  });
+  const ToolPlacementValidation({required this.code, this.messageKey});
 
   final ToolPlacementValidationCode code;
   final String? messageKey;
@@ -68,12 +62,11 @@ ToolPlacementValidation validatePlacementChange({
   required bool newValue,
 }) {
   if (!AppToolCatalog.mustStayReachableIds.contains(toolId)) {
-    return const ToolPlacementValidation(
-      code: ToolPlacementValidationCode.ok,
-    );
+    return const ToolPlacementValidation(code: ToolPlacementValidationCode.ok);
   }
 
-  final ToolPlacementFlags existing = current[toolId] ??
+  final ToolPlacementFlags existing =
+      current[toolId] ??
       const ToolPlacementFlags(dashboard: false, drawer: false);
 
   final ToolPlacementFlags after = switch (surface) {
@@ -82,9 +75,7 @@ ToolPlacementValidation validatePlacementChange({
   };
 
   if (after.dashboard || after.drawer) {
-    return const ToolPlacementValidation(
-      code: ToolPlacementValidationCode.ok,
-    );
+    return const ToolPlacementValidation(code: ToolPlacementValidationCode.ok);
   }
 
   return const ToolPlacementValidation(

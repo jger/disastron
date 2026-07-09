@@ -25,8 +25,9 @@ class WikiSources extends _$WikiSources {
 
   Future<void> updateSource(String oldUrl, WikiSource updatedSource) async {
     final current = state.value ?? [];
-    final updated =
-        current.map((s) => s.url == oldUrl ? updatedSource : s).toList();
+    final updated = current
+        .map((s) => s.url == oldUrl ? updatedSource : s)
+        .toList();
     state = AsyncValue.data(updated);
     await _store.saveSources(updated);
   }

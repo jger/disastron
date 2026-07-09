@@ -7,10 +7,7 @@ import 'package:flutter_gemma/flutter_gemma.dart' show CancelToken;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class LoraAddDialog extends ConsumerStatefulWidget {
-  const LoraAddDialog({
-    required this.modelEntryId,
-    super.key,
-  });
+  const LoraAddDialog({required this.modelEntryId, super.key});
 
   final String modelEntryId;
 
@@ -76,17 +73,19 @@ class _LoraAddDialogState extends ConsumerState<LoraAddDialog>
       final String? token = _tokenController.text.trim().isEmpty
           ? null
           : _tokenController.text.trim();
-      await ref.read(localGemmaModelProvider.notifier).installLoraFromNetwork(
-        url,
-        widget.modelEntryId,
-        token: token,
-        onProgress: (int p) {
-          if (mounted) {
-            setState(() => _progress = p);
-          }
-        },
-        cancelToken: _cancelToken,
-      );
+      await ref
+          .read(localGemmaModelProvider.notifier)
+          .installLoraFromNetwork(
+            url,
+            widget.modelEntryId,
+            token: token,
+            onProgress: (int p) {
+              if (mounted) {
+                setState(() => _progress = p);
+              }
+            },
+            cancelToken: _cancelToken,
+          );
 
       // Optionally rename if label is custom
       final String customLabel = _labelController.text.trim();
@@ -184,10 +183,7 @@ class _LoraAddDialogState extends ConsumerState<LoraAddDialog>
                 ] else ...<Widget>[
                   const Center(child: CircularProgressIndicator()),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Importing file...',
-                    textAlign: TextAlign.center,
-                  ),
+                  const Text('Importing file...', textAlign: TextAlign.center),
                 ],
                 const SizedBox(height: 16),
                 if (_progress != null)

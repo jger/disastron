@@ -8,29 +8,23 @@ import 'package:path/path.dart' as p;
 enum ModelExportResultKind { success, cancelled, failure, unsupported }
 
 class ModelExportResult {
-  const ModelExportResult._({
-    required this.kind,
-    this.savedPath,
-    this.message,
-  });
+  const ModelExportResult._({required this.kind, this.savedPath, this.message});
 
   factory ModelExportResult.cancelled() =>
       const ModelExportResult._(kind: ModelExportResultKind.cancelled);
 
-  factory ModelExportResult.success(String path) => ModelExportResult._(
-        kind: ModelExportResultKind.success,
-        savedPath: path,
-      );
+  factory ModelExportResult.success(String path) =>
+      ModelExportResult._(kind: ModelExportResultKind.success, savedPath: path);
 
   factory ModelExportResult.failure(String message) => ModelExportResult._(
-        kind: ModelExportResultKind.failure,
-        message: message,
-      );
+    kind: ModelExportResultKind.failure,
+    message: message,
+  );
 
   factory ModelExportResult.unsupported() => const ModelExportResult._(
-        kind: ModelExportResultKind.unsupported,
-        message: 'Not supported on this platform.',
-      );
+    kind: ModelExportResultKind.unsupported,
+    message: 'Not supported on this platform.',
+  );
 
   final ModelExportResultKind kind;
   final String? savedPath;

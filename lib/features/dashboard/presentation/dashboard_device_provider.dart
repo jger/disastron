@@ -96,7 +96,8 @@ Future<DashboardLocationSnapshot> dashboardLocation(Ref ref) async {
       if (!serviceOn) {
         locErr = DashboardLocationErrors.servicesDisabled;
       } else {
-        final Position pos = await Geolocator.getLastKnownPosition() ??
+        final Position pos =
+            await Geolocator.getLastKnownPosition() ??
             await Geolocator.getCurrentPosition(
               locationSettings: const LocationSettings(
                 accuracy: LocationAccuracy.medium,

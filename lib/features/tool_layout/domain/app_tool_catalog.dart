@@ -29,10 +29,7 @@ abstract final class AppToolCatalog {
     'morse_code',
   ];
 
-  static const List<String> quickActionIds = <String>[
-    callHelpId,
-    sosId,
-  ];
+  static const List<String> quickActionIds = <String>[callHelpId, sosId];
 
   static const List<String> settingsIds = <String>[
     appearanceSettingsId,
@@ -48,56 +45,56 @@ abstract final class AppToolCatalog {
 
   static const Map<String, AppToolDefinition> definitions =
       <String, AppToolDefinition>{
-    callHelpId: AppToolDefinition(
-      id: callHelpId,
-      kind: AppToolKind.quickAction,
-      icon: Icons.emergency_share_outlined,
-      titleKey: 'dashboard_call_help_title',
-      subtitleKey: 'dashboard_call_help_subtitle',
-    ),
-    sosId: AppToolDefinition(
-      id: sosId,
-      kind: AppToolKind.quickAction,
-      icon: Icons.sos,
-      titleKey: 'dashboard_sos_title',
-      subtitleKey: 'dashboard_sos_subtitle',
-    ),
-    appearanceSettingsId: AppToolDefinition(
-      id: appearanceSettingsId,
-      kind: AppToolKind.settings,
-      icon: Icons.settings_outlined,
-      titleKey: 'drawer_theme',
-      subtitleKey: 'tool_layout_settings_subtitle',
-    ),
-    offlineModelId: AppToolDefinition(
-      id: offlineModelId,
-      kind: AppToolKind.settings,
-      icon: Icons.psychology_outlined,
-      titleKey: 'drawer_offline_model',
-      subtitleKey: 'tool_layout_offline_model_subtitle',
-    ),
-    aboutId: AppToolDefinition(
-      id: aboutId,
-      kind: AppToolKind.settings,
-      icon: Icons.info_outline,
-      titleKey: 'drawer_about',
-      subtitleKey: 'tool_layout_about_subtitle',
-    ),
-    'karpa_cpr': AppToolDefinition(
-      id: 'karpa_cpr',
-      kind: AppToolKind.wikiArticle,
-      icon: Icons.favorite_border,
-      titleKey: 'dashboard_cpr_title',
-      subtitleKey: 'dashboard_cpr_subtitle',
-    ),
-    'trip_planning': AppToolDefinition(
-      id: 'trip_planning',
-      kind: AppToolKind.wikiArticle,
-      icon: Icons.luggage_outlined,
-      titleKey: 'dashboard_planning_title',
-      subtitleKey: 'dashboard_planning_subtitle',
-    ),
-  };
+        callHelpId: AppToolDefinition(
+          id: callHelpId,
+          kind: AppToolKind.quickAction,
+          icon: Icons.emergency_share_outlined,
+          titleKey: 'dashboard_call_help_title',
+          subtitleKey: 'dashboard_call_help_subtitle',
+        ),
+        sosId: AppToolDefinition(
+          id: sosId,
+          kind: AppToolKind.quickAction,
+          icon: Icons.sos,
+          titleKey: 'dashboard_sos_title',
+          subtitleKey: 'dashboard_sos_subtitle',
+        ),
+        appearanceSettingsId: AppToolDefinition(
+          id: appearanceSettingsId,
+          kind: AppToolKind.settings,
+          icon: Icons.settings_outlined,
+          titleKey: 'drawer_theme',
+          subtitleKey: 'tool_layout_settings_subtitle',
+        ),
+        offlineModelId: AppToolDefinition(
+          id: offlineModelId,
+          kind: AppToolKind.settings,
+          icon: Icons.psychology_outlined,
+          titleKey: 'drawer_offline_model',
+          subtitleKey: 'tool_layout_offline_model_subtitle',
+        ),
+        aboutId: AppToolDefinition(
+          id: aboutId,
+          kind: AppToolKind.settings,
+          icon: Icons.info_outline,
+          titleKey: 'drawer_about',
+          subtitleKey: 'tool_layout_about_subtitle',
+        ),
+        'karpa_cpr': AppToolDefinition(
+          id: 'karpa_cpr',
+          kind: AppToolKind.wikiArticle,
+          icon: Icons.favorite_border,
+          titleKey: 'dashboard_cpr_title',
+          subtitleKey: 'dashboard_cpr_subtitle',
+        ),
+        'trip_planning': AppToolDefinition(
+          id: 'trip_planning',
+          kind: AppToolKind.wikiArticle,
+          icon: Icons.luggage_outlined,
+          titleKey: 'dashboard_planning_title',
+          subtitleKey: 'dashboard_planning_subtitle',
+        ),
+      };
 
   static AppToolDefinition definitionFor(String toolId) {
     return definitions[toolId] ??
@@ -117,10 +114,7 @@ abstract final class AppToolCatalog {
   }
 
   /// Quick actions that must stay on dashboard and/or drawer.
-  static const Set<String> mustStayReachableIds = <String>{
-    callHelpId,
-    sosId,
-  };
+  static const Set<String> mustStayReachableIds = <String>{callHelpId, sosId};
 
   static List<String> idsForSurface(
     Map<String, ToolPlacementFlags> placements,

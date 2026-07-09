@@ -16,19 +16,16 @@ void main() {
     await PredefinedInferenceModelsLoader.ensureLoaded();
   });
 
-  testWidgets('app builds with ProviderScope and EasyLocalization',
-      (WidgetTester tester) async {
+  testWidgets('app builds with ProviderScope and EasyLocalization', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       EasyLocalization(
         supportedLocales: AppLocales.supported,
         path: 'assets/translations',
         fallbackLocale: AppLocales.localeFromCode(AppLocales.codes.first),
         startLocale: AppLocales.localeFromCode(AppLocales.codes.first),
-        child: const ProviderScope(
-          child: LocaleEasyBridge(
-            child: MyApp(),
-          ),
-        ),
+        child: const ProviderScope(child: LocaleEasyBridge(child: MyApp())),
       ),
     );
     await tester.pump();

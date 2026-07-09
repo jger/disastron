@@ -94,18 +94,14 @@ class OfflineTemperatureForecast {
 
 const String _kForecastMethod = 'offline_climate_normals_idw';
 
-double _haversineKm(
-  double lat1,
-  double lon1,
-  double lat2,
-  double lon2,
-) {
+double _haversineKm(double lat1, double lon1, double lat2, double lon2) {
   const double earthKm = 6371;
   final double p1 = lat1 * math.pi / 180;
   final double p2 = lat2 * math.pi / 180;
   final double dp = (lat2 - lat1) * math.pi / 180;
   final double dl = (lon2 - lon1) * math.pi / 180;
-  final double a = math.sin(dp / 2) * math.sin(dp / 2) +
+  final double a =
+      math.sin(dp / 2) * math.sin(dp / 2) +
       math.cos(p1) * math.cos(p2) * math.sin(dl / 2) * math.sin(dl / 2);
   final double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
   return earthKm * c;

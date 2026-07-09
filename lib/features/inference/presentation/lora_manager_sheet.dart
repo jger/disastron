@@ -25,10 +25,8 @@ class LoraManagerSheet extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (BuildContext ctx) => LoraManagerSheet(
-        modelEntryId: modelEntryId,
-        modelTitle: modelTitle,
-      ),
+      builder: (BuildContext ctx) =>
+          LoraManagerSheet(modelEntryId: modelEntryId, modelTitle: modelTitle),
     );
   }
 
@@ -37,8 +35,9 @@ class LoraManagerSheet extends ConsumerWidget {
     WidgetRef ref,
     InstalledLoraEntry entry,
   ) async {
-    final TextEditingController controller =
-        TextEditingController(text: entry.displayLabel);
+    final TextEditingController controller = TextEditingController(
+      text: entry.displayLabel,
+    );
     final bool? ok = await showDialog<bool>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
@@ -114,8 +113,9 @@ class LoraManagerSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
-    final AsyncValue<LoraRegistrySnapshot> snapVal =
-        ref.watch(loraRegistrySnapshotProvider);
+    final AsyncValue<LoraRegistrySnapshot> snapVal = ref.watch(
+      loraRegistrySnapshotProvider,
+    );
 
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
@@ -145,8 +145,10 @@ class LoraManagerSheet extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
@@ -156,20 +158,14 @@ class LoraManagerSheet extends ConsumerWidget {
                         children: <Widget>[
                           Text(
                             'LoRA Adapters',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             modelTitle,
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: scheme.onSurfaceVariant,
-                                    ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: scheme.onSurfaceVariant),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -197,8 +193,8 @@ class LoraManagerSheet extends ConsumerWidget {
                     child: Text('Error loading LoRA registry: $err'),
                   ),
                   data: (LoraRegistrySnapshot snap) {
-                    final List<InstalledLoraEntry> modelLoras =
-                        snap.entriesForModel(modelEntryId);
+                    final List<InstalledLoraEntry> modelLoras = snap
+                        .entriesForModel(modelEntryId);
                     final String? activeLoraId =
                         snap.activeLoraIdPerModel[modelEntryId];
 
@@ -216,12 +212,8 @@ class LoraManagerSheet extends ConsumerWidget {
                             const SizedBox(height: 16),
                             Text(
                               'No LoRA Adapters',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: 8),
                             const Text(
@@ -269,8 +261,9 @@ class LoraManagerSheet extends ConsumerWidget {
                         return ListTile(
                           leading: Icon(
                             Icons.bolt,
-                            color:
-                                isActive ? Colors.amber[700] : scheme.outline,
+                            color: isActive
+                                ? Colors.amber[700]
+                                : scheme.outline,
                           ),
                           title: Text(
                             entry.displayLabel,
@@ -286,10 +279,8 @@ class LoraManagerSheet extends ConsumerWidget {
                                 : entry.sourceUrlOrPath,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: scheme.onSurfaceVariant,
-                                    ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: scheme.onSurfaceVariant),
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,

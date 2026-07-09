@@ -15,7 +15,7 @@ Use only ops add / setDone / remove. For setDone/remove you must use todo ids fr
 
 class GemmaLocalService {
   GemmaLocalService({ChatRuntimeGateway? runtime})
-      : _runtime = runtime ?? const FlutterGemmaChatRuntimeGateway();
+    : _runtime = runtime ?? const FlutterGemmaChatRuntimeGateway();
 
   InferenceModel? _model;
   InferenceChat? _chat;

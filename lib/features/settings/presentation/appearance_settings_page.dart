@@ -12,9 +12,7 @@ class AppearanceSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('appearance_title'.tr()),
-      ),
+      appBar: AppBar(title: Text('appearance_title'.tr())),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: <Widget>[
@@ -35,8 +33,8 @@ class AppearanceSettingsPage extends StatelessWidget {
           Text(
             'appearance_tools_intro'.tr(),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 8),
           ListTile(

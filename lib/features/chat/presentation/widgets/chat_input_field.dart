@@ -96,7 +96,8 @@ class ChatInputFieldState extends State<ChatInputField> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final bool canSend = _textController.text.trim().isNotEmpty ||
+    final bool canSend =
+        _textController.text.trim().isNotEmpty ||
         (_pickedImageBytes != null && _pickedImageBytes!.isNotEmpty);
 
     return IconTheme(

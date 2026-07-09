@@ -19,8 +19,10 @@ class LocaleEasyBridge extends ConsumerStatefulWidget {
 class _LocaleEasyBridgeState extends ConsumerState<LocaleEasyBridge> {
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<AppLocaleState>>(appLocaleProvider,
-        (_, AsyncValue<AppLocaleState> next) {
+    ref.listen<AsyncValue<AppLocaleState>>(appLocaleProvider, (
+      _,
+      AsyncValue<AppLocaleState> next,
+    ) {
       next.whenData((AppLocaleState s) {
         final Locale loc = AppLocales.localeFromCode(s.localeCode);
         if (context.locale != loc) {

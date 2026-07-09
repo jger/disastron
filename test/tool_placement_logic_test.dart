@@ -25,8 +25,10 @@ void main() {
 
   group('mergeToolPlacements', () {
     test('uses defaults when prefs empty', () {
-      final Map<String, ToolPlacementFlags> merged =
-          mergeToolPlacements(buildToolPlacementDefaults(), null);
+      final Map<String, ToolPlacementFlags> merged = mergeToolPlacements(
+        buildToolPlacementDefaults(),
+        null,
+      );
       expect(merged[AppToolCatalog.callHelpId]!.dashboard, isTrue);
     });
 
@@ -37,8 +39,10 @@ void main() {
   "earthquake": {"dashboard": true, "drawer": false}
 }
 ''';
-      final Map<String, ToolPlacementFlags> merged =
-          mergeToolPlacements(buildToolPlacementDefaults(), raw);
+      final Map<String, ToolPlacementFlags> merged = mergeToolPlacements(
+        buildToolPlacementDefaults(),
+        raw,
+      );
 
       expect(merged[AppToolCatalog.callHelpId]!.dashboard, isFalse);
       expect(merged[AppToolCatalog.callHelpId]!.drawer, isTrue);
@@ -49,8 +53,10 @@ void main() {
     test('ignores unknown tool ids in JSON', () {
       const String raw =
           '{"unknown_tool": {"dashboard": true, "drawer": true}}';
-      final Map<String, ToolPlacementFlags> merged =
-          mergeToolPlacements(buildToolPlacementDefaults(), raw);
+      final Map<String, ToolPlacementFlags> merged = mergeToolPlacements(
+        buildToolPlacementDefaults(),
+        raw,
+      );
       expect(merged.containsKey('unknown_tool'), isFalse);
     });
   });
@@ -111,8 +117,10 @@ void main() {
         drawer: true,
       );
       final String raw = encodeToolPlacements(original);
-      final Map<String, ToolPlacementFlags> merged =
-          mergeToolPlacements(buildToolPlacementDefaults(), raw);
+      final Map<String, ToolPlacementFlags> merged = mergeToolPlacements(
+        buildToolPlacementDefaults(),
+        raw,
+      );
       expect(merged['earthquake']!.dashboard, isTrue);
       expect(merged['earthquake']!.drawer, isTrue);
     });

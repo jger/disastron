@@ -20,8 +20,9 @@ class WikiSourcesStore {
       final file = await _localFile;
       if (!file.existsSync()) {
         // Copy from asset
-        final String defaultYaml =
-            await rootBundle.loadString('assets/wiki/wiki.yaml');
+        final String defaultYaml = await rootBundle.loadString(
+          'assets/wiki/wiki.yaml',
+        );
         await file.writeAsString(defaultYaml);
       }
 

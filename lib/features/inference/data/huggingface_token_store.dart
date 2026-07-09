@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Keychain / Keystore-backed HF token (migrates one-time from legacy SharedPreferences).
 class HuggingfaceTokenStore {
   HuggingfaceTokenStore({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
 
