@@ -2,6 +2,13 @@
 
 All notable changes will be documented in this file.
 
+## [1.6.1](https://github.com/jger/disastron/compare/v1.6.0...v1.6.1) (2026-07-09)
+
+
+### Bug Fixes
+
+* camera crashed the app ([94b9801](https://github.com/jger/disastron/commit/94b980153844ab76b5851caacd3d9b1d167b4ba9))
+
 # [1.6.0](https://github.com/jger/disastron/compare/v1.5.1...v1.6.0) (2026-07-09)
 
 
