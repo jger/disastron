@@ -137,6 +137,16 @@ Future<DashboardLocationSnapshot> dashboardLocation(Ref ref) async {
 
 @riverpod
 Future<DashboardBatterySnapshot> dashboardBattery(Ref ref) async {
+  // Registered before the first await: if the provider is disposed during the
+  // battery reads below, a timer armed afterwards would outlive its Ref and
+  // throw when it fired.
+  if (!Platform.environment.containsKey('FLUTTER_TEST')) {
+    final timer = Timer(const Duration(minutes: 1), () {
+      ref.invalidateSelf();
+    });
+    ref.onDispose(timer.cancel);
+  }
+
   final Battery battery = Battery();
 
   int? pct;
@@ -148,13 +158,6 @@ Future<DashboardBatterySnapshot> dashboardBattery(Ref ref) async {
     // ignore
   }
 
-  // Set up timer to refresh every minute
-  if (!Platform.environment.containsKey('FLUTTER_TEST')) {
-    final timer = Timer(const Duration(minutes: 1), () {
-      ref.invalidateSelf();
-    });
-    ref.onDispose(timer.cancel);
-  }
   return DashboardBatterySnapshot(
     sampledAt: DateTime.now(),
     batteryPercent: pct,

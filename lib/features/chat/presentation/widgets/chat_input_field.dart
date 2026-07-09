@@ -1,7 +1,9 @@
 import 'dart:async';
-import 'dart:typed_data';
 
+import 'package:disastron/core/feedback/app_snackbar.dart';
 import 'package:disastron/features/chat/presentation/chat_handlers.dart';
+import 'package:disastron/features/chat/presentation/widgets/camera_capture_page.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -21,10 +23,17 @@ class ChatInputField extends StatefulWidget {
 
 class ChatInputFieldState extends State<ChatInputField> {
   final TextEditingController _textController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
   Uint8List? _pickedImageBytes;
 
   static const String _unsupportedImageHint =
       'Image input needs a multimodal model (e.g. Gemma 3n / Gemma 4 preset).';
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_restoreLostImage());
+  }
 
   @override
   void dispose() {
@@ -32,9 +41,41 @@ class ChatInputFieldState extends State<ChatInputField> {
     super.dispose();
   }
 
+  /// Recovers a photo taken just before Android killed the process.
+  ///
+  /// While the camera/gallery intent is in the foreground this app is a cached
+  /// background process, and a loaded multimodal model makes it the fattest
+  /// target for the low-memory killer. Android then relaunches us and hands the
+  /// file over here instead of returning it from [_pickImage]'s future, which
+  /// never completes.
+  Future<void> _restoreLostImage() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return;
+    }
+    final LostDataResponse lost = await _picker.retrieveLostData();
+    if (lost.isEmpty || !mounted) {
+      return;
+    }
+    if (lost.exception != null) {
+      showAppSnackBar(
+        context,
+        message: 'Could not restore the photo you took. Please try again.',
+      );
+      return;
+    }
+    final XFile? file = lost.file;
+    if (file == null || lost.type != RetrieveType.image) {
+      return;
+    }
+    final Uint8List bytes = await file.readAsBytes();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _pickedImageBytes = bytes);
+  }
+
   Future<void> _pickImage(ImageSource source) async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? file = await picker.pickImage(
+    final XFile? file = await _picker.pickImage(
       source: source,
       maxWidth: 2048,
       maxHeight: 2048,
@@ -45,6 +86,26 @@ class ChatInputFieldState extends State<ChatInputField> {
     }
     final Uint8List bytes = await file.readAsBytes();
     if (!mounted) {
+      return;
+    }
+    setState(() => _pickedImageBytes = bytes);
+  }
+
+  /// Captures in-process so the app never backgrounds and never becomes a
+  /// low-memory-killer target while the model is loaded. See
+  /// [CameraCapturePage]. Web keeps `image_picker`, which has no such problem.
+  Future<void> _takePhoto() async {
+    if (kIsWeb) {
+      await _pickImage(ImageSource.camera);
+      return;
+    }
+    final Uint8List? bytes = await Navigator.of(context).push<Uint8List>(
+      MaterialPageRoute<Uint8List>(
+        fullscreenDialog: true,
+        builder: (BuildContext _) => const CameraCapturePage(),
+      ),
+    );
+    if (bytes == null || !mounted) {
       return;
     }
     setState(() => _pickedImageBytes = bytes);
@@ -71,7 +132,7 @@ class ChatInputFieldState extends State<ChatInputField> {
               title: const Text('Take a photo'),
               onTap: () {
                 Navigator.pop(ctx);
-                unawaited(_pickImage(ImageSource.camera));
+                unawaited(_takePhoto());
               },
             ),
           ],
