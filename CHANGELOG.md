@@ -2,6 +2,18 @@
 
 All notable changes will be documented in this file.
 
+# [1.6.0](https://github.com/jger/disastron/compare/v1.5.1...v1.6.0) (2026-07-09)
+
+
+### Bug Fixes
+
+* **ios:** raise deployment target to 16.0 and commit SPM integration ([1e122e8](https://github.com/jger/disastron/commit/1e122e8b8a33f73f726317dd3c253a2b84649096))
+
+
+### Features
+
+* **inference:** migrate to flutter_gemma 1.2.2 at behavior parity ([8bbdbbc](https://github.com/jger/disastron/commit/8bbdbbc1de7721e8c097cb72cddc35e23c441a39))
+
 ## [1.5.1](https://github.com/jger/disastron/compare/v1.5.0...v1.5.1) (2026-06-11)
 
 
