@@ -2,6 +2,13 @@
 
 All notable changes will be documented in this file.
 
+## [1.6.2](https://github.com/jger/disastron/compare/v1.6.1...v1.6.2) (2026-07-10)
+
+
+### Bug Fixes
+
+* **chat:** enhance chat runtime with model type handling and session limits ([3cc6f87](https://github.com/jger/disastron/commit/3cc6f875962aa708660b807e9ed62d0b0093aef6))
+
 ## [1.6.1](https://github.com/jger/disastron/compare/v1.6.0...v1.6.1) (2026-07-09)
 
 
