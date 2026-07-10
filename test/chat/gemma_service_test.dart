@@ -50,6 +50,39 @@ void main() {
       expect(model.createChatCalls.single.loraPath, '/lora.bin');
     });
 
+    test(
+      'caps concurrent sessions to guard against a second KV cache',
+      () async {
+        await service.init();
+
+        expect(gateway.calls.single.maxConcurrentSessions, 1);
+      },
+    );
+
+    test(
+      'forwards the active model type instead of defaulting to gemmaIt',
+      () async {
+        gateway.activeType = ModelType.gemma4;
+
+        await service.init();
+
+        // createChat() defaults an omitted modelType to gemmaIt, which would put
+        // a gemma4 model on gemmaIt's thinking-filter branch.
+        expect(
+          gateway.models.single.createChatCalls.single.modelType,
+          ModelType.gemma4,
+        );
+      },
+    );
+
+    test('passes a null model type through when none is active', () async {
+      gateway.activeType = null;
+
+      await service.init();
+
+      expect(gateway.models.single.createChatCalls.single.modelType, isNull);
+    });
+
     test('reuses the loaded model when the vision flag is unchanged', () async {
       await service.init(supportImage: true);
       await service.init(supportImage: true);

@@ -1,10 +1,25 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Model files exceed 500MB, so flutter_gemma's SmartDownloader auto-selects
+         foreground download mode. That needs POST_NOTIFICATIONS to activate at all,
+         and on API 34+ WorkManager's shared SystemForegroundService must declare a
+         matching foregroundServiceType or startForeground() throws. Without these
+         the download silently drops to background and loses its Doze exemption. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
+    <!-- The camera plugin declares RECORD_AUDIO for video capture. Disastron only
+         takes stills (CameraController(enableAudio: false)), so drop it rather than
+         ask users for the microphone. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"
+        tools:node="remove" />
 
     <queries>
         <intent>
@@ -41,6 +56,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- background_downloader's foreground path runs through WorkManager's
+             shared service; API 34+ requires the type to match the permission above. -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

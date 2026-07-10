@@ -34,10 +34,22 @@ class FakeInferenceChat extends InferenceChat {
 class FakeInferenceModel extends InferenceModel {
   /// Arguments of every [createChat] call, in order.
   final List<
-    ({String? systemInstruction, bool? supportImage, String? loraPath})
+    ({
+      String? systemInstruction,
+      bool? supportImage,
+      String? loraPath,
+      ModelType? modelType,
+    })
   >
   createChatCalls =
-      <({String? systemInstruction, bool? supportImage, String? loraPath})>[];
+      <
+        ({
+          String? systemInstruction,
+          bool? supportImage,
+          String? loraPath,
+          ModelType? modelType,
+        })
+      >[];
 
   /// Chats handed out by [createChat], in order.
   final List<FakeInferenceChat> chats = <FakeInferenceChat>[];
@@ -102,6 +114,7 @@ class FakeInferenceModel extends InferenceModel {
       systemInstruction: systemInstruction,
       supportImage: supportImage,
       loraPath: loraPath,
+      modelType: modelType,
     ));
     final FakeInferenceChat created = FakeInferenceChat();
     chats.add(created);
@@ -125,24 +138,48 @@ class FakeChatRuntimeGateway implements ChatRuntimeGateway {
   final List<FakeInferenceModel> models = <FakeInferenceModel>[];
 
   /// Arguments of every [getActiveModel] call, in order.
-  final List<({int maxTokens, bool supportImage, int? maxNumImages})> calls =
-      <({int maxTokens, bool supportImage, int? maxNumImages})>[];
+  final List<
+    ({
+      int maxTokens,
+      bool supportImage,
+      int? maxNumImages,
+      int? maxConcurrentSessions,
+    })
+  >
+  calls =
+      <
+        ({
+          int maxTokens,
+          bool supportImage,
+          int? maxNumImages,
+          int? maxConcurrentSessions,
+        })
+      >[];
 
   @override
   Future<InferenceModel> getActiveModel({
     required int maxTokens,
     bool supportImage = false,
     int? maxNumImages,
+    int? maxConcurrentSessions,
   }) async {
     calls.add((
       maxTokens: maxTokens,
       supportImage: supportImage,
       maxNumImages: maxNumImages,
+      maxConcurrentSessions: maxConcurrentSessions,
     ));
     final FakeInferenceModel created = FakeInferenceModel();
     models.add(created);
     return created;
   }
+
+  /// Returned by [activeModelType]; mirrors the real gateway reading the
+  /// plugin's active [InferenceModelSpec].
+  ModelType? activeType = ModelType.gemma4;
+
+  @override
+  ModelType? activeModelType() => activeType;
 
   @override
   bool hasActiveModel() => models.isNotEmpty;
