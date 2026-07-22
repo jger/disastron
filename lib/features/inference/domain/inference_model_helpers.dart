@@ -22,6 +22,15 @@ InferenceBackend inferenceBackendForFileType(ModelFileType fileType) {
     case ModelFileType.task:
     case ModelFileType.binary:
       return InferenceBackend.mediapipe;
+    case ModelFileType.builtIn:
+      // OS-native models (Gemini Nano, Apple Foundation Models) have no file
+      // and run on neither MediaPipe nor LiteRT. They never originate from a
+      // URL/path, so [modelFileTypeForUrl] never yields this value here.
+      throw ArgumentError.value(
+        fileType,
+        'fileType',
+        'builtIn models have no downloadable file backend',
+      );
   }
 }
 
