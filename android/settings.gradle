@@ -14,6 +14,21 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+
+    resolutionStrategy {
+        eachPlugin {
+            // background_downloader pins the kotlinx-serialization compiler
+            // plugin to 2.1.0, but this project compiles with Kotlin 2.3.20.
+            // The serialization compiler plugin must match the Kotlin compiler
+            // version exactly; a 2.1.0 plugin under a 2.3.20 compiler mangles
+            // the plugin's @Serializable classes (Models, Auth, BDPlugin…),
+            // producing cascading "Unresolved reference 'BDPlugin'" errors.
+            // Force it up to the project's Kotlin version to keep them aligned.
+            if (requested.id.id == 'org.jetbrains.kotlin.plugin.serialization') {
+                useVersion('2.3.20')
+            }
+        }
+    }
 }
 
 plugins {
