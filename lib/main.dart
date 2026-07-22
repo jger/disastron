@@ -72,7 +72,7 @@ class MyApp extends ConsumerWidget {
         locale: context.locale,
         theme: lightFallback,
         darkTheme: darkFallback,
-        themeMode: ThemeMode.dark,
+        themeMode: ThemeMode.light,
         home: const SizedBox.shrink(),
       ),
       error: (Object _, StackTrace _) => MaterialApp(
@@ -82,7 +82,7 @@ class MyApp extends ConsumerWidget {
         locale: context.locale,
         theme: lightFallback,
         darkTheme: darkFallback,
-        themeMode: ThemeMode.dark,
+        themeMode: ThemeMode.light,
         home: const SizedBox.shrink(),
       ),
     );
