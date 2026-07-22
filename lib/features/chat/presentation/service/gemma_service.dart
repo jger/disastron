@@ -40,6 +40,16 @@ class GemmaLocalService {
   /// (avoids recreating [InferenceChat] and desyncing UI vs native history).
   String? _pendingDeviceContextSituation;
 
+  /// Set when the user stops an in-flight generation. On the `.litertlm` FFI
+  /// engine, cancelling the response stream reaches
+  /// `litert_lm_conversation_cancel_process`, which leaves the native
+  /// conversation wedged: every later turn prefills forever and emits no token
+  /// (reproduced on Gemma 4 E2B, flutter_gemma_litertlm 1.1.0). The recovery
+  /// flutter_gemma documents is close+recreate with history replay; we defer it
+  /// to the next turn (see [processMessageAsync]) so the stop itself stays
+  /// instant and we only pay the re-prefill cost if the user actually continues.
+  bool _needsSessionReset = false;
+
   bool get isInitialized => _chat != null;
 
   void setDeviceContextForNextUserMessage(String situationText) {
@@ -89,18 +99,27 @@ class GemmaLocalService {
       // gemma4 model through gemmaIt's thinking filter and function-call parser.
       modelType: _runtime.activeModelType(),
     );
+    // Fresh chat — no wedged session to recover from.
+    _needsSessionReset = false;
   }
 
-  // Deliberately no stopGeneration() wrapper. InferenceChat.stopGeneration()
-  // reaches litert_lm_conversation_cancel_process, which leaves the native
-  // conversation permanently wedged: the Dart stream closes cleanly, but every
-  // later message on that conversation prefills forever and never emits a
-  // token. Reproduced on Gemma 4 E2B with flutter_gemma_litertlm 1.0.2. The
-  // stop button therefore only drops our subscription; the engine keeps
-  // decoding unobserved until it reaches a stop token.
+  /// Records that an in-flight generation was stopped (stop button or the
+  /// message widget being torn down mid-stream). The wedged native session is
+  /// rebuilt lazily on the next [processMessageAsync]; see [_needsSessionReset].
+  void markGenerationStopped() {
+    _needsSessionReset = true;
+  }
 
   Stream<ModelResponse> processMessageAsync(Message userMessage) async* {
     final InferenceChat chat = _chat!;
+    if (_needsSessionReset) {
+      _needsSessionReset = false;
+      // Discard the conversation wedged by the previous stop and rebuild a
+      // fresh native session, replaying prior turns so multi-turn context
+      // survives. `fullHistory` is an unmodifiable copy, so clearHistory
+      // clearing its own backing list does not mutate the snapshot mid-replay.
+      await chat.clearHistory(replayHistory: chat.fullHistory);
+    }
     Message toSend = userMessage;
     final String? pending = _pendingDeviceContextSituation;
     if (pending != null) {
@@ -118,6 +137,7 @@ class GemmaLocalService {
 
   Future<void> close() async {
     _pendingDeviceContextSituation = null;
+    _needsSessionReset = false;
     _lastInitSupportImage = null;
     await _chat?.close();
     _chat = null;
