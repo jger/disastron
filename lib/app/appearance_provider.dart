@@ -12,11 +12,11 @@ class AppAppearance extends _$AppAppearance {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? raw = prefs.getString(PrefsKeys.appearanceMode);
     if (raw == null) {
-      return AppAppearanceMode.darkHighContrast;
+      return AppAppearanceMode.light;
     }
     return AppAppearanceMode.values.firstWhere(
       (AppAppearanceMode e) => e.name == raw,
-      orElse: () => AppAppearanceMode.darkHighContrast,
+      orElse: () => AppAppearanceMode.light,
     );
   }
 

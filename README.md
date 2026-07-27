@@ -59,6 +59,19 @@ flutter run
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for PR workflow, wiki validation, and maintainer release signing. Content licensing for wiki articles: [CONTENT_ATTRIBUTION.md](CONTENT_ATTRIBUTION.md).
 
+## Patrol (on-device E2E)
+
+[Patrol](https://patrol.leancode.co/) drives real on-device UI tests under `patrol_test/` — used where plain `flutter test` integration tests can't reach the device (e.g. native permission dialogs, or devices like MIUI where `adb shell input` is blocked). Requires `patrol_cli >= 4` (`dart pub global activate patrol_cli`) and a connected/booted Android device or emulator.
+
+```bash
+make patrol-prepare   # one-time: cache + seed a model onto the device (see PRESET in Makefile)
+make patrol-test       # run the default investigation test (TARGET/DEVICE overridable)
+```
+
+`patrol-test` pre-grants runtime permissions and runs with `--no-uninstall` so app data (including the multi-GB seeded model) survives between runs. If the Gradle-based orchestrator can't install on your device, fall back to `make patrol-test-manual` (`tool/patrol/run_no_orchestrator.sh`, plain `adb install` + `am instrument`). See [`docs/patrol-chat-stop-investigation.md`](docs/patrol-chat-stop-investigation.md) for the full workflow and background.
+
+**Patrol MCP** (`.mcp.json`, `patrol_mcp` package) exposes Patrol to MCP-capable AI agents (e.g. Claude Code) as tools to launch/restart a test run, take screenshots, and inspect the native UI tree — useful for driving and debugging on-device test sessions interactively rather than only via `make patrol-test`.
+
 ## Tech (short)
 
 Flutter, Riverpod, Auto Route, `flutter_gemma`, `image_picker` (chat attachments on supported models), bundled assets (wiki, emergency numbers, climate normals), local permissions for location / camera / photos / audio / vibration as required by the platform.
