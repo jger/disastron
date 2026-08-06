@@ -50,6 +50,12 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
+
+        // Patrol (integration_test/) runs as an Android instrumentation test.
+        // Deliberately NO `testInstrumentationRunnerArguments clearPackageData`:
+        // the seeded inference model + registry must survive between test runs
+        // so the 2.4GB model is installed exactly once per device.
+        testInstrumentationRunner = "pl.leancode.patrol.PatrolJUnitRunner"
     }
 
     signingConfigs {
@@ -71,6 +77,16 @@ android {
             )
         }
     }
+
+    testOptions {
+        // Each patrol test runs in its own instrumentation invocation (fresh
+        // app process), while installed app data (the model) is kept.
+        execution "ANDROIDX_TEST_ORCHESTRATOR"
+    }
+}
+
+dependencies {
+    androidTestUtil "androidx.test:orchestrator:1.5.1"
 }
 
 flutter {

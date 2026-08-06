@@ -75,3 +75,5 @@ assets/model.bin
 *.litertlm
 *.jks
 key.properties
+# patrol_cli regenerates this before every test build
+patrol_test/test_bundle.dart
