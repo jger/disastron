@@ -204,14 +204,14 @@ Future<void> _completeFirstRunDialogsIfAny(PatrolIntegrationTester $) async {
     if ($.tester.any(find.byType(CheckboxListTile))) {
       _log('accepting terms dialog');
       await $(CheckboxListTile).tap(settlePolicy: SettlePolicy.trySettle);
-      await $(AlertDialog)
-          .$(FilledButton)
-          .tap(settlePolicy: SettlePolicy.trySettle);
+      await $(
+        AlertDialog,
+      ).$(FilledButton).tap(settlePolicy: SettlePolicy.trySettle);
     } else {
       _log('confirming first-run (language) dialog');
-      await $(AlertDialog)
-          .$(FilledButton)
-          .tap(settlePolicy: SettlePolicy.trySettle);
+      await $(
+        AlertDialog,
+      ).$(FilledButton).tap(settlePolicy: SettlePolicy.trySettle);
     }
   }
 }
@@ -276,16 +276,17 @@ Future<File?> _findSeedModelFile() async {
     if (!dir.existsSync()) {
       continue;
     }
-    final List<File> candidates = dir
-        .listSync()
-        .whereType<File>()
-        .where(
-          (File f) => _kModelFileExtensions.any(
-            (String ext) => f.path.toLowerCase().endsWith(ext),
-          ),
-        )
-        .toList()
-      ..sort((File a, File b) => b.lengthSync().compareTo(a.lengthSync()));
+    final List<File> candidates =
+        dir
+            .listSync()
+            .whereType<File>()
+            .where(
+              (File f) => _kModelFileExtensions.any(
+                (String ext) => f.path.toLowerCase().endsWith(ext),
+              ),
+            )
+            .toList()
+          ..sort((File a, File b) => b.lengthSync().compareTo(a.lengthSync()));
     if (candidates.isNotEmpty) {
       return candidates.first;
     }
@@ -332,18 +333,18 @@ Future<void> _send(PatrolIntegrationTester $, String text) async {
   _log('sending: "$text"');
   await $(ChatInputField).$(TextField).enterText(text);
   await $.pump(const Duration(milliseconds: 300));
-  await $(ChatInputField)
-      .$(Icons.send)
-      .tap(settlePolicy: SettlePolicy.noSettle);
+  await $(
+    ChatInputField,
+  ).$(Icons.send).tap(settlePolicy: SettlePolicy.noSettle);
   // One frame so GemmaInputField mounts and starts streaming; do NOT settle -
   // the assistant spinner animates forever, pumpAndSettle would time out.
   await $.pump(const Duration(milliseconds: 300));
 }
 
 Future<void> _tapStop(PatrolIntegrationTester $) async {
-  await $(GemmaInputField)
-      .$(Icons.stop_circle_outlined)
-      .tap(settlePolicy: SettlePolicy.noSettle);
+  await $(
+    GemmaInputField,
+  ).$(Icons.stop_circle_outlined).tap(settlePolicy: SettlePolicy.noSettle);
   await $.pump(const Duration(milliseconds: 300));
 }
 
