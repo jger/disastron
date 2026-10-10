@@ -1,5 +1,5 @@
-import 'package:disastron/core/bootstrap/app_bootstrap.dart';
 import 'package:disastron/features/inference/data/huggingface_token_store.dart';
+import 'package:disastron/features/inference/inference_bootstrap.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'huggingface_token_provider.g.dart';
@@ -15,13 +15,13 @@ class HuggingfaceToken extends _$HuggingfaceToken {
 
   Future<void> save(String token) async {
     await _hfTokenStore.write(token);
-    await AppBootstrap.initializeGemmaWithToken(token);
+    await InferenceBootstrap.initializeGemmaWithToken(token);
     ref.invalidateSelf();
   }
 
   Future<void> clear() async {
     await _hfTokenStore.clear();
-    await AppBootstrap.initializeGemmaWithToken(null);
+    await InferenceBootstrap.initializeGemmaWithToken(null);
     ref.invalidateSelf();
   }
 }

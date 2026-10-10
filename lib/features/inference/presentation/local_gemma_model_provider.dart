@@ -5,6 +5,7 @@ import 'package:disastron/features/inference/data/model_download_resume_service.
 import 'package:disastron/features/inference/data/model_registry_store.dart';
 import 'package:disastron/features/inference/data/pending_model_download_store.dart';
 import 'package:disastron/features/inference/domain/inference_model_descriptor.dart';
+import 'package:disastron/features/inference/domain/inference_path_utils.dart';
 import 'package:disastron/features/inference/domain/model_install_activity_kind.dart';
 import 'package:disastron/features/inference/domain/model_install_domain_error.dart';
 import 'package:disastron/features/inference/domain/model_operation_state.dart';

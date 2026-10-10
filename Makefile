@@ -11,6 +11,7 @@ pre-release-checks: ## pub get, format, build_runner, analyze, test (release gat
 	dart format --output=none --set-exit-if-changed .
 	dart run build_runner build --delete-conflicting-outputs
 	dart analyze --fatal-infos --fatal-warnings .
+	dart run tool/check_feature_imports.dart
 	flutter test
 
 # --- Patrol E2E (docs/patrol-chat-stop-investigation.md) -----------------
@@ -27,12 +28,12 @@ patrol-test: ## Run the chat stop/continue investigation on the connected device
 	@out=$$(patrol --version 2>&1); \
 	if ! echo "$$out" | grep -q 'patrol_cli v'; then \
 		echo "error: patrol_cli not installed."; \
-		echo "fix:   dart pub global activate patrol_cli 4.6.1"; \
+		echo "fix:   dart pub global activate patrol_cli 4.8.0"; \
 		exit 1; \
 	fi; \
 	if echo "$$out" | grep -qi 'incompatibility'; then \
 		echo "$$out"; \
-		echo "fix:   match global patrol_cli to pubspec patrol (4.8.x → 4.6.1; 4.9+ → 4.7+)"; \
+		echo "fix:   dart pub global activate patrol_cli 4.8.0 (match patrol ^4.10)"; \
 		exit 1; \
 	fi
 	@# Pre-grant runtime permissions so no native dialog blocks chat init.

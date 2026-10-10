@@ -61,7 +61,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for PR workflow, wiki validation, and mai
 
 ## Patrol (on-device E2E)
 
-[Patrol](https://patrol.leancode.co/) drives real on-device UI tests under `patrol_test/` — used where plain `flutter test` integration tests can't reach the device (e.g. native permission dialogs, or devices like MIUI where `adb shell input` is blocked). Requires `patrol_cli >= 4` (`dart pub global activate patrol_cli`) and a connected/booted Android device or emulator.
+[Patrol](https://patrol.leancode.co/) drives real on-device UI tests under `patrol_test/` — used where plain `flutter test` integration tests can't reach the device (e.g. native permission dialogs, or devices like MIUI where `adb shell input` is blocked). Requires `patrol_cli` 4.8.0+ with `patrol` 4.10 (`dart pub global activate patrol_cli 4.8.0`) and a connected/booted Android device or emulator.
 
 ```bash
 make patrol-prepare   # one-time: cache + seed a model onto the device (see PRESET in Makefile)

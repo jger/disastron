@@ -2,12 +2,10 @@
 // Copyright (c) 2024-2026 Jannis Gerardis
 
 import 'package:auto_route/auto_route.dart';
-import 'package:disastron/features/dashboard/presentation/dashboard_device_provider.dart';
-import 'package:disastron/features/dashboard/presentation/sos_overlay.dart';
-import 'package:disastron/features/emergency/emergency_numbers.dart';
-import 'package:disastron/features/emergency/presentation/providers/emergency_numbers_pack_provider.dart';
-import 'package:disastron/features/tool_layout/domain/app_tool_catalog.dart';
-import 'package:disastron/features/wiki/presentation/wiki_navigation.dart';
+import 'package:disastron/features/dashboard/dashboard.dart';
+import 'package:disastron/features/emergency/emergency.dart';
+import 'package:disastron/features/tool_layout/tool_layout.dart';
+import 'package:disastron/features/wiki/wiki.dart';
 import 'package:disastron/router/routes.gr.dart';
 import 'package:disastron/shared/about/disastron_about.dart';
 import 'package:easy_localization/easy_localization.dart';

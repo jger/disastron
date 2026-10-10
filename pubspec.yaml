@@ -82,8 +82,8 @@ dev_dependencies:
     sdk: flutter
   image_picker_platform_interface: ^2.11.1
   license_checker: ^1.6.2
-  patrol: ^4.8.0
-  patrol_mcp: ^0.1.4
+  patrol: ^4.10.0
+  patrol_mcp: ^0.2.1
   path_provider_platform_interface: ^2.1.2
   plugin_platform_interface: ^2.1.8
   riverpod_generator: ^4.0.3

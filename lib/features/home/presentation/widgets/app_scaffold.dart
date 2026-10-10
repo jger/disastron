@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2024-2026 Jannis Gerardis
 
-import 'package:disastron/shared/widgets/app_app_bar.dart';
-import 'package:disastron/shared/widgets/app_drawer.dart';
+import 'package:disastron/features/home/presentation/widgets/app_app_bar.dart';
+import 'package:disastron/features/home/presentation/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 
 class AppScaffold extends StatefulWidget {

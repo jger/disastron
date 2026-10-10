@@ -3,7 +3,7 @@ import 'dart:io' show File;
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:disastron/features/inference/data/pending_model_download_store.dart';
-import 'package:disastron/features/inference/presentation/model_install_orchestrator.dart';
+import 'package:disastron/features/inference/domain/inference_path_utils.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:flutter_edge_ai/mobile/smart_downloader.dart';

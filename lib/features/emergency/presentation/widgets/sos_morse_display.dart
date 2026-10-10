@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2024-2026 Jannis Gerardis
 
-import 'package:disastron/features/dashboard/domain/sos_morse_codec.dart';
+import 'package:disastron/features/emergency/domain/sos_morse_codec.dart';
 import 'package:flutter/material.dart';
 
 /// Live Morse visualization for the SOS overlay message field.

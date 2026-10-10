@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:disastron/features/dashboard/domain/sos_morse_codec.dart';
-import 'package:disastron/features/dashboard/presentation/sos_morse_tone.dart';
-import 'package:disastron/features/dashboard/presentation/widgets/sos_morse_display.dart';
+import 'package:disastron/features/emergency/domain/sos_morse_codec.dart';
+import 'package:disastron/features/emergency/presentation/sos_morse_tone.dart';
+import 'package:disastron/features/emergency/presentation/widgets/sos_morse_display.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

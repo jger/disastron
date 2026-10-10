@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2024-2026 Jannis Gerardis
 
-import 'package:disastron/features/chat/presentation/service/chat_runtime_gateway.dart';
+import 'package:disastron/features/chat/data/chat_runtime_gateway.dart';
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
 /// Stand-in for [InferenceChat] that records queries and replays a scripted

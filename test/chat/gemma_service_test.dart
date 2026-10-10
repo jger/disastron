@@ -9,7 +9,7 @@
 // Not covered: init(reloadInferenceWeights: true), which calls
 // clearTfliteXnnpackWeightCaches() -> path_provider, unavailable in unit tests.
 
-import 'package:disastron/features/chat/presentation/service/gemma_service.dart';
+import 'package:disastron/features/chat/data/gemma_service.dart';
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:flutter_test/flutter_test.dart';
 

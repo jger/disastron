@@ -1,5 +1,5 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:disastron/features/dashboard/presentation/widgets/model_setup_widget.dart';
+import 'package:disastron/features/inference/presentation/widgets/model_setup_widget.dart';
 import 'package:flutter/material.dart';
 
 @RoutePage()

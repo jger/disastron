@@ -1,7 +1,7 @@
 import 'dart:io' show File;
 
 import 'package:disastron/features/inference/data/lora_registry_store.dart';
-import 'package:disastron/features/inference/presentation/model_install_orchestrator.dart';
+import 'package:disastron/features/inference/domain/inference_path_utils.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

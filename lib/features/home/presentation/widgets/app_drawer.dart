@@ -4,13 +4,9 @@
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:disastron/features/tool_layout/domain/app_tool.dart';
-import 'package:disastron/features/tool_layout/domain/app_tool_catalog.dart';
-import 'package:disastron/features/tool_layout/presentation/open_app_tool.dart';
-import 'package:disastron/features/tool_layout/presentation/tool_layout_labels.dart';
-import 'package:disastron/features/tool_layout/presentation/tool_placements_provider.dart';
-import 'package:disastron/features/wiki/presentation/wiki_models.dart';
-import 'package:disastron/features/wiki/presentation/wiki_pack_provider.dart';
+import 'package:disastron/features/home/home.dart';
+import 'package:disastron/features/tool_layout/tool_layout.dart';
+import 'package:disastron/features/wiki/wiki.dart';
 import 'package:disastron/router/routes.gr.dart';
 import 'package:disastron/shared/about/disastron_about.dart';
 import 'package:easy_localization/easy_localization.dart';

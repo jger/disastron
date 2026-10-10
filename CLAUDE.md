@@ -32,15 +32,19 @@ Use **Conventional Commits** (`feat:`, `fix:`, `chore:`, …). semantic-release 
 
 ## Architecture
 
-Feature-first with Riverpod (see `.cursor/rules/feature-first-riverpod.mdc` for the full convention). Each feature under `lib/features/<name>/` splits into `data/` (stores, services, loaders), `domain/` (entities, states, domain errors), and `presentation/` (pages, widgets, providers); simpler features have only `presentation/`.
+Feature-first with Riverpod (see `.cursor/rules/feature-first-riverpod.mdc`). Use `data/` / `domain/` only where needed; expose cross-feature APIs via `lib/features/<name>/<name>.dart`. `core/` and `shared/` do not import features.
 
-- `lib/main.dart` — wraps the app in `EasyLocalization` → `ProviderScope` → `LocaleEasyBridge`; awaits `AppBootstrap.initializeGemma()` and predefined-model loading before `runApp`.
-- `lib/core/bootstrap/app_bootstrap.dart` — startup initialization (Gemma plugin, predefined inference models from `assets/data/inference_models.yaml`, start-locale resolution).
-- `lib/app/` — app-level cross-cutting state: appearance/theme modes (including high-contrast variants, `appearance_provider.dart`), locale provider bridged to easy_localization, terms-acceptance and initial-language dialogs.
-- `lib/router/routes.dart` — auto_route table; `routes.gr.dart` is generated.
-- `lib/features/inference/` — the most involved feature: model registry store, predefined model presets, download/resume via `background_downloader`, Hugging Face token store, LoRA registry, install-domain errors. Chat (`lib/features/chat/`) consumes the active model through `flutter_edge_ai`.
-- `lib/features/wiki/` — bundled markdown articles per locale in `assets/wiki/<locale>/` with `manifest.yaml`, plus a downloader service for extra packs.
-- `lib/core/` — shared plumbing: bundled asset IO, preference keys (`prefs_keys.dart`), theme/spacing, snackbar feedback.
+- `lib/main.dart` — `EasyLocalization` → `ProviderScope` → `LocaleEasyBridge`; bootstrap Gemma + predefined models before `runApp`.
+- `lib/features/home/` — tab shell (`/`), scaffold, drawer, tool launcher.
+- `lib/features/dashboard/` — first tab (weather, status, tools grid).
+- `lib/features/inference/` — model registry, download/resume, LoRA, model settings UI.
+- `lib/features/chat/` — chat UI; consumes inference via public barrel + `flutter_edge_ai`.
+- `lib/features/emergency/` — numbers pack + SOS tools.
+- `lib/features/wiki/` — bundled `assets/wiki/<locale>/` + pack downloader.
+- `lib/app/` — appearance, locale, terms/language dialogs.
+- `lib/router/routes.dart` — auto_route; `routes.gr.dart` generated.
+- `lib/core/` — bootstrap, prefs keys, theme, snackbar.
+- Import boundaries: `dart run tool/check_feature_imports.dart` (also in `make pre-release-checks`).
 
 State management uses Riverpod codegen (`@riverpod` annotations + `riverpod_generator`); `riverpod_lint` and `custom_lint` are active.
 

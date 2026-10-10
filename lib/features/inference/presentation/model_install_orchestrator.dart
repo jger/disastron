@@ -4,6 +4,7 @@ import 'dart:io' show File;
 import 'package:disastron/features/inference/data/lora_registry_store.dart';
 import 'package:disastron/features/inference/data/model_registry_store.dart';
 import 'package:disastron/features/inference/domain/inference_model_descriptor.dart';
+import 'package:disastron/features/inference/domain/inference_path_utils.dart';
 import 'package:disastron/features/inference/domain/model_install_domain_error.dart';
 import 'package:disastron/features/inference/domain/predefined_models.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -11,16 +12,6 @@ import 'package:flutter_edge_ai/core/di/service_registry.dart';
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-
-String basenameFromStored(String urlOrPath) {
-  final Uri uri = urlOrPath.contains('://')
-      ? Uri.parse(urlOrPath)
-      : Uri.file(urlOrPath);
-  if (uri.pathSegments.isEmpty) {
-    return urlOrPath;
-  }
-  return uri.pathSegments.last;
-}
 
 class ColdStartRestoreResult {
   const ColdStartRestoreResult._({required this.attempted, this.error});
