@@ -7,8 +7,8 @@ import 'package:disastron/features/inference/domain/inference_model_descriptor.d
 import 'package:disastron/features/inference/domain/model_install_domain_error.dart';
 import 'package:disastron/features/inference/domain/predefined_models.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_gemma/core/di/service_registry.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/core/di/service_registry.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -36,10 +36,9 @@ class ColdStartRestoreResult {
   final ModelInstallDomainError? error;
 }
 
-/// Install / activate / remove inference models (delegates IO to [FlutterGemma]).
+/// Install / activate / remove inference models (delegates IO to [FlutterEdgeAi]).
 class ModelInstallOrchestrator {
-  ModelInstallOrchestrator({required ModelRegistryStore registry})
-    : _registry = registry;
+  ModelInstallOrchestrator({required this._registry});
 
   final ModelRegistryStore _registry;
   final LoraRegistryStore _loraRegistry = LoraRegistryStore();
@@ -86,7 +85,7 @@ class ModelInstallOrchestrator {
     );
     final String id = _entryIdForFilePath(path);
     final String title = d.displayTitle ?? basenameFromStored(path);
-    var builder = FlutterGemma.installModel(
+    var builder = FlutterEdgeAi.installModel(
       modelType: d.modelType,
       fileType: d.fileType,
     ).fromFile(path);
@@ -128,7 +127,7 @@ class ModelInstallOrchestrator {
         : _entryIdForUrl(url);
     final String title = inferred.displayTitle ?? basenameFromStored(url);
 
-    var netBuilder = FlutterGemma.installModel(
+    var netBuilder = FlutterEdgeAi.installModel(
       modelType: resolvedType,
       fileType: resolvedFile,
     ).fromNetwork(url, token: token);
@@ -175,7 +174,7 @@ class ModelInstallOrchestrator {
     if (kIsWeb) {
       return const ColdStartRestoreResult.skipped();
     }
-    if (FlutterGemma.hasActiveModel()) {
+    if (FlutterEdgeAi.hasActiveModel()) {
       return const ColdStartRestoreResult.skipped();
     }
     await _registry.migrateFromLegacyIfNeeded();
@@ -189,14 +188,14 @@ class ModelInstallOrchestrator {
       return const ColdStartRestoreResult.skipped();
     }
     final String filename = basenameFromStored(entry.sourceUrlOrPath);
-    final bool installed = await FlutterGemma.isModelInstalled(filename);
+    final bool installed = await FlutterEdgeAi.isModelInstalled(filename);
     if (!installed) {
       return const ColdStartRestoreResult.skipped();
     }
     onRestoreBegins?.call();
     try {
       final String localPath = await _resolveLocalFilePath(entry);
-      await FlutterGemma.installModel(
+      await FlutterEdgeAi.installModel(
         modelType: entry.modelType,
         fileType: entry.fileType,
       ).fromFile(localPath).withProgress(onProgress).install();
@@ -221,7 +220,7 @@ class ModelInstallOrchestrator {
       );
     }
     final String filename = basenameFromStored(entry.sourceUrlOrPath);
-    final bool installed = await FlutterGemma.isModelInstalled(filename);
+    final bool installed = await FlutterEdgeAi.isModelInstalled(filename);
     if (!installed) {
       return const ModelInstallDomainError(
         kind: ModelInstallDomainErrorKind.unknown,
@@ -230,7 +229,7 @@ class ModelInstallOrchestrator {
     }
     try {
       final String localPath = await _resolveLocalFilePath(entry);
-      var builder = FlutterGemma.installModel(
+      var builder = FlutterEdgeAi.installModel(
         modelType: entry.modelType,
         fileType: entry.fileType,
       ).fromFile(localPath).withProgress(onProgress);
@@ -264,7 +263,7 @@ class ModelInstallOrchestrator {
     }
     final String modelId = basenameFromStored(entry.sourceUrlOrPath);
     try {
-      await FlutterGemma.uninstallModel(modelId);
+      await FlutterEdgeAi.uninstallModel(modelId);
     } on Object catch (e) {
       return mapModelInstallException(e);
     }
@@ -296,13 +295,13 @@ class ModelInstallOrchestrator {
 
   /// Sync registry active entry when the plugin already has a model (e.g. after external init).
   Future<void> reconcileActiveWithPluginIfPossible() async {
-    if (!FlutterGemma.hasActiveModel()) {
+    if (!FlutterEdgeAi.hasActiveModel()) {
       return;
     }
     await _registry.migrateFromLegacyIfNeeded();
     final ModelRegistrySnapshot snap = await _registry.readSnapshot();
     final InferenceModelSpec? spec =
-        FlutterGemmaPlugin.instance.modelManager.activeInferenceModel
+        FlutterEdgeAiPlugin.instance.modelManager.activeInferenceModel
             as InferenceModelSpec?;
     if (spec == null) {
       return;

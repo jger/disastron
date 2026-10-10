@@ -37,7 +37,7 @@ See [`SECURITY.md`](SECURITY.md) for how to report issues and a short checklist 
 - **SOS signal** — Screen/torch **Morse SOS**, optional **alarm tone**, **vibration**, and **Bluetooth** awareness (user-toggled); use only where lawful and safe.
 - **Wiki tab** — Full list of offline reference articles (markdown).
 - **Todos** — Simple on-device checklist support (including chat-driven actions where implemented).
-- **Chat** — **On-device** LLM inference (Gemma family via `flutter_gemma`); models downloaded to storage. With a **multimodal** model active, you can attach **one photo per message** from the gallery or camera; text-only models keep the attach control disabled with an in-app hint. Optional **Hugging Face token** only for authorized model downloads—**no app login**, no cloud chat backend in the default design.
+- **Chat** — **On-device** LLM inference (Gemma family via `flutter_edge_ai`); models downloaded to storage. With a **multimodal** model active, you can attach **one photo per message** from the gallery or camera; text-only models keep the attach control disabled with an in-app hint. Optional **Hugging Face token** only for authorized model downloads—**no app login**, no cloud chat backend in the default design.
 - **Settings** — **Theme & appearance** (multiple modes, including dark high contrast for visibility and battery messaging), **offline model** install (presets, URL, file from device).
 
 Core principle: **work offline** so maps, towers, and accounts are not single points of failure when things go wrong.
@@ -48,7 +48,7 @@ Dataset pipeline, n8n synthesis workflows, and Gemma 4 E2B LoRA training live in
 
 ## Development
 
-Requirements: Flutter **3.44.5** ([`.fvmrc`](.fvmrc)), Dart `>=3.11.0`.
+Requirements: Flutter **3.44.8** ([`.fvmrc`](.fvmrc)), Dart `>=3.11.0`.
 
 ```bash
 cd disastron   # your clone of this repository
@@ -74,7 +74,7 @@ make patrol-test       # run the default investigation test (TARGET/DEVICE overr
 
 ## Tech (short)
 
-Flutter, Riverpod, Auto Route, `flutter_gemma`, `image_picker` (chat attachments on supported models), bundled assets (wiki, emergency numbers, climate normals), local permissions for location / camera / photos / audio / vibration as required by the platform.
+Flutter, Riverpod, Auto Route, `flutter_edge_ai`, `image_picker` (chat attachments on supported models), bundled assets (wiki, emergency numbers, climate normals), local permissions for location / camera / photos / audio / vibration as required by the platform.
 
 ## Releases (semantic-release)
 

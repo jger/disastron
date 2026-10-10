@@ -24,10 +24,15 @@ patrol-prepare: ## One-time: cache the model locally + seed it into the app on t
 TARGET ?= patrol_test/chat_stop_regression_test.dart
 
 patrol-test: ## Run the chat stop/continue investigation on the connected device
-	@v=$$(patrol --version 2>/dev/null | grep -oE '[0-9]+' | head -1); \
-	if [ -z "$$v" ] || [ "$$v" -lt 4 ]; then \
-		echo "error: patrol_cli >= 4 required for patrol 4.x (found: $$(patrol --version 2>/dev/null || echo 'not installed'))."; \
-		echo "fix:   dart pub global activate patrol_cli"; \
+	@out=$$(patrol --version 2>&1); \
+	if ! echo "$$out" | grep -q 'patrol_cli v'; then \
+		echo "error: patrol_cli not installed."; \
+		echo "fix:   dart pub global activate patrol_cli 4.6.1"; \
+		exit 1; \
+	fi; \
+	if echo "$$out" | grep -qi 'incompatibility'; then \
+		echo "$$out"; \
+		echo "fix:   match global patrol_cli to pubspec patrol (4.8.x → 4.6.1; 4.9+ → 4.7+)"; \
 		exit 1; \
 	fi
 	@# Pre-grant runtime permissions so no native dialog blocks chat init.

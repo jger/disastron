@@ -1,7 +1,6 @@
 import 'package:disastron/features/inference/data/model_registry_store.dart';
 import 'package:disastron/features/inference/domain/predefined_models.dart';
-import 'package:flutter_gemma/core/domain/model_source.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
 /// Readable label + detail for the active inference model (from plugin state).
 class ActiveInferenceModelSummary {
@@ -16,7 +15,7 @@ class ActiveInferenceModelSummary {
 
 ActiveInferenceModelSummary? _summaryFromPlugin() {
   final ModelSpec? raw =
-      FlutterGemmaPlugin.instance.modelManager.activeInferenceModel;
+      FlutterEdgeAiPlugin.instance.modelManager.activeInferenceModel;
   if (raw is! InferenceModelSpec) {
     return null;
   }

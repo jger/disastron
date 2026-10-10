@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Disastron is an offline-first Flutter emergency-readiness app: bundled offline wiki, emergency numbers by country, SOS tools (torch/alarm/vibration), and on-device LLM chat via `flutter_gemma` (models downloaded at runtime, never committed). Targets Android, iOS, and web (PWA/WASM). Flutter **3.44.5** (`.fvmrc`, FVM recommended), Dart `>=3.11.0`.
+Disastron is an offline-first Flutter emergency-readiness app: bundled offline wiki, emergency numbers by country, SOS tools (torch/alarm/vibration), and on-device LLM chat via `flutter_edge_ai` (models downloaded at runtime, never committed). Targets Android, iOS, and web (PWA/WASM). Flutter **3.44.8** (`.fvmrc`, FVM recommended), Dart `>=3.12.0`.
 
 ## Commands
 
@@ -38,7 +38,7 @@ Feature-first with Riverpod (see `.cursor/rules/feature-first-riverpod.mdc` for 
 - `lib/core/bootstrap/app_bootstrap.dart` — startup initialization (Gemma plugin, predefined inference models from `assets/data/inference_models.yaml`, start-locale resolution).
 - `lib/app/` — app-level cross-cutting state: appearance/theme modes (including high-contrast variants, `appearance_provider.dart`), locale provider bridged to easy_localization, terms-acceptance and initial-language dialogs.
 - `lib/router/routes.dart` — auto_route table; `routes.gr.dart` is generated.
-- `lib/features/inference/` — the most involved feature: model registry store, predefined model presets, download/resume via `background_downloader`, Hugging Face token store, LoRA registry, install-domain errors. Chat (`lib/features/chat/`) consumes the active model through `flutter_gemma`.
+- `lib/features/inference/` — the most involved feature: model registry store, predefined model presets, download/resume via `background_downloader`, Hugging Face token store, LoRA registry, install-domain errors. Chat (`lib/features/chat/`) consumes the active model through `flutter_edge_ai`.
 - `lib/features/wiki/` — bundled markdown articles per locale in `assets/wiki/<locale>/` with `manifest.yaml`, plus a downloader service for extra packs.
 - `lib/core/` — shared plumbing: bundled asset IO, preference keys (`prefs_keys.dart`), theme/spacing, snackbar feedback.
 

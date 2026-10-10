@@ -1,5 +1,5 @@
 import 'package:disastron/features/inference/data/model_registry_store.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

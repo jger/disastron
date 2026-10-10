@@ -106,13 +106,13 @@ EXISTING=$("${ADB[@]}" shell run-as "$PKG" sh -c "\"wc -c < $DEVICE_SEED\"" 2>/d
 if [ "${EXISTING:-0}" = "$LOCAL_SIZE" ]; then
   echo "==> device seed already up to date ($DEVICE_SEED, $EXISTING bytes) — skipping push"
 else
-  echo "==> pushing to /data/local/tmp/$FILE"
-  "${ADB[@]}" push "$CACHED" "/data/local/tmp/$FILE"
-  echo "==> moving into app sandbox via run-as (debug build required)"
+  # Stream from the host — do NOT adb push to /data/local/tmp first: that needs
+  # ~2× model size on /data (tmp copy + sandbox copy) and fails on 10G AVDs.
+  "${ADB[@]}" shell rm -f "/data/local/tmp/$FILE" 2>/dev/null || true
   "${ADB[@]}" shell run-as "$PKG" mkdir -p files/patrol_seed
-  # run-as uid cannot read /data/local/tmp, but shell can: pipe across.
-  "${ADB[@]}" shell "cat /data/local/tmp/$FILE | run-as $PKG sh -c 'cat > $DEVICE_SEED'"
-  "${ADB[@]}" shell rm -f "/data/local/tmp/$FILE"
+  "${ADB[@]}" shell run-as "$PKG" rm -f "$DEVICE_SEED" 2>/dev/null || true
+  echo "==> streaming into app sandbox via run-as (debug build required)"
+  cat "$CACHED" | "${ADB[@]}" shell "run-as $PKG sh -c 'cat > $DEVICE_SEED'"
   SEEDED=$("${ADB[@]}" shell run-as "$PKG" sh -c "\"wc -c < $DEVICE_SEED\"" | tr -d '[:space:]')
   if [ "$SEEDED" != "$LOCAL_SIZE" ]; then
     echo "error: size mismatch after seeding (device $SEEDED vs local $LOCAL_SIZE)" >&2

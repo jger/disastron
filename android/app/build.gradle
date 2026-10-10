@@ -32,7 +32,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "dev.zardoz.disastron"
     compileSdk = 36
-    // NDK r28+ recommended for 16 KB page-size toolchain; flutter_gemma .so alignment still upstream.
+    // NDK r28+ recommended for 16 KB page-size toolchain; LiteRT .so alignment still upstream.
     ndkVersion = "28.2.13676358"
 
     compileOptions {

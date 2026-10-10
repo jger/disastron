@@ -2,7 +2,7 @@
 // Copyright (c) 2024-2026 Jannis Gerardis
 
 import 'package:disastron/features/chat/presentation/service/chat_runtime_gateway.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
 /// Stand-in for [InferenceChat] that records queries and replays a scripted
 /// response stream. [InferenceChat.sessionCreator] is nullable, so no
@@ -103,7 +103,7 @@ class FakeInferenceModel extends InferenceModel {
     bool? supportAudio,
     List<Tool> tools = const <Tool>[],
     bool? supportsFunctionCalls,
-    bool isThinking = false,
+    bool enableThinking = false,
     ModelType? modelType,
     ToolChoice toolChoice = ToolChoice.auto,
     int? maxFunctionBufferLength,

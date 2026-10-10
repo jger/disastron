@@ -17,10 +17,11 @@ pluginManagement {
 
     resolutionStrategy {
         eachPlugin {
-            // background_downloader pins the kotlinx-serialization compiler
-            // plugin to 2.1.0, matching the project's Kotlin version (2.1.0).
+            // background_downloader's own build.gradle pins the kotlinx-serialization
+            // compiler plugin to 2.1.0; override it to match the project's Kotlin
+            // version (2.2.21) so the compiler and plugin stay in lockstep.
             if (requested.id.id == 'org.jetbrains.kotlin.plugin.serialization') {
-                useVersion('2.1.0')
+                useVersion('2.2.21')
             }
         }
     }
@@ -29,12 +30,12 @@ pluginManagement {
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
     id "com.android.application" version "8.13.1" apply false
-    id "org.jetbrains.kotlin.android" version "2.1.0" apply false
+    id "org.jetbrains.kotlin.android" version "2.2.21" apply false
 }
 
 include ":app"
 
-// Workaround for Patrol + native-assets packages (flutter_gemma_litertlm):
+// Workaround for Patrol + native-assets packages (flutter_edge_ai_litertlm):
 // when Gradle is invoked with exactly one task like :app:assembleDebugAndroidTest
 // (which is what patrol_cli does for the test APK), the Flutter Gradle plugin's
 // shouldConfigureFlutterTask heuristic (flutter/flutter#109560) skips registering

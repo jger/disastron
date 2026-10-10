@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Model files exceed 500MB, so flutter_gemma's SmartDownloader auto-selects
          foreground download mode. That needs POST_NOTIFICATIONS to activate at all,

@@ -1,5 +1,5 @@
 import 'package:disastron/features/inference/domain/predefined_models.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
 /// Resolved install target: explicit [ModelType] / [ModelFileType] (no UI string guessing).
 class InferenceModelDescriptor {

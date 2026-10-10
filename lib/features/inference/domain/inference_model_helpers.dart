@@ -1,6 +1,6 @@
 import 'package:disastron/features/inference/domain/predefined_inference_model.dart';
 import 'package:disastron/features/inference/domain/predefined_inference_models_state.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
 ModelFileType modelFileTypeForUrl(String url) {
   final String path = Uri.parse(url).path.toLowerCase();
@@ -23,13 +23,12 @@ InferenceBackend inferenceBackendForFileType(ModelFileType fileType) {
     case ModelFileType.binary:
       return InferenceBackend.mediapipe;
     case ModelFileType.builtIn:
-      // OS-native models (Gemini Nano, Apple Foundation Models) have no file
-      // and run on neither MediaPipe nor LiteRT. They never originate from a
-      // URL/path, so [modelFileTypeForUrl] never yields this value here.
+    case ModelFileType.onnx:
+      // OS-native and ONNX models have no Disastron install path from URL/path.
       throw ArgumentError.value(
         fileType,
         'fileType',
-        'builtIn models have no downloadable file backend',
+        'builtIn/onnx models are not supported in this app',
       );
   }
 }

@@ -1,6 +1,6 @@
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
-/// Abstraction over the active inference engine (currently [FlutterGemma] only).
+/// Abstraction over the active inference engine (currently [FlutterEdgeAi] only).
 abstract class ChatRuntimeGateway {
   Future<InferenceModel> getActiveModel({
     required int maxTokens,
@@ -19,8 +19,8 @@ abstract class ChatRuntimeGateway {
   bool hasActiveModel();
 }
 
-class FlutterGemmaChatRuntimeGateway implements ChatRuntimeGateway {
-  const FlutterGemmaChatRuntimeGateway();
+class FlutterEdgeAiChatRuntimeGateway implements ChatRuntimeGateway {
+  const FlutterEdgeAiChatRuntimeGateway();
 
   @override
   Future<InferenceModel> getActiveModel({
@@ -28,7 +28,7 @@ class FlutterGemmaChatRuntimeGateway implements ChatRuntimeGateway {
     bool supportImage = false,
     int? maxNumImages,
     int? maxConcurrentSessions,
-  }) => FlutterGemma.getActiveModel(
+  }) => FlutterEdgeAi.getActiveModel(
     maxTokens: maxTokens,
     supportImage: supportImage,
     maxNumImages: maxNumImages,
@@ -38,10 +38,10 @@ class FlutterGemmaChatRuntimeGateway implements ChatRuntimeGateway {
   @override
   ModelType? activeModelType() {
     final ModelSpec? spec =
-        FlutterGemmaPlugin.instance.modelManager.activeInferenceModel;
+        FlutterEdgeAiPlugin.instance.modelManager.activeInferenceModel;
     return spec is InferenceModelSpec ? spec.modelType : null;
   }
 
   @override
-  bool hasActiveModel() => FlutterGemma.hasActiveModel();
+  bool hasActiveModel() => FlutterEdgeAi.hasActiveModel();
 }

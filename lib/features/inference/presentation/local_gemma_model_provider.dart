@@ -19,13 +19,13 @@ import 'package:disastron/features/inference/presentation/model_file_export.dart
 import 'package:disastron/features/inference/presentation/model_install_orchestrator.dart';
 import 'package:disastron/features/inference/presentation/model_registry_provider.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'local_gemma_model_provider.g.dart';
 
 /// Riverpod surface for install lifecycle: delegates heavy work to the install orchestrator
-/// and syncs FlutterGemma when install completes. Gated HF models set `isGated403`.
+/// and syncs FlutterEdgeAi when install completes. Gated HF models set `isGated403`.
 enum LocalGemmaPhase {
   notInstalled,
   installing,
@@ -162,7 +162,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
 
   void _syncUiToEngine() {
     state = LocalGemmaModelUi(
-      phase: FlutterGemma.hasActiveModel()
+      phase: FlutterEdgeAi.hasActiveModel()
           ? LocalGemmaPhase.ready
           : LocalGemmaPhase.notInstalled,
     );
@@ -373,7 +373,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
 
   @override
   LocalGemmaModelUi build() {
-    final bool active = FlutterGemma.hasActiveModel();
+    final bool active = FlutterEdgeAi.hasActiveModel();
     if (!active && !kIsWeb) {
       unawaited(_tryRestoreModel().then((_) => refreshPendingDownload()));
     } else if (active) {
@@ -389,11 +389,11 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       return;
     }
     state = LocalGemmaModelUi(
-      phase: FlutterGemma.hasActiveModel()
+      phase: FlutterEdgeAi.hasActiveModel()
           ? LocalGemmaPhase.ready
           : LocalGemmaPhase.notInstalled,
     );
-    if (FlutterGemma.hasActiveModel()) {
+    if (FlutterEdgeAi.hasActiveModel()) {
       unawaited(_orchestrator.reconcileActiveWithPluginIfPossible());
       _invalidateRegistry();
     } else {
@@ -405,7 +405,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
     if (kIsWeb) {
       return;
     }
-    if (FlutterGemma.hasActiveModel()) {
+    if (FlutterEdgeAi.hasActiveModel()) {
       return;
     }
     if (_restoreInFlight) {
@@ -441,7 +441,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       if (!result.attempted) {
         if (state.activity == ModelInstallActivityKind.restoreSaved) {
           state = LocalGemmaModelUi(
-            phase: FlutterGemma.hasActiveModel()
+            phase: FlutterEdgeAi.hasActiveModel()
                 ? LocalGemmaPhase.ready
                 : LocalGemmaPhase.notInstalled,
           );
@@ -461,7 +461,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
         );
         return;
       }
-      if (FlutterGemma.hasActiveModel()) {
+      if (FlutterEdgeAi.hasActiveModel()) {
         if (state.activity == ModelInstallActivityKind.restoreSaved) {
           state = const LocalGemmaModelUi(phase: LocalGemmaPhase.ready);
           _invalidateRegistry();

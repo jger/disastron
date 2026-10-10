@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:disastron/core/preferences/prefs_keys.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Persisted metadata for an in-flight network model download (resume after interrupt).
@@ -81,7 +81,7 @@ class PendingModelDownload {
 
 /// SharedPreferences-backed store for [PendingModelDownload].
 class PendingModelDownloadStore {
-  PendingModelDownloadStore({SharedPreferences? prefs}) : _prefs = prefs;
+  PendingModelDownloadStore({this._prefs});
 
   SharedPreferences? _prefs;
 

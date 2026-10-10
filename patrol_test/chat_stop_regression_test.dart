@@ -34,7 +34,7 @@ import 'package:disastron/features/inference/data/model_registry_store.dart';
 import 'package:disastron/features/inference/presentation/model_install_orchestrator.dart';
 import 'package:disastron/main.dart' as app;
 import 'package:flutter/material.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -231,10 +231,10 @@ Future<void> _ensureModelActive(PatrolIntegrationTester $) async {
     '(registry entry present: $restoreExpected)',
   );
   final DateTime deadline = DateTime.now().add(restoreWait);
-  while (!FlutterGemma.hasActiveModel() && DateTime.now().isBefore(deadline)) {
+  while (!FlutterEdgeAi.hasActiveModel() && DateTime.now().isBefore(deadline)) {
     await $.pump(const Duration(milliseconds: 500));
   }
-  if (FlutterGemma.hasActiveModel()) {
+  if (FlutterEdgeAi.hasActiveModel()) {
     _log('model active via cold-start restore');
     return;
   }
@@ -256,7 +256,7 @@ Future<void> _ensureModelActive(PatrolIntegrationTester $) async {
     registry: ModelRegistryStore(),
   ).installFromFile(seed.path);
   expect(
-    FlutterGemma.hasActiveModel(),
+    FlutterEdgeAi.hasActiveModel(),
     isTrue,
     reason: 'installFromFile(${seed.path}) finished but no model is active',
   );

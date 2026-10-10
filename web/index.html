@@ -30,6 +30,21 @@
   <title>disastron</title>
   <link rel="manifest" href="manifest.json">
 
+  <script src="cache_api.js"></script>
+  <script src="opfs_helper.js"></script>
+  <script type="module">
+    import { FilesetResolver, LlmInference } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai@0.10.29';
+    window.FilesetResolver = FilesetResolver;
+    window.LlmInference = LlmInference;
+  </script>
+  <script type="module">
+    window.litertLmReady = (async () => {
+      const m = await import('https://cdn.jsdelivr.net/npm/@litert-lm/core@0.17.1/+esm');
+      window.Engine = m.Engine;
+      return m.Engine;
+    })();
+  </script>
+
   <script>
     // The value below is injected by flutter build, do not touch.
     var serviceWorkerVersion = null;

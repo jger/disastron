@@ -4,7 +4,7 @@ import 'package:disastron/features/chat/presentation/chat_handlers.dart';
 import 'package:disastron/features/chat/presentation/service/gemma_service.dart';
 import 'package:disastron/features/chat/presentation/widgets/chat_message.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
 class GemmaInputField extends StatefulWidget {
   const GemmaInputField({

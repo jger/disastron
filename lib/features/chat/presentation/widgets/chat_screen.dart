@@ -21,7 +21,7 @@ import 'package:disastron/features/inference/presentation/lora_provider.dart';
 import 'package:disastron/features/inference/presentation/model_registry_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -89,7 +89,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (previousIndex == kHomeTabIndexChat) {
       return;
     }
-    if (!FlutterGemma.hasActiveModel() || !_chatReady) {
+    if (!FlutterEdgeAi.hasActiveModel() || !_chatReady) {
       return;
     }
     final bool useCtx = ref.read(useDisastronContextProvider);
@@ -135,7 +135,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _ensureChatReady({required bool reloadInferenceWeights}) async {
-    if (!FlutterGemma.hasActiveModel()) {
+    if (!FlutterEdgeAi.hasActiveModel()) {
       return;
     }
     try {

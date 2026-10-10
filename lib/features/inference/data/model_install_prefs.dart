@@ -1,4 +1,4 @@
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String _kUrl = 'disastron_model_url';

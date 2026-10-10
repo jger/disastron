@@ -3,7 +3,7 @@
 
 import 'package:disastron/features/chat/presentation/service/chat_runtime_gateway.dart';
 import 'package:disastron/features/chat/presentation/service/xnnpack_cache_cleanup.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
 const String kDisasterSystemInstruction = '''
 You are Disastron, a concise offline assistant for emergencies: wars, natural disasters, transport accidents, fires, medical crises. Give practical, calm, step-by-step guidance. If information is uncertain, say so. Do not claim real-time data you cannot have offline. Prioritize safety, evacuation, shelter, first aid basics, and contacting local authorities when possible.
@@ -18,7 +18,7 @@ Use only ops add / setDone / remove. For setDone/remove you must use todo ids fr
 
 class GemmaLocalService {
   GemmaLocalService({ChatRuntimeGateway? runtime})
-    : _runtime = runtime ?? const FlutterGemmaChatRuntimeGateway();
+    : _runtime = runtime ?? const FlutterEdgeAiChatRuntimeGateway();
 
   /// The KV-cache budget shared by prompt, history, and reply.
   static const int _kContextWindowTokens = 2048;

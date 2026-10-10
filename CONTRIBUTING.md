@@ -12,7 +12,7 @@ Thank you for helping improve Disastron. Pull requests are welcome.
 
 Requirements:
 
-- Flutter **3.44.5** (see [`.fvmrc`](.fvmrc); [FVM](https://fvm.app/) recommended)
+- Flutter **3.44.8** (see [`.fvmrc`](.fvmrc); [FVM](https://fvm.app/) recommended)
 - Dart SDK `>=3.11.0 <4.0.0`
 
 ```bash

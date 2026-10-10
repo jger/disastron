@@ -1,56 +1,52 @@
 import 'package:disastron/features/inference/data/model_download_resume_service.dart';
 import 'package:disastron/features/inference/data/pending_model_download_store.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+
+class _FakePathProvider extends Fake
+    with MockPlatformInterfaceMixin
+    implements PathProviderPlatform {
+  @override
+  Future<String?> getTemporaryPath() async => '/fake/temp';
+
+  @override
+  Future<String?> getApplicationSupportPath() async => '/fake/support';
+
+  @override
+  Future<String?> getApplicationDocumentsPath() async => '/fake/documents';
+
+  @override
+  Future<String?> getLibraryPath() async => '/fake/library';
+}
 
 void main() {
-  const String url = 'https://huggingface.co/example/model.task';
-  const String path = '/data/user/0/app/model.task';
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('taskIdFor is stable for the same url and target path', () {
+  const String path = '/fake/temp/model.task';
+
+  setUpAll(() {
+    PathProviderPlatform.instance = _FakePathProvider();
+  });
+
+  test('taskIdFor is stable for the same target path', () async {
     expect(
-      ModelDownloadResumeService.taskIdFor(url, path),
-      ModelDownloadResumeService.taskIdFor(url, path),
+      await ModelDownloadResumeService.taskIdFor(path),
+      await ModelDownloadResumeService.taskIdFor(path),
     );
   });
 
-  // taskIdFor must produce the same id as flutter_gemma's SmartDownloader
-  // (mobile/smart_downloader.dart), otherwise an interrupted download is not
-  // recognised on resume and restarts from byte zero. The id is not asserted
-  // against a golden literal because String.hashCode is not guaranteed stable
-  // across Dart SDKs -- both sides compute it at runtime, so only the shape and
-  // the discrimination are contractual.
-  //
-  // If flutter_gemma's resume support is adopted and this service deleted,
-  // re-verify resume end-to-end on device; these tests cannot catch a scheme
-  // change upstream.
-  test('taskIdFor matches the SmartDownloader hex_hex shape', () {
-    expect(
-      ModelDownloadResumeService.taskIdFor(url, path),
-      matches(RegExp(r'^[0-9a-f]{1,8}_[0-9a-f]{1,8}$')),
-    );
+  test('taskIdFor matches SmartDownloader computeTaskId shape', () async {
+    final String id = await ModelDownloadResumeService.taskIdFor(path);
+    expect(id, matches(RegExp(r'^[0-9a-f]{64}$')));
   });
 
-  test('taskIdFor discriminates on url', () {
+  test('taskIdFor discriminates on target path', () async {
     expect(
-      ModelDownloadResumeService.taskIdFor(url, path),
+      await ModelDownloadResumeService.taskIdFor(path),
       isNot(
-        ModelDownloadResumeService.taskIdFor(
-          'https://huggingface.co/example/other.task',
-          path,
-        ),
-      ),
-    );
-  });
-
-  test('taskIdFor discriminates on target path', () {
-    expect(
-      ModelDownloadResumeService.taskIdFor(url, path),
-      isNot(
-        ModelDownloadResumeService.taskIdFor(
-          url,
-          '/data/user/0/app/other.task',
-        ),
+        await ModelDownloadResumeService.taskIdFor('/fake/temp/other.task'),
       ),
     );
   });
