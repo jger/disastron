@@ -56,9 +56,8 @@ class InterruptedDownloadPanel extends ConsumerWidget {
                   const SizedBox(height: 6),
                   Text(
                     copy.subtitle!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: scheme.onTertiaryContainer,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: scheme.onTertiaryContainer),
                   ),
                 ],
                 const SizedBox(height: 10),
@@ -99,9 +98,8 @@ class InterruptedDownloadPanel extends ConsumerWidget {
           Text(
             copy.subtitle!,
             textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
         const SizedBox(height: 24),

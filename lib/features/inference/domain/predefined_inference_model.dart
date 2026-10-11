@@ -1,5 +1,5 @@
 import 'package:disastron/features/inference/domain/inference_model_helpers.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
 /// Hugging Face download access (from preset YAML `access`).
 enum InferencePresetAccess { public, gated }

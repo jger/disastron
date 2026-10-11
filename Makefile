@@ -2,7 +2,7 @@
 
 .DEFAULT_GOAL := help
 
-.PHONY: help pre-release-checks
+.PHONY: help pre-release-checks patrol-prepare patrol-check-device patrol-test patrol-test-manual
 help: ## List available targets
 	@grep -E '^[a-zA-Z0-9_.-]+:.*?##' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-24s\033[0m %s\n", $$1, $$2}'
 
@@ -11,4 +11,44 @@ pre-release-checks: ## pub get, format, build_runner, analyze, test (release gat
 	dart format --output=none --set-exit-if-changed .
 	dart run build_runner build --delete-conflicting-outputs
 	dart analyze --fatal-infos --fatal-warnings .
+	dart run tool/check_feature_imports.dart
 	flutter test
+
+# --- Patrol E2E (docs/patrol-chat-stop-investigation.md) -----------------
+# PRESET: gemma4_e2b_litertlm (default) | gemma4_e4b_litertlm | gemma3_270m_q8 | <url>
+PRESET ?= gemma4_e2b_litertlm
+
+patrol-prepare: ## One-time: cache the model locally + seed it into the app on the adb device
+	bash tool/patrol/prepare_model.sh $(PRESET)
+
+patrol-check-device: ## Fail fast if adb /data is too small for Patrol APK reinstall
+	bash tool/patrol/check_device.sh $(DEVICE)
+
+# TARGET: test file to run; DEVICE: adb serial (optional, for multiple devices)
+TARGET ?= patrol_test/chat_stop_regression_test.dart
+
+patrol-test: ## Run the chat stop/continue investigation on the connected device
+	@out=$$(patrol --version 2>&1); \
+	if ! echo "$$out" | grep -q 'patrol_cli v'; then \
+		echo "error: patrol_cli not installed."; \
+		echo "fix:   dart pub global activate patrol_cli 4.8.0"; \
+		exit 1; \
+	fi; \
+	if echo "$$out" | grep -qi 'incompatibility'; then \
+		echo "$$out"; \
+		echo "fix:   dart pub global activate patrol_cli 4.8.0 (match patrol ^4.10)"; \
+		exit 1; \
+	fi
+	@bash tool/patrol/check_device.sh $(DEVICE)
+	@# Pre-grant runtime permissions so no native dialog blocks chat init.
+	@# Needs a unique adb target: pass DEVICE=<serial> when several are attached.
+	@ADB="adb $(if $(DEVICE),-s $(DEVICE),)"; \
+	for p in ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION POST_NOTIFICATIONS; do \
+		$$ADB shell pm grant dev.zardoz.disastron android.permission.$$p 2>/dev/null || true; \
+	done
+	@# --no-uninstall is ESSENTIAL: patrol's default uninstalls the app
+	@# before AND after the run, wiping app data incl. the 2.4GB model+seed.
+	patrol test --no-uninstall --target $(TARGET) $(if $(DEVICE),--device $(DEVICE),)
+
+patrol-test-manual: ## Fallback runner: plain adb install + am instrument (MIUI blocks gradle's -g install)
+	bash tool/patrol/run_no_orchestrator.sh

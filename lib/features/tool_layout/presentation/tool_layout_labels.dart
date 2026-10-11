@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2024-2026 Jannis Gerardis
 
-import 'package:disastron/features/tool_layout/domain/app_tool.dart';
-import 'package:disastron/features/tool_layout/domain/app_tool_catalog.dart';
-import 'package:disastron/features/wiki/presentation/wiki_models.dart';
+import 'package:disastron/features/tool_layout/tool_layout.dart';
+import 'package:disastron/features/wiki/wiki.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class ToolLayoutLabels {

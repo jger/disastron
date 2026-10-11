@@ -89,9 +89,9 @@ class WikiConfigPage extends ConsumerWidget {
                               s.url,
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
                                   ),
                             ),
                             const SizedBox(height: 8),
@@ -114,9 +114,9 @@ class WikiConfigPage extends ConsumerWidget {
                                 const SizedBox(width: 8),
                                 TextButton.icon(
                                   style: TextButton.styleFrom(
-                                    foregroundColor: Theme.of(
-                                      context,
-                                    ).colorScheme.error,
+                                    foregroundColor: Theme.of(context)
+                                        .colorScheme
+                                        .error,
                                   ),
                                   onPressed: () =>
                                       _confirmDeleteSource(context, ref, s),
@@ -330,11 +330,16 @@ class WikiConfigPage extends ConsumerWidget {
         await ref.read(wikiSourcesProvider.notifier).importSources(list);
       }
       final bytes = await file.readAsBytes();
-      final String? path = await FilePicker.saveFile(
+      final Uri? saved = await FilePicker.saveFile(
         dialogTitle: 'wiki_export_title'.tr(),
         fileName: 'wiki.yaml',
         bytes: bytes,
       );
+      final String? path = saved == null
+          ? null
+          : saved.scheme == 'file'
+          ? saved.toFilePath()
+          : saved.toString();
       if (path != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('wiki_export_success'.tr(args: [path]))),
@@ -353,11 +358,11 @@ class WikiConfigPage extends ConsumerWidget {
 
   Future<void> _importWikiYaml(BuildContext context, WidgetRef ref) async {
     try {
-      final FilePickerResult? result = await FilePicker.pickFiles(
+      final List<PlatformFile> picked = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['yaml', 'yml'],
       );
-      final String? path = result?.files.single.path;
+      final String? path = picked.isEmpty ? null : picked.single.path;
       if (path == null) return;
 
       final content = await File(path).readAsString();
@@ -374,9 +379,8 @@ class WikiConfigPage extends ConsumerWidget {
       ref.invalidate(wikiDownloadProvider);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('wiki_import_success'.tr())));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('wiki_import_success'.tr())));
       }
     } catch (e) {
       if (context.mounted) {

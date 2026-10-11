@@ -3,7 +3,7 @@ import 'package:disastron/features/inference/presentation/widgets/hugging_face_t
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gemma/flutter_gemma.dart' show CancelToken;
+import 'package:flutter_edge_ai/flutter_edge_ai.dart' show CancelToken;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class LoraAddDialog extends ConsumerStatefulWidget {
@@ -120,12 +120,12 @@ class _LoraAddDialogState extends ConsumerState<LoraAddDialog>
     });
 
     try {
-      final FilePickerResult? result = await FilePicker.pickFiles(
+      final List<PlatformFile> picked = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: <String>['bin', 'task', 'litertlm', 'tflite'],
       );
 
-      final String? path = result?.files.single.path;
+      final String? path = picked.isEmpty ? null : picked.single.path;
       if (path == null) {
         setState(() => _isLoading = false);
         return;

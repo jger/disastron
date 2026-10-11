@@ -1,4 +1,4 @@
-import 'dart:io' show File;
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -44,15 +44,21 @@ Future<ModelExportResult> exportModelFileToUserChosenLocation({
   final String name = p.basename(absoluteSourcePath);
   final Uint8List bytes = await f.readAsBytes();
   try {
-    final String? out = await FilePicker.saveFile(
+    final Uri? out = await FilePicker.saveFile(
       dialogTitle: 'Save a copy (e.g. Downloads)',
       fileName: name,
       bytes: bytes,
     );
-    if (out == null || out.isEmpty) {
+    if (out == null) {
       return ModelExportResult.cancelled();
     }
-    return ModelExportResult.success(out);
+    final String path = out.scheme == 'file'
+        ? out.toFilePath()
+        : out.toString();
+    if (path.isEmpty) {
+      return ModelExportResult.cancelled();
+    }
+    return ModelExportResult.success(path);
   } on Object catch (e) {
     return ModelExportResult.failure(e.toString());
   }

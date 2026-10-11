@@ -3,9 +3,10 @@ import 'dart:io' show File;
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:disastron/features/inference/data/pending_model_download_store.dart';
-import 'package:disastron/features/inference/presentation/model_install_orchestrator.dart';
+import 'package:disastron/features/inference/domain/inference_path_utils.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
+import 'package:flutter_edge_ai/mobile/smart_downloader.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -22,7 +23,7 @@ class ResumableDownloadSnapshot {
   final String? taskId;
 }
 
-/// Mirrors flutter_gemma SmartDownloader task paths and IDs for resume/discard.
+/// Mirrors flutter_edge_ai SmartDownloader task paths and IDs for resume/discard.
 class ModelDownloadResumeService {
   const ModelDownloadResumeService();
 
@@ -46,10 +47,11 @@ class ModelDownloadResumeService {
     }
   }
 
-  /// Same deterministic id as flutter_gemma SmartDownloader.
-  static String taskIdFor(String url, String targetPath) {
-    return '${url.hashCode.toUnsigned(32).toRadixString(16)}_'
-        '${targetPath.hashCode.toUnsigned(32).toRadixString(16)}';
+  /// Same deterministic id as flutter_edge_ai [computeTaskId] / SmartDownloader.
+  static Future<String> taskIdFor(String targetPath) async {
+    final (BaseDirectory base, String directory, String filename) =
+        await Task.split(filePath: targetPath);
+    return computeTaskId(base, directory, filename);
   }
 
   static Future<String> targetPathForUrl(String url) async {
@@ -63,7 +65,7 @@ class ModelDownloadResumeService {
       return;
     }
     final String targetPath = await targetPathForUrl(url);
-    final String taskId = taskIdFor(url, targetPath);
+    final String taskId = await taskIdFor(targetPath);
     try {
       await FileDownloader().cancelTaskWithId(taskId);
       developer.log(
@@ -86,7 +88,7 @@ class ModelDownloadResumeService {
     }
 
     final String targetPath = await targetPathForUrl(pending.url);
-    final String taskId = taskIdFor(pending.url, targetPath);
+    final String taskId = await taskIdFor(targetPath);
     final File file = File(targetPath);
     final bool fileExists = file.existsSync();
     int partialBytes = 0;
@@ -94,7 +96,7 @@ class ModelDownloadResumeService {
       partialBytes = await file.length();
     }
 
-    final bool installed = await FlutterGemma.isModelInstalled(
+    final bool installed = await FlutterEdgeAi.isModelInstalled(
       pending.filename,
     );
     if (installed) {
@@ -138,7 +140,7 @@ class ModelDownloadResumeService {
     }
 
     final String targetPath = await targetPathForUrl(pending.url);
-    final String taskId = taskIdFor(pending.url, targetPath);
+    final String taskId = await taskIdFor(targetPath);
 
     try {
       await FileDownloader().cancelTaskWithId(taskId);

@@ -1,27 +1,21 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:disastron/features/chat/chat.dart';
+import 'package:disastron/features/chat/data/gemma_service.dart';
+import 'package:disastron/features/chat/domain/chat_dashboard_context.dart';
+import 'package:disastron/features/chat/domain/todo_action_parser.dart';
 import 'package:disastron/features/chat/presentation/chat_dashboard_situation_provider.dart';
 import 'package:disastron/features/chat/presentation/chat_handlers.dart';
-import 'package:disastron/features/chat/presentation/chat_reset_provider.dart';
-import 'package:disastron/features/chat/presentation/first_chat_accident_provider.dart';
-import 'package:disastron/features/chat/presentation/service/chat_dashboard_context.dart';
-import 'package:disastron/features/chat/presentation/service/gemma_service.dart';
-import 'package:disastron/features/chat/presentation/service/todo_action_parser.dart';
 import 'package:disastron/features/chat/presentation/widgets/accident_chips_panel.dart';
 import 'package:disastron/features/chat/presentation/widgets/chat_widget.dart';
 import 'package:disastron/features/chat/presentation/widgets/loading_widget.dart';
-import 'package:disastron/features/dashboard/presentation/dashboard_device_provider.dart';
-import 'package:disastron/features/dashboard/presentation/dashboard_weather_provider.dart';
-import 'package:disastron/features/home_shell/presentation/home_tab_index_provider.dart';
-import 'package:disastron/features/inference/data/model_registry_store.dart';
-import 'package:disastron/features/inference/presentation/inference_model_vision_support.dart';
-import 'package:disastron/features/inference/presentation/local_gemma_model_provider.dart';
-import 'package:disastron/features/inference/presentation/lora_provider.dart';
-import 'package:disastron/features/inference/presentation/model_registry_provider.dart';
+import 'package:disastron/features/dashboard/dashboard.dart';
+import 'package:disastron/features/home/home.dart';
+import 'package:disastron/features/inference/inference.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -89,7 +83,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (previousIndex == kHomeTabIndexChat) {
       return;
     }
-    if (!FlutterGemma.hasActiveModel() || !_chatReady) {
+    if (!FlutterEdgeAi.hasActiveModel() || !_chatReady) {
       return;
     }
     final bool useCtx = ref.read(useDisastronContextProvider);
@@ -135,7 +129,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _ensureChatReady({required bool reloadInferenceWeights}) async {
-    if (!FlutterGemma.hasActiveModel()) {
+    if (!FlutterEdgeAi.hasActiveModel()) {
       return;
     }
     try {

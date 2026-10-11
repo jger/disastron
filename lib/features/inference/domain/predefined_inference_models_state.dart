@@ -49,8 +49,3 @@ void registerPredefinedInferenceModelsCatalog(
 ) {
   _catalog = catalog;
 }
-
-/// Test-only: reset catalog state.
-void debugResetPredefinedInferenceModelsCatalog() {
-  _catalog = null;
-}

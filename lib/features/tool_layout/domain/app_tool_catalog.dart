@@ -31,12 +31,6 @@ abstract final class AppToolCatalog {
 
   static const List<String> quickActionIds = <String>[callHelpId, sosId];
 
-  static const List<String> settingsIds = <String>[
-    appearanceSettingsId,
-    offlineModelId,
-    aboutId,
-  ];
-
   /// Tools the user can place on dashboard/drawer (settings stay fixed in drawer).
   static const List<String> placementConfigurableIds = <String>[
     ...quickActionIds,
@@ -103,10 +97,6 @@ abstract final class AppToolCatalog {
           kind: AppToolKind.wikiArticle,
           icon: Icons.menu_book_outlined,
         );
-  }
-
-  static AppToolKind kindFor(String toolId) {
-    return definitionFor(toolId).kind;
   }
 
   static bool isWikiArticle(String toolId) {

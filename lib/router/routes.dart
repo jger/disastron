@@ -11,7 +11,7 @@ class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => <AutoRoute>[
     AutoRoute(page: HomeRoute.page, path: '/', initial: true),
-    AutoRoute(page: DashboardRoute.page, path: '/dashboard'),
+    RedirectRoute(path: '/dashboard', redirectTo: '/'),
     AutoRoute(page: MessagesRoute.page, path: '/chat'),
     AutoRoute(page: TodosRoute.page, path: '/todos'),
     AutoRoute(page: WikiRoute.page, path: '/wiki'),

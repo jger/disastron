@@ -1,7 +1,7 @@
 import 'package:disastron/shared/widgets/genui_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 class ChatMessageWidget extends StatelessWidget {

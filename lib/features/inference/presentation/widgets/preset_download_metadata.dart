@@ -113,10 +113,8 @@ class PresetDownloadMetadataChips extends StatelessWidget {
       avatar: Icon(icon, size: 14, color: foregroundColor),
       label: Text(
         label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: foregroundColor,
-          fontWeight: FontWeight.w600,
-        ),
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: foregroundColor, fontWeight: FontWeight.w600),
       ),
     );
   }

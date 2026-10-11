@@ -1,4 +1,4 @@
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String _kUrl = 'disastron_model_url';
@@ -19,17 +19,6 @@ class ModelInstallRecord {
 }
 
 class ModelInstallPrefs {
-  Future<void> save({
-    required String urlOrPath,
-    required ModelType modelType,
-    required ModelFileType fileType,
-  }) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kUrl, urlOrPath);
-    await prefs.setString(_kModelType, modelType.name);
-    await prefs.setString(_kFileType, fileType.name);
-  }
-
   Future<ModelInstallRecord?> read() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? urlOrPath = prefs.getString(_kUrl);

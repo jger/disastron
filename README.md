@@ -37,7 +37,7 @@ See [`SECURITY.md`](SECURITY.md) for how to report issues and a short checklist 
 - **SOS signal** — Screen/torch **Morse SOS**, optional **alarm tone**, **vibration**, and **Bluetooth** awareness (user-toggled); use only where lawful and safe.
 - **Wiki tab** — Full list of offline reference articles (markdown).
 - **Todos** — Simple on-device checklist support (including chat-driven actions where implemented).
-- **Chat** — **On-device** LLM inference (Gemma family via `flutter_gemma`); models downloaded to storage. With a **multimodal** model active, you can attach **one photo per message** from the gallery or camera; text-only models keep the attach control disabled with an in-app hint. Optional **Hugging Face token** only for authorized model downloads—**no app login**, no cloud chat backend in the default design.
+- **Chat** — **On-device** LLM inference (Gemma family via `flutter_edge_ai`); models downloaded to storage. With a **multimodal** model active, you can attach **one photo per message** from the gallery or camera; text-only models keep the attach control disabled with an in-app hint. Optional **Hugging Face token** only for authorized model downloads—**no app login**, no cloud chat backend in the default design.
 - **Settings** — **Theme & appearance** (multiple modes, including dark high contrast for visibility and battery messaging), **offline model** install (presets, URL, file from device).
 
 Core principle: **work offline** so maps, towers, and accounts are not single points of failure when things go wrong.
@@ -48,7 +48,7 @@ Dataset pipeline, n8n synthesis workflows, and Gemma 4 E2B LoRA training live in
 
 ## Development
 
-Requirements: Flutter **3.44.5** ([`.fvmrc`](.fvmrc)), Dart `>=3.11.0`.
+Requirements: Flutter **3.47.5** ([`.fvmrc`](.fvmrc)), Dart `>=3.13.0`.
 
 ```bash
 cd disastron   # your clone of this repository
@@ -59,9 +59,22 @@ flutter run
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for PR workflow, wiki validation, and maintainer release signing. Content licensing for wiki articles: [CONTENT_ATTRIBUTION.md](CONTENT_ATTRIBUTION.md).
 
+## Patrol (on-device E2E)
+
+[Patrol](https://patrol.leancode.co/) drives real on-device UI tests under `patrol_test/` — used where plain `flutter test` integration tests can't reach the device (e.g. native permission dialogs, or devices like MIUI where `adb shell input` is blocked). Requires `patrol_cli` 4.8.0+ with `patrol` 4.10 (`dart pub global activate patrol_cli 4.8.0`) and a connected/booted Android device or emulator.
+
+```bash
+make patrol-prepare   # one-time: cache + seed a model onto the device (see PRESET in Makefile)
+make patrol-test       # run the default investigation test (TARGET/DEVICE overridable)
+```
+
+`patrol-test` pre-grants runtime permissions and runs with `--no-uninstall` so app data (including the multi-GB seeded model) survives between runs. If the Gradle-based orchestrator can't install on your device, fall back to `make patrol-test-manual` (`tool/patrol/run_no_orchestrator.sh`, plain `adb install` + `am instrument`). See [`docs/patrol-chat-stop-investigation.md`](docs/patrol-chat-stop-investigation.md) for the full workflow and background.
+
+**Patrol MCP** (`.mcp.json`, `patrol_mcp` package) exposes Patrol to MCP-capable AI agents (e.g. Claude Code) as tools to launch/restart a test run, take screenshots, and inspect the native UI tree — useful for driving and debugging on-device test sessions interactively rather than only via `make patrol-test`.
+
 ## Tech (short)
 
-Flutter, Riverpod, Auto Route, `flutter_gemma`, `image_picker` (chat attachments on supported models), bundled assets (wiki, emergency numbers, climate normals), local permissions for location / camera / photos / audio / vibration as required by the platform.
+Flutter, Riverpod, Auto Route, `flutter_edge_ai`, `image_picker` (chat attachments on supported models), bundled assets (wiki, emergency numbers, climate normals), local permissions for location / camera / photos / audio / vibration as required by the platform.
 
 ## Releases (semantic-release)
 

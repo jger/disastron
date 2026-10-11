@@ -26,10 +26,5 @@ abstract final class AppLocales {
     }
   }
 
-  /// Inverse of [localeFromCode] for prefs / filenames (drops script where fixed).
-  static String codeFromLocale(Locale locale) {
-    return locale.languageCode;
-  }
-
   static String displayNameKey(String code) => 'lang_$code';
 }

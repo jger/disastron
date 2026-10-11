@@ -22,6 +22,10 @@ analyzer:
     - "**/*.freezed.dart"
     - "lib/app/core/icons/*"
     - "lib/generated/**"
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
 
 linter:
   # The lint rules applied to this project can be customized in the
@@ -55,7 +59,6 @@ linter:
     avoid_multiple_declarations_per_line: true
     avoid_positional_boolean_parameters: true
     avoid_print: true
-    avoid_private_typedef_functions: true
     avoid_redundant_argument_values: true
     avoid_relative_lib_imports: true
     avoid_renaming_method_parameters: true
@@ -122,7 +125,6 @@ linter:
     null_check_on_nullable_type_parameter: true
     null_closures: true
     omit_local_variable_types: false
-    one_member_abstracts: true
     only_throw_errors: true
     overridden_fields: true
     package_names: true
@@ -178,7 +180,6 @@ linter:
     type_annotate_public_apis: true
     type_init_formals: true
     unawaited_futures: true
-    unnecessary_await_in_return: true
     unnecessary_brace_in_string_interps: true
     unnecessary_breaks: true
     unnecessary_const: true

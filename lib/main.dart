@@ -6,6 +6,7 @@ import 'package:disastron/app/app_locales.dart';
 import 'package:disastron/app/appearance_provider.dart';
 import 'package:disastron/app/locale_easy_bridge.dart';
 import 'package:disastron/core/bootstrap/app_bootstrap.dart';
+import 'package:disastron/features/inference/inference_bootstrap.dart';
 import 'package:disastron/router/providers/app_router_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +16,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   await Future.wait<void>(<Future<void>>[
-    AppBootstrap.initializeGemma(),
-    AppBootstrap.loadPredefinedInferenceModels(),
+    InferenceBootstrap.initializeGemma(),
+    InferenceBootstrap.loadPredefinedInferenceModels(),
   ]);
   final String startCode = await AppBootstrap.resolveStartLocaleCode();
   runApp(
@@ -72,7 +73,7 @@ class MyApp extends ConsumerWidget {
         locale: context.locale,
         theme: lightFallback,
         darkTheme: darkFallback,
-        themeMode: ThemeMode.dark,
+        themeMode: ThemeMode.light,
         home: const SizedBox.shrink(),
       ),
       error: (Object _, StackTrace _) => MaterialApp(
@@ -82,7 +83,7 @@ class MyApp extends ConsumerWidget {
         locale: context.locale,
         theme: lightFallback,
         darkTheme: darkFallback,
-        themeMode: ThemeMode.dark,
+        themeMode: ThemeMode.light,
         home: const SizedBox.shrink(),
       ),
     );

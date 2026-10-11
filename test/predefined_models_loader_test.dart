@@ -1,6 +1,6 @@
 import 'package:disastron/features/inference/data/predefined_models_loader.dart';
 import 'package:disastron/features/inference/domain/predefined_inference_model.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void _ensureFlutterTestBinding() {

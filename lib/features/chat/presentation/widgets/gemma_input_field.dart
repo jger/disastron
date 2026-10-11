@@ -1,10 +1,10 @@
 import 'dart:async';
 
+import 'package:disastron/features/chat/data/gemma_service.dart';
 import 'package:disastron/features/chat/presentation/chat_handlers.dart';
-import 'package:disastron/features/chat/presentation/service/gemma_service.dart';
 import 'package:disastron/features/chat/presentation/widgets/chat_message.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
 class GemmaInputField extends StatefulWidget {
   const GemmaInputField({
@@ -68,6 +68,9 @@ class GemmaInputFieldState extends State<GemmaInputField> {
   Future<void> _stopGeneration() async {
     await _subscription?.cancel();
     _subscription = null;
+    // Cancelling the stream reaches the native litertlm cancel, which wedges
+    // the conversation; have the service rebuild the session before next turn.
+    widget.gemmaService.markGenerationStopped();
     if (mounted) {
       setState(() => _isGenerating = false);
     }
@@ -77,6 +80,12 @@ class GemmaInputFieldState extends State<GemmaInputField> {
 
   @override
   void dispose() {
+    // A generation cut short by teardown (e.g. sending the next message while
+    // this one streams) wedges the native session exactly like the stop
+    // button — recover on the next turn.
+    if (_isGenerating) {
+      widget.gemmaService.markGenerationStopped();
+    }
     final Future<void>? cancelFuture = _subscription?.cancel();
     if (cancelFuture != null) {
       unawaited(cancelFuture);

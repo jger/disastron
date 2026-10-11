@@ -81,9 +81,8 @@ class ModelInstallProgressPanel extends ConsumerWidget {
               Text(
                 status.subtitle!,
                 textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: scheme.onSurfaceVariant),
               ),
             ],
             const SizedBox(height: 24),
@@ -120,9 +119,8 @@ class ModelInstallProgressPanel extends ConsumerWidget {
             if (ui.progress > 0 && ui.progress < 100)
               Text(
                 '${ui.progress}%',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(color: scheme.onSurfaceVariant),
               ),
           ],
         ),
@@ -130,9 +128,8 @@ class ModelInstallProgressPanel extends ConsumerWidget {
           const SizedBox(height: 6),
           Text(
             status.subtitle!,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
         const SizedBox(height: 10),

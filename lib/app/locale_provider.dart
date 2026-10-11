@@ -1,6 +1,5 @@
 import 'package:disastron/app/app_locales.dart';
 import 'package:disastron/core/preferences/prefs_keys.dart';
-import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,8 +15,6 @@ class AppLocaleState {
   final String localeCode;
   final bool initialChoiceDone;
   final bool termsAccepted;
-
-  Locale get locale => AppLocales.localeFromCode(localeCode);
 }
 
 @Riverpod(keepAlive: true)

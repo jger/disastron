@@ -1,7 +1,7 @@
 import 'package:disastron/core/assets/bundled_asset_io.dart';
 import 'package:disastron/features/inference/domain/predefined_inference_model.dart';
 import 'package:disastron/features/inference/domain/predefined_inference_models_state.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:yaml/yaml.dart';
 
 const String kInferenceModelsAssetPath = 'assets/data/inference_models.yaml';
