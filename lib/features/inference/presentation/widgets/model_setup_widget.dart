@@ -94,11 +94,11 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
   }
 
   Future<void> _pickAndInstall() async {
-    final FilePickerResult? result = await FilePicker.pickFiles(
+    final List<PlatformFile> picked = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: <String>['task', 'bin', 'litertlm', 'tflite'],
     );
-    final String? path = result?.files.single.path;
+    final String? path = picked.isEmpty ? null : picked.single.path;
     if (path == null || !mounted) {
       return;
     }

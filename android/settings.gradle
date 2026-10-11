@@ -19,9 +19,9 @@ pluginManagement {
         eachPlugin {
             // background_downloader's own build.gradle pins the kotlinx-serialization
             // compiler plugin to 2.1.0; override it to match the project's Kotlin
-            // version (2.2.21) so the compiler and plugin stay in lockstep.
+            // version (2.4.0) so the compiler and plugin stay in lockstep.
             if (requested.id.id == 'org.jetbrains.kotlin.plugin.serialization') {
-                useVersion('2.2.21')
+                useVersion('2.4.0')
             }
         }
     }
@@ -29,8 +29,8 @@ pluginManagement {
 
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-    id "com.android.application" version "8.13.1" apply false
-    id "org.jetbrains.kotlin.android" version "2.2.21" apply false
+    id "com.android.application" version "9.1.0" apply false
+    id "org.jetbrains.kotlin.android" version "2.4.0" apply false
 }
 
 include ":app"

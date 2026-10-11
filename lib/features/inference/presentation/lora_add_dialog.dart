@@ -120,12 +120,12 @@ class _LoraAddDialogState extends ConsumerState<LoraAddDialog>
     });
 
     try {
-      final FilePickerResult? result = await FilePicker.pickFiles(
+      final List<PlatformFile> picked = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: <String>['bin', 'task', 'litertlm', 'tflite'],
       );
 
-      final String? path = result?.files.single.path;
+      final String? path = picked.isEmpty ? null : picked.single.path;
       if (path == null) {
         setState(() => _isLoading = false);
         return;

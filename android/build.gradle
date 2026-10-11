@@ -16,13 +16,46 @@ subprojects {
 subprojects { subproject ->
     def bumpCompileSdk = {
         if (subproject.plugins.hasPlugin("com.android.library")) {
-            subproject.android.compileSdk = 36
+            // permission_handler_android 14.1 calls API 37 (ACCESS_LOCAL_NETWORK).
+            // sdkmanager ships platforms;android-37.2, not android-37, and AGP 9.1
+            // maps integer compileSdk 37 onto that missing platform. Keep other
+            // libraries on 36 (AGP 9.1 is tested through 36.1).
+            if (subproject.name == 'permission_handler_android') {
+                subproject.android.compileSdk = 37
+                subproject.android.compileSdkMinor = 2
+            } else {
+                subproject.android.compileSdk = 36
+            }
         }
     }
     if (subproject.state.executed) {
         bumpCompileSdk()
     } else {
         subproject.afterEvaluate(bumpCompileSdk)
+    }
+}
+
+// AGP 9+ plugins (e.g. file_picker) skip applying KGP when built-in Kotlin is the
+// default; with android.builtInKotlin=false their Kotlin sources never compile.
+subprojects { subproject ->
+    subproject.pluginManager.withPlugin('com.android.library') {
+        // file_picker skips KGP on AGP 9+; other Flutter plugins rely on FGP to apply it.
+        if (subproject.name != 'file_picker') {
+            return
+        }
+        def agpMajor = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0].toInteger()
+        if (agpMajor < 9) {
+            return
+        }
+        if (subproject.pluginManager.hasPlugin('org.jetbrains.kotlin.android')) {
+            return
+        }
+        subproject.pluginManager.apply('org.jetbrains.kotlin.android')
+        subproject.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            kotlinOptions {
+                jvmTarget = '17'
+            }
+        }
     }
 }
 

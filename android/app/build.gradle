@@ -1,6 +1,5 @@
 plugins {
     id "com.android.application"
-    id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
 }
@@ -31,17 +30,17 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "dev.zardoz.disastron"
-    compileSdk = 36
+    // 37.2 so AAR metadata from permission_handler_android is satisfied.
+    // Integer 37 resolves to the missing platform android-37; the installed
+    // SDK is platforms;android-37.2.
+    compileSdk = 37
+    compileSdkMinor = 2
     // NDK r28+ recommended for 16 KB page-size toolchain; LiteRT .so alignment still upstream.
     ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -82,6 +81,12 @@ android {
         // Each patrol test runs in its own instrumentation invocation (fresh
         // app process), while installed app data (the model) is kept.
         execution "ANDROIDX_TEST_ORCHESTRATOR"
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
