@@ -30,8 +30,6 @@ class DashboardLocationSnapshot {
   final String? isoCountryCode;
   final String? locality;
   final String? locationError;
-
-  bool get hasFix => latitude != null && longitude != null;
 }
 
 /// Snapshot for battery status and sampling time.

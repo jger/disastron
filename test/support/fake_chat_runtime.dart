@@ -180,7 +180,4 @@ class FakeChatRuntimeGateway implements ChatRuntimeGateway {
 
   @override
   ModelType? activeModelType() => activeType;
-
-  @override
-  bool hasActiveModel() => models.isNotEmpty;
 }

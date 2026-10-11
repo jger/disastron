@@ -59,21 +59,18 @@ void main() {
       },
     );
 
-    test(
-      'forwards the active model type instead of defaulting to gemmaIt',
-      () async {
-        gateway.activeType = ModelType.gemma4;
+    test('forwards the active model type instead of defaulting to gemmaIt', () async {
+      gateway.activeType = ModelType.gemma4;
 
-        await service.init();
+      await service.init();
 
-        // createChat() defaults an omitted modelType to gemmaIt, which would put
-        // a gemma4 model on gemmaIt's thinking-filter branch.
-        expect(
-          gateway.models.single.createChatCalls.single.modelType,
-          ModelType.gemma4,
-        );
-      },
-    );
+      // createChat() defaults an omitted modelType to gemmaIt, which would put
+      // a gemma4 model on gemmaIt's thinking-filter branch.
+      expect(
+        gateway.models.single.createChatCalls.single.modelType,
+        ModelType.gemma4,
+      );
+    });
 
     test('passes a null model type through when none is active', () async {
       gateway.activeType = null;

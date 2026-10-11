@@ -184,9 +184,8 @@ class _ToolLayoutTable extends ConsumerWidget {
       return;
     }
     if (!result.isOk && result.messageKey != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(result.messageKey!.tr())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(result.messageKey!.tr())));
     }
   }
 }

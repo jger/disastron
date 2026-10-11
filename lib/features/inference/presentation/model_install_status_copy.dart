@@ -68,8 +68,7 @@ InstallStatusCopy modelInstallStatusCopy(LocalGemmaModelUi ui) {
       if (p == 0) {
         return InstallStatusCopy(
           title: 'Preparing download of $name…',
-          subtitle:
-              'Wi‑Fi check, Hugging Face auth, or connection setup. Progress appears when bytes flow.',
+          subtitle: 'Wi‑Fi check, Hugging Face auth, or connection setup. Progress appears when bytes flow.',
         );
       }
       if (p < 100) {
@@ -158,9 +157,3 @@ InstallStatusCopy modelInstallStatusCopy(LocalGemmaModelUi ui) {
       );
   }
 }
-
-String modelInstallStatusTitle(LocalGemmaModelUi ui) =>
-    modelInstallStatusCopy(ui).title;
-
-String? modelInstallStatusSubtitle(LocalGemmaModelUi ui) =>
-    modelInstallStatusCopy(ui).subtitle;

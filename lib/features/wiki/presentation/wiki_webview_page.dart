@@ -186,9 +186,8 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
       if (connectivityResult.contains(ConnectivityResult.none)) {
         return false;
       }
-      final result = await InternetAddress.lookup(
-        'google.com',
-      ).timeout(const Duration(seconds: 3));
+      final result = await InternetAddress.lookup('google.com')
+          .timeout(const Duration(seconds: 3));
       return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
     } catch (_) {
       return false;
@@ -224,8 +223,7 @@ class _WikiWebviewPageState extends ConsumerState<WikiWebviewPage> {
       } else {
         if (mounted) {
           setState(() {
-            _error =
-                'Offline content not found. Please download this page when online.';
+            _error = 'Offline content not found. Please download this page when online.';
             _loading = false;
           });
         }

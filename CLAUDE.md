@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Disastron is an offline-first Flutter emergency-readiness app: bundled offline wiki, emergency numbers by country, SOS tools (torch/alarm/vibration), and on-device LLM chat via `flutter_edge_ai` (models downloaded at runtime, never committed). Targets Android, iOS, and web (PWA/WASM). Flutter **3.44.8** (`.fvmrc`, FVM recommended), Dart `>=3.12.0`.
+Disastron is an offline-first Flutter emergency-readiness app: bundled offline wiki, emergency numbers by country, SOS tools (torch/alarm/vibration), and on-device LLM chat via `flutter_edge_ai` (models downloaded at runtime, never committed). Targets Android, iOS, and web (PWA/WASM). Flutter **3.47.5** (`.fvmrc`, FVM recommended), Dart `>=3.13.0`.
 
 ## Commands
 

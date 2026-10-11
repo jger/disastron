@@ -35,7 +35,4 @@ class WikiPack {
   /// Loads bundled wiki for [localeCode]; falls back to English pack.
   static Future<WikiPack> loadForLocale(String localeCode) =>
       WikiPackLoader.loadForLocale(localeCode);
-
-  /// Legacy entry point (English).
-  static Future<WikiPack> loadBundled() => loadForLocale('en');
 }

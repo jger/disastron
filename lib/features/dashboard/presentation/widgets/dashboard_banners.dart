@@ -67,9 +67,8 @@ class _DashboardHcBatteryTipBannerState
                   Expanded(
                     child: Text(
                       'battery_tip_body'.tr(),
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: onSec),
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: onSec),
                     ),
                   ),
                   TextButton(
@@ -87,9 +86,8 @@ class _DashboardHcBatteryTipBannerState
                     },
                     child: Text(
                       'light_mode'.tr(),
-                      style: Theme.of(
-                        context,
-                      ).textTheme.labelLarge?.copyWith(color: onSec),
+                      style: Theme.of(context).textTheme.labelLarge
+                          ?.copyWith(color: onSec),
                     ),
                   ),
                   IconButton(
@@ -156,10 +154,8 @@ class DashboardNoOfflineModelBanner extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       'no_offline_model_title'.tr(),
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: onC,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.titleSmall
+                          ?.copyWith(color: onC, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -169,18 +165,16 @@ class DashboardNoOfflineModelBanner extends ConsumerWidget {
                 'no_offline_model_body'.tr(
                   namedArgs: <String, String>{'preset': m.title},
                 ),
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: onC),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: onC),
               ),
               const SizedBox(height: 8),
               PresetDownloadMetadataChips(model: m),
               const SizedBox(height: 4),
               Text(
                 m.downloadMetadataLine,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: onC),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: onC),
               ),
               const SizedBox(height: 10),
               Wrap(
@@ -335,10 +329,8 @@ class _DashboardNoOfflineWikiBannerState
                       padding: const EdgeInsets.only(top: 10),
                       child: Text(
                         'no_offline_wiki_title'.tr(),
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: onC,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: Theme.of(context).textTheme.titleSmall
+                            ?.copyWith(color: onC, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -359,9 +351,8 @@ class _DashboardNoOfflineWikiBannerState
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Text(
                   'no_offline_wiki_body'.tr(),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: onC),
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: onC),
                 ),
               ),
               const SizedBox(height: 10),

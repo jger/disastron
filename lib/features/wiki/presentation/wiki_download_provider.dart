@@ -18,20 +18,6 @@ class WikiDownloadState {
   final double progress;
   final String? error;
   final double sizeMB;
-
-  WikiDownloadState copyWith({
-    WikiDownloadStatus? status,
-    double? progress,
-    String? error,
-    double? sizeMB,
-  }) {
-    return WikiDownloadState(
-      status: status ?? this.status,
-      progress: progress ?? this.progress,
-      error: error ?? this.error,
-      sizeMB: sizeMB ?? this.sizeMB,
-    );
-  }
 }
 
 @Riverpod(keepAlive: true)

@@ -12,9 +12,8 @@ class DashboardWeatherCard extends ConsumerWidget {
     if (t == null) {
       return '—';
     }
-    return MaterialLocalizations.of(
-      context,
-    ).formatTimeOfDay(TimeOfDay.fromDateTime(t));
+    return MaterialLocalizations.of(context)
+        .formatTimeOfDay(TimeOfDay.fromDateTime(t));
   }
 
   @override
@@ -220,9 +219,8 @@ class DashboardWeatherCard extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           child: Text(
             'Conditions error: $e',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.error,
-            ),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: Theme.of(context).colorScheme.error),
           ),
         ),
       ),

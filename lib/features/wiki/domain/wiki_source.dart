@@ -20,27 +20,6 @@ class WikiSource {
   final String category;
   final String locale;
 
-  Map<String, String> toMap() => {
-    'url': url,
-    'title': title,
-    'category': category,
-    'locale': locale,
-  };
-
-  WikiSource copyWith({
-    String? url,
-    String? title,
-    String? category,
-    String? locale,
-  }) {
-    return WikiSource(
-      url: url ?? this.url,
-      title: title ?? this.title,
-      category: category ?? this.category,
-      locale: locale ?? this.locale,
-    );
-  }
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

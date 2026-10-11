@@ -15,8 +15,6 @@ abstract class ChatRuntimeGateway {
   /// [ModelType.gemmaIt], which silently puts a gemma4 model on gemmaIt's
   /// thinking-filter and function-call-parsing branches.
   ModelType? activeModelType();
-
-  bool hasActiveModel();
 }
 
 class FlutterEdgeAiChatRuntimeGateway implements ChatRuntimeGateway {
@@ -41,7 +39,4 @@ class FlutterEdgeAiChatRuntimeGateway implements ChatRuntimeGateway {
         FlutterEdgeAiPlugin.instance.modelManager.activeInferenceModel;
     return spec is InferenceModelSpec ? spec.modelType : null;
   }
-
-  @override
-  bool hasActiveModel() => FlutterEdgeAi.hasActiveModel();
 }

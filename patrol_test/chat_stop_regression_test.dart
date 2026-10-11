@@ -204,14 +204,14 @@ Future<void> _completeFirstRunDialogsIfAny(PatrolIntegrationTester $) async {
     if ($.tester.any(find.byType(CheckboxListTile))) {
       _log('accepting terms dialog');
       await $(CheckboxListTile).tap(settlePolicy: SettlePolicy.trySettle);
-      await $(
-        AlertDialog,
-      ).$(FilledButton).tap(settlePolicy: SettlePolicy.trySettle);
+      await $(AlertDialog)
+          .$(FilledButton)
+          .tap(settlePolicy: SettlePolicy.trySettle);
     } else {
       _log('confirming first-run (language) dialog');
-      await $(
-        AlertDialog,
-      ).$(FilledButton).tap(settlePolicy: SettlePolicy.trySettle);
+      await $(AlertDialog)
+          .$(FilledButton)
+          .tap(settlePolicy: SettlePolicy.trySettle);
     }
   }
 }
@@ -252,9 +252,8 @@ Future<void> _ensureModelActive(PatrolIntegrationTester $) async {
     'installing model from seed ${seed.path} '
     '(${seed.lengthSync()} bytes) - one-time per device',
   );
-  await ModelInstallOrchestrator(
-    registry: ModelRegistryStore(),
-  ).installFromFile(seed.path);
+  await ModelInstallOrchestrator(registry: ModelRegistryStore())
+      .installFromFile(seed.path);
   expect(
     FlutterEdgeAi.hasActiveModel(),
     isTrue,
@@ -333,18 +332,18 @@ Future<void> _send(PatrolIntegrationTester $, String text) async {
   _log('sending: "$text"');
   await $(ChatInputField).$(TextField).enterText(text);
   await $.pump(const Duration(milliseconds: 300));
-  await $(
-    ChatInputField,
-  ).$(Icons.send).tap(settlePolicy: SettlePolicy.noSettle);
+  await $(ChatInputField)
+      .$(Icons.send)
+      .tap(settlePolicy: SettlePolicy.noSettle);
   // One frame so GemmaInputField mounts and starts streaming; do NOT settle -
   // the assistant spinner animates forever, pumpAndSettle would time out.
   await $.pump(const Duration(milliseconds: 300));
 }
 
 Future<void> _tapStop(PatrolIntegrationTester $) async {
-  await $(
-    GemmaInputField,
-  ).$(Icons.stop_circle_outlined).tap(settlePolicy: SettlePolicy.noSettle);
+  await $(GemmaInputField)
+      .$(Icons.stop_circle_outlined)
+      .tap(settlePolicy: SettlePolicy.noSettle);
   await $.pump(const Duration(milliseconds: 300));
 }
 

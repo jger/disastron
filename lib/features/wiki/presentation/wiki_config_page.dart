@@ -89,9 +89,9 @@ class WikiConfigPage extends ConsumerWidget {
                               s.url,
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
                                   ),
                             ),
                             const SizedBox(height: 8),
@@ -114,9 +114,9 @@ class WikiConfigPage extends ConsumerWidget {
                                 const SizedBox(width: 8),
                                 TextButton.icon(
                                   style: TextButton.styleFrom(
-                                    foregroundColor: Theme.of(
-                                      context,
-                                    ).colorScheme.error,
+                                    foregroundColor: Theme.of(context)
+                                        .colorScheme
+                                        .error,
                                   ),
                                   onPressed: () =>
                                       _confirmDeleteSource(context, ref, s),
@@ -379,9 +379,8 @@ class WikiConfigPage extends ConsumerWidget {
       ref.invalidate(wikiDownloadProvider);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('wiki_import_success'.tr())));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('wiki_import_success'.tr())));
       }
     } catch (e) {
       if (context.mounted) {

@@ -289,9 +289,8 @@ class WikiPage extends HookConsumerWidget {
                 children: [
                   Text(
                     'wiki_web_sources_title'.tr(args: [locale.toUpperCase()]),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   Row(
                     children: [
@@ -437,9 +436,8 @@ class WikiPage extends HookConsumerWidget {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isDownloaded
-                  ? Theme.of(
-                      context,
-                    ).colorScheme.primaryContainer.withValues(alpha: 0.3)
+                  ? Theme.of(context).colorScheme.primaryContainer
+                        .withValues(alpha: 0.3)
                   : Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(12),
             ),
@@ -580,12 +578,12 @@ class WikiPage extends HookConsumerWidget {
                         ),
                         FilledButton(
                           style: FilledButton.styleFrom(
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.error,
-                            foregroundColor: Theme.of(
-                              context,
-                            ).colorScheme.onError,
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .error,
+                            foregroundColor: Theme.of(context)
+                                .colorScheme
+                                .onError,
                           ),
                           onPressed: () => Navigator.pop(ctx, true),
                           child: Text('remove'.tr()),
@@ -700,16 +698,14 @@ class WikiPage extends HookConsumerWidget {
                 if (parts.length < 2) {
                   return Text(
                     text,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: onContainer),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: onContainer),
                   );
                 }
                 return RichText(
                   text: TextSpan(
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: onContainer),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: onContainer),
                     children: [
                       TextSpan(text: parts[0]),
                       WidgetSpan(

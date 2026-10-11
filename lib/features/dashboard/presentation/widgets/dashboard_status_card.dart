@@ -31,9 +31,8 @@ class DashboardStatusCard extends ConsumerWidget {
           padding: const EdgeInsets.all(12),
           child: Text(
             'Status error: $e',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.error,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(color: Theme.of(context).colorScheme.error),
           ),
         ),
       ),
@@ -100,9 +99,8 @@ class _DashboardStatusExpansionTile extends StatelessWidget {
         ),
         subtitle: Text(
           'Tap for device details and conditions',
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.labelSmall
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         children: <Widget>[
           Padding(
@@ -145,17 +143,15 @@ class _DashboardStatusExpansionTile extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     snapshot.locationError!.tr(),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: Theme.of(context).colorScheme.error),
                   ),
                 ],
                 const Divider(height: 28),
                 Text(
                   'Day / night',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                  style: Theme.of(context).textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 const DashboardWeatherCard(),

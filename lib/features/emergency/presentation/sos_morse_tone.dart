@@ -16,8 +16,6 @@ final class SosMorseTone {
   AudioSource? _sine;
   SoundHandle? _handle;
 
-  bool get isReady => _ready;
-
   static int _mobileAudioSessionHolders = 0;
   static AudioSessionConfiguration? _mobileAudioSessionBackup;
 

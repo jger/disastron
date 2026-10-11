@@ -138,9 +138,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     await ref.read(huggingfaceTokenProvider.notifier).save(t);
     if (mounted) {
       _tokenController.clear();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('model_hf_token_saved'.tr())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('model_hf_token_saved'.tr())));
     }
   }
 
@@ -148,9 +147,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
     await ref.read(huggingfaceTokenProvider.notifier).clear();
     if (mounted) {
       _tokenController.clear();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('model_token_cleared'.tr())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('model_token_cleared'.tr())));
     }
   }
 
@@ -185,9 +183,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
         if (mounted) {
           setState(() => _showReplaceFlow = false);
         }
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('model_ready_snack'.tr())));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('model_ready_snack'.tr())));
       }
     });
 
@@ -466,9 +463,9 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               LinearProgressIndicator(
-                backgroundColor: Theme.of(
-                  ctx,
-                ).colorScheme.surfaceContainerHighest,
+                backgroundColor: Theme.of(ctx)
+                    .colorScheme
+                    .surfaceContainerHighest,
               ),
               const SizedBox(height: 12),
               Text(
@@ -593,9 +590,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             if (snap.entries.isNotEmpty) ...<Widget>[
               Text(
                 'model_installed_heading'.tr(),
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               ...snap.entries.map((InstalledModelEntry e) {
@@ -641,9 +637,9 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                               'model_active_badge'.tr(),
                               style: Theme.of(context).textTheme.labelLarge
                                   ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary,
                                     fontWeight: FontWeight.w600,
                                   ),
                             ),
@@ -743,9 +739,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
       ),
       subtitle: Text(
         saved ? 'model_hf_gated_uses_saved'.tr() : 'model_hf_not_required'.tr(),
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
       ),
       children: <Widget>[
         SelectableText('model_hf_read_token'.tr()),
@@ -817,17 +812,15 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
             const SizedBox(height: 16),
             Text(
               'model_available_downloads'.tr(),
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             if (publicModels.isNotEmpty) ...<Widget>[
               Text(
                 'model_public_presets'.tr(),
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               presetTiles(publicModels),
@@ -838,9 +831,8 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
               const SizedBox(height: 12),
               Text(
                 'model_gated_presets'.tr(),
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               presetTiles(gatedModels),

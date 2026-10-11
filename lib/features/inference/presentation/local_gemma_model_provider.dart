@@ -8,12 +8,8 @@ import 'package:disastron/features/inference/domain/inference_model_descriptor.d
 import 'package:disastron/features/inference/domain/inference_path_utils.dart';
 import 'package:disastron/features/inference/domain/model_install_activity_kind.dart';
 import 'package:disastron/features/inference/domain/model_install_domain_error.dart';
-import 'package:disastron/features/inference/domain/model_operation_state.dart';
 import 'package:disastron/features/inference/domain/predefined_models.dart'
-    show
-        PredefinedInferenceModel,
-        modelFileTypeForUrl,
-        presetInferenceModelById;
+    show PredefinedInferenceModel, presetInferenceModelById;
 import 'package:disastron/features/inference/presentation/huggingface_token_provider.dart';
 import 'package:disastron/features/inference/presentation/lora_provider.dart';
 import 'package:disastron/features/inference/presentation/model_file_export.dart';
@@ -74,19 +70,6 @@ class LocalGemmaModelUi {
       pendingPresetId: pendingPresetId,
     );
   }
-
-  ModelInstallSurfacePhase? get installSurface {
-    if (phase != LocalGemmaPhase.installing) {
-      return null;
-    }
-    return progress > 0
-        ? ModelInstallSurfacePhase.transferring
-        : ModelInstallSurfacePhase.preparing;
-  }
-}
-
-ModelFileType modelFileTypeForPath(String path) {
-  return modelFileTypeForUrl(Uri.file(path).toString());
 }
 
 @Riverpod(keepAlive: true)

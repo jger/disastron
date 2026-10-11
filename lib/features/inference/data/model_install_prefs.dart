@@ -19,17 +19,6 @@ class ModelInstallRecord {
 }
 
 class ModelInstallPrefs {
-  Future<void> save({
-    required String urlOrPath,
-    required ModelType modelType,
-    required ModelFileType fileType,
-  }) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kUrl, urlOrPath);
-    await prefs.setString(_kModelType, modelType.name);
-    await prefs.setString(_kFileType, fileType.name);
-  }
-
   Future<ModelInstallRecord?> read() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? urlOrPath = prefs.getString(_kUrl);

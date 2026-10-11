@@ -7,10 +7,6 @@ extension AppAppearanceModeX on AppAppearanceMode {
   bool get isDark =>
       this == AppAppearanceMode.dark ||
       this == AppAppearanceMode.darkHighContrast;
-
-  bool get isHighContrast =>
-      this == AppAppearanceMode.lightHighContrast ||
-      this == AppAppearanceMode.darkHighContrast;
 }
 
 ThemeData buildLightTheme({required bool highContrast}) {

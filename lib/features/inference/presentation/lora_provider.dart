@@ -1,5 +1,3 @@
-import 'dart:io' show File;
-
 import 'package:disastron/features/inference/data/lora_registry_store.dart';
 import 'package:disastron/features/inference/domain/inference_path_utils.dart';
 import 'package:path/path.dart' as p;
@@ -28,14 +26,6 @@ Future<String?> activeLoraPath(Ref ref, String modelEntryId) async {
   final InstalledLoraEntry? active = snap.activeLoraForModel(modelEntryId);
   if (active == null) return null;
   return _resolveLoraFilePath(active);
-}
-
-/// Derives the on-disk path for a LoRA entry. Imported files use their stored
-/// absolute path; downloaded files live in [getApplicationDocumentsDirectory].
-Future<String?> resolveLoraFilePathFor(InstalledLoraEntry entry) async {
-  final String path = await _resolveLoraFilePath(entry);
-  if (!File(path).existsSync()) return null;
-  return path;
 }
 
 Future<String> _resolveLoraFilePath(InstalledLoraEntry entry) async {

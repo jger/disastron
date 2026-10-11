@@ -11,5 +11,4 @@ abstract final class AppSpacing {
   static const EdgeInsets screenPadding = EdgeInsets.all(16);
   static const double gapSm = 8;
   static const double gapMd = 12;
-  static const double gapLg = 16;
 }
