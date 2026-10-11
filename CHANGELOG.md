@@ -2,6 +2,23 @@
 
 All notable changes will be documented in this file.
 
+# [1.7.0](https://github.com/jger/disastron/compare/v1.6.2...v1.7.0) (2026-10-11)
+
+
+### Bug Fixes
+
+* **android:** pin kotlinx-serialization compiler plugin to Kotlin 2.3.20 ([66c0b97](https://github.com/jger/disastron/commit/66c0b978eefed52d05a6f3e48dd069f5f84ed838))
+* **chat:** recreate wedged litertlm session after stopping generation ([1e39ad3](https://github.com/jger/disastron/commit/1e39ad31a5b3e7b7b4672e8253451d510a188796))
+* **inference:** handle builtIn ModelFileType in backend mapping ([10d92f9](https://github.com/jger/disastron/commit/10d92f9625950a256045545ec70c4945fd216987))
+* **main:** change theme mode from dark to light in MyApp widget ([45e1009](https://github.com/jger/disastron/commit/45e1009fbafec1202fb11d4527c65828afd0dfc9))
+
+
+### Features
+
+* **chat:** enhance chat feature with new dashboard and runtime capabilities ([4b8ccbd](https://github.com/jger/disastron/commit/4b8ccbd69e9813334159a9301a78bd693257f141))
+* integrate Patrol for automated end-to-end testing with model seeding and native instrumentation support ([cfa9f39](https://github.com/jger/disastron/commit/cfa9f39343615bbc534aacbefa6bdba1e09861fc))
+* several fixes for patrol ([8105b61](https://github.com/jger/disastron/commit/8105b61ce2d2446a88e5a79e5384fd7402ef29cb))
+
 ## [1.6.2](https://github.com/jger/disastron/compare/v1.6.1...v1.6.2) (2026-07-10)
 
 
