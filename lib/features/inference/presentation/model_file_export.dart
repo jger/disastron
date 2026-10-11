@@ -52,8 +52,9 @@ Future<ModelExportResult> exportModelFileToUserChosenLocation({
     if (out == null) {
       return ModelExportResult.cancelled();
     }
-    final String path =
-        out.scheme == 'file' ? out.toFilePath() : out.toString();
+    final String path = out.scheme == 'file'
+        ? out.toFilePath()
+        : out.toString();
     if (path.isEmpty) {
       return ModelExportResult.cancelled();
     }
