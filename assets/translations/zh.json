@@ -212,6 +212,7 @@
   "battery_state_connectedNotCharging": "已连接未充电",
   "battery_state_unknown": "未知",
   "chat_llm_warning": "设备端人工智能可能会出错。请务必根据官方来源核实关键信息。",
+  "chat_updating_checklist": "正在更新清单…",
   "terms_title": "服务条款与免责声明",
   "terms_message": "请阅读并接受条款以继续。",
   "terms_intro": "使用 Disastron 即表示您接受 disastron.com/terms 上的服务条款，并同意您对自己的行为承担全部责任。",

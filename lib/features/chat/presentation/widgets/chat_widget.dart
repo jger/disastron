@@ -16,6 +16,7 @@ class ChatListWidget extends StatelessWidget {
     required this.showAccidentChips,
     required this.onAccidentChip,
     required this.isImageSupported,
+    this.onChecklistToolCall,
     super.key,
   });
 
@@ -26,6 +27,11 @@ class ChatListWidget extends StatelessWidget {
   final bool showAccidentChips;
   final void Function(AccidentChipOption option) onAccidentChip;
   final bool isImageSupported;
+  final Future<Map<String, dynamic>> Function(
+    FunctionCallResponse call,
+    List<Map<String, dynamic>> ops,
+  )?
+  onChecklistToolCall;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +49,7 @@ class ChatListWidget extends StatelessWidget {
               userMessage: messages.last,
               gemmaService: gemmaService,
               streamHandled: gemmaHandler,
+              onChecklistToolCall: onChecklistToolCall,
             );
           }
           if (messages.isEmpty || !messages.last.isUser) {

@@ -212,6 +212,7 @@
   "battery_state_connectedNotCharging": "Conectado, no cargando",
   "battery_state_unknown": "Desconocido",
   "chat_llm_warning": "La IA en el dispositivo puede cometer errores. Verifique siempre la información crítica con fuentes oficiales.",
+  "chat_updating_checklist": "Actualizando la lista…",
   "terms_title": "Condiciones de servicio y descargo de responsabilidad",
   "terms_message": "Por favor lea y acepte los términos para continuar.",
   "terms_intro": "Al usar Disastron, acepta las Condiciones de servicio en disastron.com/terms y acepta que es el único responsable de sus acciones.",

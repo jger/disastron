@@ -212,6 +212,7 @@
   "battery_state_connectedNotCharging": "Branché, pas en charge",
   "battery_state_unknown": "Inconnu",
   "chat_llm_warning": "L'IA sur l'appareil peut faire des erreurs. Vérifiez toujours les informations critiques avec des sources officielles.",
+  "chat_updating_checklist": "Mise à jour de la checklist…",
   "terms_title": "Conditions d'utilisation et clause de non-responsabilité",
   "terms_message": "Veuillez lire et accepter les conditions pour continuer.",
   "terms_intro": "En utilisant Disastron, vous acceptez les Conditions d'utilisation sur disastron.com/terms et acceptez que vous êtes seul responsable de vos actions.",

@@ -93,10 +93,19 @@ String formatChatDashboardSituationError(Object error) {
 }
 
 /// Full system instruction: static disaster prompt + structured device context.
-String composeDisasterSystemInstruction(String situationBlock) {
+///
+/// When [includeLegacyTodosBlock] is false (Gemma 4 native `update_checklist`
+/// tool), the `[[TODOS]]` JSON instructions are omitted.
+String composeDisasterSystemInstruction(
+  String situationBlock, {
+  bool includeLegacyTodosBlock = true,
+}) {
   final String trimmed = situationBlock.trim();
   final String block = trimmed.isEmpty ? 'context_error: empty' : trimmed;
-  return '${kDisasterSystemInstruction.trim()}\n\n'
+  final String base = includeLegacyTodosBlock
+      ? kDisasterSystemInstruction.trim()
+      : kDisasterSystemInstructionBase.trim();
+  return '$base\n\n'
       '---\n'
       'Current device context (sampled when Chat was opened; offline estimates, '
       'not live weather):\n'

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:disastron/features/chat/chat.dart';
 import 'package:disastron/features/chat/data/gemma_service.dart';
 import 'package:disastron/features/chat/domain/chat_dashboard_context.dart';
+import 'package:disastron/features/chat/domain/checklist_tool.dart';
 import 'package:disastron/features/chat/domain/todo_action_parser.dart';
 import 'package:disastron/features/chat/presentation/chat_dashboard_situation_provider.dart';
 import 'package:disastron/features/chat/presentation/chat_handlers.dart';
@@ -13,6 +14,7 @@ import 'package:disastron/features/chat/presentation/widgets/loading_widget.dart
 import 'package:disastron/features/dashboard/dashboard.dart';
 import 'package:disastron/features/home/home.dart';
 import 'package:disastron/features/inference/inference.dart';
+import 'package:disastron/features/todos/todos.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
@@ -128,22 +130,80 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  bool _nativeChecklistForRegistry(ModelRegistrySnapshot registry) {
+    final String? activeId = registry.activeEntryId;
+    if (activeId == null) {
+      return false;
+    }
+    for (final InstalledModelEntry entry in registry.entries) {
+      if (entry.id == activeId) {
+        return modelSupportsNativeChecklistTools(
+          modelType: entry.modelType,
+          fileType: entry.fileType,
+        );
+      }
+    }
+    return false;
+  }
+
+  Future<void> _injectChecklistSnapshotForNextTurn() async {
+    if (!_gemma.usesNativeChecklistTools) {
+      return;
+    }
+    final List<EmergencyTodo> todos = await ref.read(
+      emergencyTodosProvider.future,
+    );
+    _gemma.setChecklistSnapshotForNextUserMessage(
+      formatChecklistSnapshotForUserTurn(todos),
+    );
+  }
+
+  Future<Map<String, dynamic>> _onChecklistToolCall(
+    FunctionCallResponse call,
+    List<Map<String, dynamic>> ops,
+  ) async {
+    int addedTodoCount = 0;
+    for (final Map<String, dynamic> op in ops) {
+      if ((op['op'] as String?) == 'add' &&
+          ((op['title'] as String?)?.trim().isNotEmpty ?? false)) {
+        addedTodoCount++;
+      }
+    }
+    if (ops.isNotEmpty) {
+      await ref.read(emergencyTodosProvider.notifier).applyOps(ops);
+      if (addedTodoCount > 0) {
+        ref
+            .read(todoTabBadgeProvider.notifier)
+            .addFromAssistant(addedTodoCount);
+      }
+    }
+    return <String, dynamic>{
+      'status': 'ok',
+      'applied': ops.length,
+      'added': addedTodoCount,
+    };
+  }
+
   Future<void> _ensureChatReady({required bool reloadInferenceWeights}) async {
     if (!FlutterEdgeAi.hasActiveModel()) {
       return;
     }
     try {
+      final ModelRegistrySnapshot registry = await ref.read(
+        modelRegistrySnapshotProvider.future,
+      );
+      final bool nativeChecklist = _nativeChecklistForRegistry(registry);
       final bool useCtx = ref.read(useDisastronContextProvider);
       final String? system;
       if (useCtx) {
         final String situation = await _loadFreshSituationString();
-        system = composeDisasterSystemInstruction(situation);
+        system = composeDisasterSystemInstruction(
+          situation,
+          includeLegacyTodosBlock: !nativeChecklist,
+        );
       } else {
         system = null;
       }
-      final ModelRegistrySnapshot registry = await ref.read(
-        modelRegistrySnapshotProvider.future,
-      );
       final bool visionRequested = activeRegistryEntrySupportsVision(registry);
 
       final String? activeEntryId = registry.activeEntryId;
@@ -160,6 +220,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             supportImage: true,
             maxNumImages: 1,
             loraPath: loraPath,
+            useNativeChecklistTools: nativeChecklist,
           );
           _markChatReady(
             runtimeVisionEnabled: true,
@@ -171,7 +232,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           if (!mounted) {
             return;
           }
-          await _gemma.init(systemInstruction: system, loraPath: loraPath);
+          await _gemma.init(
+            systemInstruction: system,
+            loraPath: loraPath,
+            useNativeChecklistTools: nativeChecklist,
+          );
           _markChatReady(
             runtimeVisionEnabled: false,
             showVisionFallbackSnack: true,
@@ -184,6 +249,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         systemInstruction: system,
         reloadInferenceWeights: reloadInferenceWeights,
         loraPath: loraPath,
+        useNativeChecklistTools: nativeChecklist,
       );
       _markChatReady(
         runtimeVisionEnabled: false,
@@ -202,23 +268,41 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _onAssistantMessage(Message message) async {
-    final TodoApplyResult result = await stripTodosAndApply(ref, message.text);
+    int appliedCount = 0;
+    int addedTodoCount = 0;
+    String displayText = message.text;
+    if (_gemma.usesNativeChecklistTools) {
+      final ChecklistTurnResult? toolResult = _gemma
+          .takeLastChecklistTurnResult();
+      if (toolResult != null) {
+        appliedCount = toolResult.appliedCount;
+        addedTodoCount = toolResult.addedTodoCount;
+      }
+    } else {
+      final TodoApplyResult result = await stripTodosAndApply(
+        ref,
+        message.text,
+      );
+      displayText = result.displayText;
+      appliedCount = result.appliedCount;
+      addedTodoCount = result.addedTodoCount;
+    }
     if (!mounted) {
       return;
     }
-    final String trimmedDisplay = result.displayText.trim();
+    final String trimmedDisplay = displayText.trim();
     final String assistantBody = trimmedDisplay.isEmpty
-        ? (result.appliedCount > 0 ? '(Checklist updated.)' : '(No response)')
+        ? (appliedCount > 0 ? '(Checklist updated.)' : '(No response)')
         : trimmedDisplay;
     setState(() {
       _messages.add(Message.text(text: assistantBody));
-      if (result.appliedCount > 0) {
-        final String hint = result.addedTodoCount > 0
-            ? ' ${result.addedTodoCount} new on Todos (tab badge).'
+      if (appliedCount > 0) {
+        final String hint = addedTodoCount > 0
+            ? ' $addedTodoCount new on Todos (tab badge).'
             : ' Open the Todos tab to review.';
         _messages.add(
           Message(
-            text: 'Checklist updated (${result.appliedCount} action(s)).$hint',
+            text: 'Checklist updated ($appliedCount action(s)).$hint',
             type: MessageType.systemInfo,
           ),
         );
@@ -230,6 +314,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!draft.isNotEmpty) {
       return;
     }
+    unawaited(_injectChecklistSnapshotForNextTurn());
     unawaited(ref.read(firstChatAccidentPromptProvider.notifier).markDone());
     final String trimmed = draft.text.trim();
     final Uint8List? img = draft.imageBytes;
@@ -247,6 +332,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _onAccidentChip(AccidentChipOption option) {
+    unawaited(_injectChecklistSnapshotForNextTurn());
     unawaited(ref.read(firstChatAccidentPromptProvider.notifier).markDone());
     setState(() {
       _messages.add(Message.text(text: option.prompt, isUser: true));
@@ -395,6 +481,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     humanHandler: _onHumanMessage,
                     messages: _messages,
                     isImageSupported: _runtimeImageSupportEnabled,
+                    onChecklistToolCall: _gemma.usesNativeChecklistTools
+                        ? _onChecklistToolCall
+                        : null,
                   ),
                 ),
               ],

@@ -212,6 +212,7 @@
   "battery_state_connectedNotCharging": "متصل، لا يشحن",
   "battery_state_unknown": "غير معروف",
   "chat_llm_warning": "يمكن للذكاء الاصطناعي على الجهاز أن يرتكب أخطاء. تحقق دائماً من المعلومات الهامة مع المصادر الرسمية.",
+  "chat_updating_checklist": "جارٍ تحديث القائمة…",
   "terms_title": "شروط الخدمة وإخلاء المسؤولية",
   "terms_message": "يرجى قراءة وقبول الشروط للمتابعة.",
   "terms_intro": "باستخدامك لـ Disastron، فإنك تقبل شروط الخدمة على disastron.com/terms وتوافق على أنك المسؤول الوحيد عن أفعالك.",

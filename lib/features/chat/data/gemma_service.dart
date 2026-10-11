@@ -3,10 +3,14 @@
 
 import 'package:disastron/features/chat/data/chat_runtime_gateway.dart';
 import 'package:disastron/features/chat/data/xnnpack_cache_cleanup.dart';
+import 'package:disastron/features/chat/domain/checklist_tool.dart';
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
-const String kDisasterSystemInstruction = '''
+const String kDisasterSystemInstructionBase = '''
 You are Disastron, a concise offline assistant for emergencies: wars, natural disasters, transport accidents, fires, medical crises. Give practical, calm, step-by-step guidance. If information is uncertain, say so. Do not claim real-time data you cannot have offline. Prioritize safety, evacuation, shelter, first aid basics, and contacting local authorities when possible.
+''';
+
+const String kLegacyTodosSystemInstructionAppend = '''
 
 When you suggest checklist items the user should track, append EXACTLY one block at the END of your reply:
 [[TODOS]]
@@ -15,6 +19,10 @@ When you suggest checklist items the user should track, append EXACTLY one block
 
 Use only ops add / setDone / remove. For setDone/remove you must use todo ids from context when known; otherwise only use add. Keep titles short. If no checklist updates, omit the entire [[TODOS]] block.
 ''';
+
+/// Full system prompt for models without native tool calling (e.g. Gemma 3 `.task`).
+const String kDisasterSystemInstruction =
+    '$kDisasterSystemInstructionBase$kLegacyTodosSystemInstructionAppend';
 
 class GemmaLocalService {
   GemmaLocalService({ChatRuntimeGateway? runtime})
@@ -31,14 +39,22 @@ class GemmaLocalService {
   /// would allocate a second KV cache and risk an OOM kill — into a StateError.
   static const int _kMaxConcurrentSessions = 1;
 
+  static const int _kMaxChecklistToolTurns = 3;
+
   InferenceModel? _model;
   InferenceChat? _chat;
   final ChatRuntimeGateway _runtime;
   bool? _lastInitSupportImage;
+  bool _usesNativeChecklistTools = false;
 
   /// Fresh dashboard snapshot text applied to the **next** user turn only
   /// (avoids recreating [InferenceChat] and desyncing UI vs native history).
   String? _pendingDeviceContextSituation;
+
+  /// Open checklist snapshot for the next user turn (Gemma 4 tool path).
+  String? _pendingChecklistSnapshot;
+
+  ChecklistTurnResult? _lastChecklistTurnResult;
 
   /// Set when the user stops an in-flight generation. On the `.litertlm` FFI
   /// engine, cancelling the response stream reaches
@@ -52,9 +68,24 @@ class GemmaLocalService {
 
   bool get isInitialized => _chat != null;
 
+  /// True after [init] when the active model is Gemma 4 on `.litertlm`.
+  bool get usesNativeChecklistTools => _usesNativeChecklistTools;
+
   void setDeviceContextForNextUserMessage(String situationText) {
     final String t = situationText.trim();
     _pendingDeviceContextSituation = t.isEmpty ? 'context_error: empty' : t;
+  }
+
+  void setChecklistSnapshotForNextUserMessage(String snapshotText) {
+    final String t = snapshotText.trim();
+    _pendingChecklistSnapshot = t.isEmpty ? null : t;
+  }
+
+  /// Native tool path only: checklist ops applied on the last completed turn.
+  ChecklistTurnResult? takeLastChecklistTurnResult() {
+    final ChecklistTurnResult? r = _lastChecklistTurnResult;
+    _lastChecklistTurnResult = null;
+    return r;
   }
 
   /// Creates or refreshes the chat session. Loads the active inference model
@@ -66,6 +97,7 @@ class GemmaLocalService {
     bool supportImage = false,
     int? maxNumImages,
     String? loraPath,
+    bool useNativeChecklistTools = false,
   }) async {
     final bool visionFlagChanged =
         _lastInitSupportImage != null && _lastInitSupportImage != supportImage;
@@ -88,6 +120,15 @@ class GemmaLocalService {
         maxConcurrentSessions: _kMaxConcurrentSessions,
       );
     }
+
+    final ModelType? activeType = _runtime.activeModelType();
+    _usesNativeChecklistTools =
+        useNativeChecklistTools &&
+        modelSupportsNativeChecklistTools(
+          modelType: activeType,
+          fileType: _model!.fileType,
+        );
+
     await _chat?.close();
     _chat = null;
     _chat = await _model!.createChat(
@@ -95,9 +136,13 @@ class GemmaLocalService {
       supportImage: supportImage,
       loraPath: loraPath,
       maxOutputTokens: _kMaxReplyTokens,
+      tools: _usesNativeChecklistTools
+          ? <Tool>[kUpdateChecklistTool]
+          : const <Tool>[],
+      supportsFunctionCalls: _usesNativeChecklistTools,
       // Omitting this silently defaults to ModelType.gemmaIt, which routes a
       // gemma4 model through gemmaIt's thinking filter and function-call parser.
-      modelType: _runtime.activeModelType(),
+      modelType: activeType,
     );
     // Fresh chat — no wedged session to recover from.
     _needsSessionReset = false;
@@ -110,33 +155,78 @@ class GemmaLocalService {
     _needsSessionReset = true;
   }
 
-  Stream<ModelResponse> processMessageAsync(Message userMessage) async* {
+  Stream<ModelResponse> processMessageAsync(
+    Message userMessage, {
+    Future<Map<String, dynamic>> Function(
+      FunctionCallResponse call,
+      List<Map<String, dynamic>> ops,
+    )?
+    onChecklistToolCall,
+  }) async* {
+    _lastChecklistTurnResult = null;
     final InferenceChat chat = _chat!;
     if (_needsSessionReset) {
       _needsSessionReset = false;
-      // Discard the conversation wedged by the previous stop and rebuild a
-      // fresh native session, replaying prior turns so multi-turn context
-      // survives. `fullHistory` is an unmodifiable copy, so clearHistory
-      // clearing its own backing list does not mutate the snapshot mid-replay.
       await chat.clearHistory(replayHistory: chat.fullHistory);
     }
     Message toSend = userMessage;
-    final String? pending = _pendingDeviceContextSituation;
-    if (pending != null) {
+    final String? pendingSituation = _pendingDeviceContextSituation;
+    if (pendingSituation != null) {
       _pendingDeviceContextSituation = null;
-      toSend = userMessage.copyWith(
-        text:
-            '[Device context refresh — offline estimates; use for this reply]\n'
-            '$pending\n\n---\n\n${userMessage.text}',
-        isUser: true,
+      toSend = _prependUserContext(
+        toSend,
+        '[Device context refresh — offline estimates; use for this reply]\n'
+        '$pendingSituation',
       );
     }
+    final String? pendingChecklist = _pendingChecklistSnapshot;
+    if (pendingChecklist != null) {
+      _pendingChecklistSnapshot = null;
+      toSend = _prependUserContext(toSend, pendingChecklist);
+    }
     await chat.addQuery(toSend);
+
+    if (_usesNativeChecklistTools && onChecklistToolCall != null) {
+      yield* chat.generateChatResponseWithTools(
+        maxToolTurns: _kMaxChecklistToolTurns,
+        onToolCall: (FunctionCallResponse call) async {
+          if (call.name != kUpdateChecklistToolName) {
+            return <String, dynamic>{'error': 'unknown tool ${call.name}'};
+          }
+          final List<Map<String, dynamic>> ops = checklistOpsFromToolArgs(
+            call.args,
+          );
+          final Map<String, dynamic> response = await onChecklistToolCall(
+            call,
+            ops,
+          );
+          final int applied = response['applied'] as int? ?? ops.length;
+          final int added = response['added'] as int? ?? 0;
+          _lastChecklistTurnResult = ChecklistTurnResult(
+            appliedCount: applied,
+            addedTodoCount: added,
+          );
+          return response;
+        },
+      );
+      return;
+    }
+
     yield* chat.generateChatResponseAsync();
+  }
+
+  Message _prependUserContext(Message userMessage, String prefix) {
+    return userMessage.copyWith(
+      text: '$prefix\n\n---\n\n${userMessage.text}',
+      isUser: true,
+    );
   }
 
   Future<void> close() async {
     _pendingDeviceContextSituation = null;
+    _pendingChecklistSnapshot = null;
+    _lastChecklistTurnResult = null;
+    _usesNativeChecklistTools = false;
     _needsSessionReset = false;
     _lastInitSupportImage = null;
     await _chat?.close();
