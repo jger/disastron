@@ -2,6 +2,15 @@
 
 All notable changes will be documented in this file.
 
+## [1.8.1](https://github.com/jger/disastron/compare/v1.8.0...v1.8.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* **release:** change directory to dist before computing apk checksum ([437fa1c](https://github.com/jger/disastron/commit/437fa1c396ac2dc7ff62d7742205737885e9f3de))
+* **release:** fix yaml indentation for key properties in release workflow ([4a593d9](https://github.com/jger/disastron/commit/4a593d98d41f1640754fe787991cc2622492db64))
+* resolve invalid secrets syntax in release workflow and support sha256sum ([9e7ba5c](https://github.com/jger/disastron/commit/9e7ba5c194229fc26a371886df1f10c7113949aa))
+
 # [1.8.0](https://github.com/jger/disastron/compare/v1.7.0...v1.8.0) (2026-10-19)
 
 
