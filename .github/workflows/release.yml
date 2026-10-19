@@ -5,6 +5,11 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -16,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GH_TOKEN || github.token }}
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -48,20 +53,24 @@ jobs:
         run: flutter test
 
       - name: Restore Android keystore
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.jks
-          cat > android/key.properties <<EOF
-          storeFile=release.jks
-          storePassword=$ANDROID_STORE_PASSWORD
-          keyAlias=$ANDROID_KEY_ALIAS
-          keyPassword=$ANDROID_KEY_PASSWORD
-          EOF
+          if [ -n "${ANDROID_KEYSTORE_BASE64:-}" ]; then
+            echo "Restoring Android release keystore..."
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.jks
+            cat > android/key.properties <<EOF
+storeFile=release.jks
+storePassword=$ANDROID_STORE_PASSWORD
+keyAlias=$ANDROID_KEY_ALIAS
+keyPassword=$ANDROID_KEY_PASSWORD
+EOF
+          else
+            echo "No ANDROID_KEYSTORE_BASE64 secret provided; proceeding with debug signing."
+          fi
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -74,8 +83,10 @@ jobs:
       - name: Run semantic-release
         run: npx semantic-release
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
 
       - name: Clean up Android keystore
         if: always()
         run: rm -f android/app/release.jks android/key.properties
+
