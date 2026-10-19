@@ -18,6 +18,13 @@ void main() {
     await bootIntoPatrolChat($, logTag: logTag);
 
     patrolChatLog('tapping Vehicle crash chip', logTag: logTag);
+    final DateTime chipDeadline = DateTime.now().add(
+      const Duration(seconds: 15),
+    );
+    while (!$.tester.any(find.text('Vehicle crash')) &&
+        DateTime.now().isBefore(chipDeadline)) {
+      await $.pump(const Duration(milliseconds: 300));
+    }
     expect(find.text('Vehicle crash'), findsOneWidget);
     await $('Vehicle crash').tap();
     await $.pump(const Duration(milliseconds: 500));

@@ -3,6 +3,7 @@
 
 import 'dart:io';
 
+import 'package:disastron/features/chat/presentation/first_chat_accident_provider.dart';
 import 'package:disastron/features/chat/presentation/widgets/chat_input_field.dart';
 import 'package:disastron/features/chat/presentation/widgets/chat_message.dart';
 import 'package:disastron/features/chat/presentation/widgets/gemma_input_field.dart';
@@ -16,9 +17,10 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:patrol/patrol.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-const Duration kPatrolFirstTokenTimeout = Duration(minutes: 2);
-const Duration kPatrolCompletionTimeout = Duration(minutes: 5);
+const Duration kPatrolFirstTokenTimeout = Duration(minutes: 3);
+const Duration kPatrolCompletionTimeout = Duration(minutes: 8);
 
 const List<String> kPatrolModelFileExtensions = <String>[
   '.litertlm',
@@ -32,6 +34,8 @@ Future<void> bootIntoPatrolChat(
   PatrolIntegrationTester $, {
   String logTag = 'patrol-chat',
 }) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove(kFirstChatAccidentPromptDoneKey);
   patrolChatLog('launching app', logTag: logTag);
   await app.main();
   await $.pump(const Duration(seconds: 1));

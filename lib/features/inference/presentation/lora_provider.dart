@@ -20,15 +20,19 @@ Future<LoraRegistrySnapshot> loraRegistrySnapshot(Ref ref) async {
 /// Used by GemmaLocalService to pass `loraPath` to `model.createChat()`.
 @Riverpod(keepAlive: true)
 Future<String?> activeLoraPath(Ref ref, String modelEntryId) async {
-  final LoraRegistrySnapshot snap = await ref.watch(
-    loraRegistrySnapshotProvider.future,
-  );
-  final InstalledLoraEntry? active = snap.activeLoraForModel(modelEntryId);
-  if (active == null) return null;
-  return _resolveLoraFilePath(active);
+  ref.watch(loraRegistrySnapshotProvider);
+  return resolveActiveLoraPath(modelEntryId);
 }
 
-Future<String> _resolveLoraFilePath(InstalledLoraEntry entry) async {
+Future<String?> resolveActiveLoraPath(String modelEntryId) async {
+  final LoraRegistryStore store = LoraRegistryStore();
+  final LoraRegistrySnapshot snap = await store.readSnapshot();
+  final InstalledLoraEntry? active = snap.activeLoraForModel(modelEntryId);
+  if (active == null) return null;
+  return resolveLoraFilePath(active);
+}
+
+Future<String> resolveLoraFilePath(InstalledLoraEntry entry) async {
   if (entry.importedFromPicker) return entry.sourceUrlOrPath;
   final String dir = (await getApplicationDocumentsDirectory()).path;
   return p.join(dir, basenameFromStored(entry.sourceUrlOrPath));

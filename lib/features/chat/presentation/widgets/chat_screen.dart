@@ -34,6 +34,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _chatReady = false;
   String? _initError;
   bool _showWarningBanner = true;
+  bool _initInFlight = false;
 
   /// Effective image attach support after init (native engine may refuse vision).
   bool _runtimeImageSupportEnabled = false;
@@ -96,6 +97,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       '$phase (+${sw.elapsedMilliseconds}ms)',
       name: 'disastron.chat_init',
     );
+    debugPrint('[chat_init] $phase (+${sw.elapsedMilliseconds}ms)');
   }
 
   /// When user switches back to Chat, refresh dashboard samples and attach
@@ -206,15 +208,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _ensureChatReady({required bool reloadInferenceWeights}) async {
-    if (!FlutterEdgeAi.hasActiveModel()) {
+    if (!FlutterEdgeAi.hasActiveModel() || _initInFlight || _chatReady) {
       return;
     }
+    _initInFlight = true;
     final Stopwatch sw = Stopwatch()..start();
     _logChatInit('start', sw);
     try {
-      final ModelRegistrySnapshot registry = await ref.read(
-        modelRegistrySnapshotProvider.future,
-      );
+      final ModelRegistryStore store = ModelRegistryStore();
+      await store.migrateFromLegacyIfNeeded();
+      final ModelRegistrySnapshot registry = await store.readSnapshot();
       _logChatInit('registry', sw);
       final bool nativeChecklist = _nativeChecklistForRegistry(registry);
       final bool useCtx = ref.read(useDisastronContextProvider);
@@ -229,15 +232,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final String? activeEntryId = registry.activeEntryId;
       String? loraPath;
       if (activeEntryId != null) {
-        loraPath = await ref.read(activeLoraPathProvider(activeEntryId).future);
+        loraPath = await resolveActiveLoraPath(activeEntryId);
       }
+      _logChatInit('lora ($loraPath)', sw);
 
-      Future<void> initTextOnly() => _gemma.init(
-        systemInstruction: system,
-        reloadInferenceWeights: reloadInferenceWeights,
-        loraPath: loraPath,
-        useNativeChecklistTools: nativeChecklist,
-      );
+      Future<void> initTextOnly() => _gemma
+          .init(
+            systemInstruction: system,
+            reloadInferenceWeights: reloadInferenceWeights,
+            loraPath: loraPath,
+            useNativeChecklistTools: nativeChecklist,
+          )
+          .timeout(const Duration(minutes: 2));
 
       if (visionRequested) {
         try {
@@ -289,6 +295,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         });
         ref.read(chatResetProvider.notifier).state = null;
       }
+    } finally {
+      _initInFlight = false;
     }
   }
 
@@ -442,6 +450,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           setState(() {
             _showWarningBanner = true;
           });
+          ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
+          if (!_chatReady && !_initInFlight) {
+            unawaited(_ensureChatReady(reloadInferenceWeights: false));
+          }
         }
         unawaited(
           _scheduleDeviceContextInjectIfEnteredChatTab(
@@ -454,7 +466,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         LocalGemmaModelUi? previous,
         LocalGemmaModelUi next,
       ) {
-        if (next.isReady && !_chatReady) {
+        if (next.isReady && !_chatReady && !_initInFlight) {
           unawaited(_ensureChatReady(reloadInferenceWeights: false));
         }
         if (!next.isReady && _chatReady) {
@@ -477,6 +489,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       });
 
     final LocalGemmaModelUi modelUi = ref.watch(localGemmaModelProvider);
+
+    if (modelUi.isReady &&
+        !_chatReady &&
+        !_initInFlight &&
+        _initError == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_chatReady && !_initInFlight && _initError == null) {
+          unawaited(_ensureChatReady(reloadInferenceWeights: false));
+        }
+      });
+    }
     final AsyncValue<bool> accidentDone = ref.watch(
       firstChatAccidentPromptProvider,
     );

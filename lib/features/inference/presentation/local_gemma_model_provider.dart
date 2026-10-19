@@ -674,9 +674,8 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   }
 
   Future<void> switchToRegistryEntry(String entryId) async {
-    final ModelRegistrySnapshot snap = await ref.read(
-      modelRegistrySnapshotProvider.future,
-    );
+    final ModelRegistryStore store = ModelRegistryStore();
+    final ModelRegistrySnapshot snap = await store.readSnapshot();
     final InstalledModelEntry? entry = snap.entryById(entryId);
 
     final int epoch = _beginTrackedInstall(
