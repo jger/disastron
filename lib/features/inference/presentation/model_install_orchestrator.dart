@@ -3,6 +3,7 @@ import 'dart:io' show File;
 /// Coordinates inference installs (network, file, preset): maps native errors to domain errors for UI.
 import 'package:disastron/features/inference/data/lora_registry_store.dart';
 import 'package:disastron/features/inference/data/model_registry_store.dart';
+import 'package:disastron/features/inference/data/web_opfs_url_restore.dart';
 import 'package:disastron/features/inference/domain/inference_model_descriptor.dart';
 import 'package:disastron/features/inference/domain/inference_path_utils.dart';
 import 'package:disastron/features/inference/domain/model_install_domain_error.dart';
@@ -163,7 +164,37 @@ class ModelInstallOrchestrator {
     void Function()? onRestoreBegins,
   }) async {
     if (kIsWeb) {
-      return const ColdStartRestoreResult.skipped();
+      await restoreWebOpfsModelUrlsFromRegistry(_registry);
+      if (FlutterEdgeAi.hasActiveModel()) {
+        return const ColdStartRestoreResult.skipped();
+      }
+      await _registry.migrateFromLegacyIfNeeded();
+      final ModelRegistrySnapshot webSnap = await _registry.readSnapshot();
+      final String? webActiveId = webSnap.activeEntryId;
+      if (webActiveId == null) {
+        return const ColdStartRestoreResult.skipped();
+      }
+      final InstalledModelEntry? webEntry = webSnap.entryById(webActiveId);
+      if (webEntry == null) {
+        return const ColdStartRestoreResult.skipped();
+      }
+      final String filename = basenameFromStored(webEntry.sourceUrlOrPath);
+      if (!await isWebOpfsModelCached(filename)) {
+        return const ColdStartRestoreResult.skipped();
+      }
+      registerWebOpfsUrl(filename);
+      onRestoreBegins?.call();
+      try {
+        await installFromNetwork(
+          webEntry.sourceUrlOrPath,
+          modelType: webEntry.modelType,
+          fileType: webEntry.fileType,
+          onProgress: onProgress,
+        );
+        return const ColdStartRestoreResult.success();
+      } on Object catch (e) {
+        return ColdStartRestoreResult.failure(mapModelInstallException(e));
+      }
     }
     if (FlutterEdgeAi.hasActiveModel()) {
       return const ColdStartRestoreResult.skipped();

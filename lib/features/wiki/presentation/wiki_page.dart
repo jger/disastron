@@ -14,6 +14,7 @@ import 'package:disastron/features/wiki/presentation/wiki_sources_provider.dart'
 import 'package:disastron/router/routes.gr.dart';
 import 'package:disastron/shared/widgets/genui_card.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -70,19 +71,30 @@ class WikiPage extends HookConsumerWidget {
               ],
             ),
             const SizedBox(height: 16),
-            _buildSegmentedControl(context, ref, selectedTab),
-            const SizedBox(height: 16),
-            if (selectedTab == 0)
-              ..._buildBundledSection(context, ref, pack, searchQuery)
-            else
-              ..._buildWebSection(
-                context,
-                ref,
-                sourcesAsync,
-                downloadsAsync,
-                currentLocale,
-                searchQuery,
+            if (kIsWeb) ...<Widget>[
+              ..._buildBundledSection(context, ref, pack, searchQuery),
+              const SizedBox(height: 16),
+              Text(
+                'wiki_web_offline_mobile_only'.tr(),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
+            ] else ...<Widget>[
+              _buildSegmentedControl(context, ref, selectedTab),
+              const SizedBox(height: 16),
+              if (selectedTab == 0)
+                ..._buildBundledSection(context, ref, pack, searchQuery)
+              else
+                ..._buildWebSection(
+                  context,
+                  ref,
+                  sourcesAsync,
+                  downloadsAsync,
+                  currentLocale,
+                  searchQuery,
+                ),
+            ],
           ],
         );
       },
@@ -528,6 +540,9 @@ class WikiPage extends HookConsumerWidget {
     WikiSource source,
     WikiDownloadState dlState,
   ) {
+    if (kIsWeb) {
+      return const SizedBox.shrink();
+    }
     switch (dlState.status) {
       case WikiDownloadStatus.notDownloaded:
       case WikiDownloadStatus.failed:
@@ -592,9 +607,14 @@ class WikiPage extends HookConsumerWidget {
                     ),
                   );
                   if (ok ?? false) {
-                    await ref
+                    final bool deleted = await ref
                         .read(wikiDownloadProvider.notifier)
                         .deleteDownloadedPage(source);
+                    if (!deleted && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('wiki_delete_failed'.tr())),
+                      );
+                    }
                   }
                 }
               },

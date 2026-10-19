@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:disastron/features/chat/data/gemma_service.dart';
 import 'package:disastron/features/chat/presentation/chat_handlers.dart';
 import 'package:disastron/features/chat/presentation/widgets/chat_message.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
@@ -11,12 +12,18 @@ class GemmaInputField extends StatefulWidget {
     required this.userMessage,
     required this.streamHandled,
     required this.gemmaService,
+    this.onChecklistToolCall,
     super.key,
   });
 
   final Message userMessage;
   final GemmaLocalService gemmaService;
   final AssistantMessageHandler streamHandled;
+  final Future<Map<String, dynamic>> Function(
+    FunctionCallResponse call,
+    List<Map<String, dynamic>> ops,
+  )?
+  onChecklistToolCall;
 
   @override
   GemmaInputFieldState createState() => GemmaInputFieldState();
@@ -26,6 +33,7 @@ class GemmaInputFieldState extends State<GemmaInputField> {
   StreamSubscription<ModelResponse>? _subscription;
   Message _message = Message.text(text: '');
   bool _isGenerating = false;
+  bool _updatingChecklist = false;
 
   @override
   void initState() {
@@ -34,13 +42,22 @@ class GemmaInputFieldState extends State<GemmaInputField> {
   }
 
   Future<void> _processMessages() async {
-    setState(() => _isGenerating = true);
+    setState(() {
+      _isGenerating = true;
+      _updatingChecklist =
+          widget.gemmaService.usesNativeChecklistTools &&
+          widget.onChecklistToolCall != null;
+    });
     _subscription = widget.gemmaService
-        .processMessageAsync(widget.userMessage)
+        .processMessageAsync(
+          widget.userMessage,
+          onChecklistToolCall: widget.onChecklistToolCall,
+        )
         .listen(
           (ModelResponse response) {
             if (response is TextResponse) {
               setState(() {
+                _updatingChecklist = false;
                 _message = Message.text(
                   text: '${_message.text}${response.token}',
                 );
@@ -49,7 +66,10 @@ class GemmaInputFieldState extends State<GemmaInputField> {
           },
           onDone: () async {
             if (mounted) {
-              setState(() => _isGenerating = false);
+              setState(() {
+                _isGenerating = false;
+                _updatingChecklist = false;
+              });
             }
             await widget.streamHandled(_message);
           },
@@ -57,6 +77,7 @@ class GemmaInputFieldState extends State<GemmaInputField> {
             if (mounted) {
               setState(() {
                 _isGenerating = false;
+                _updatingChecklist = false;
                 _message = Message.text(text: '${_message.text}\n[Error: $e]');
               });
             }
@@ -100,12 +121,28 @@ class GemmaInputFieldState extends State<GemmaInputField> {
     return Stack(
       alignment: Alignment.bottomRight,
       children: <Widget>[
-        SingleChildScrollView(child: ChatMessageWidget(message: _message)),
+        SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              if (_updatingChecklist && _message.text.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    'chat_updating_checklist'.tr(),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                ),
+              ChatMessageWidget(message: _message),
+            ],
+          ),
+        ),
         if (_isGenerating)
           Padding(
             padding: const EdgeInsets.only(bottom: 4, right: 4),
             child: IconButton(
-              tooltip: 'Stop generating',
+              tooltip: 'chat_stop_generating'.tr(),
               icon: Icon(
                 Icons.stop_circle_outlined,
                 size: 28,

@@ -52,7 +52,8 @@ Future<void> _pumpInputFieldOn(
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
   } finally {
     debugDefaultTargetPlatformOverride = null;
   }
@@ -106,10 +107,7 @@ void main() {
       await _pumpInputFieldOn(tester, TargetPlatform.android);
 
       expect(find.byType(Image), findsNothing);
-      expect(
-        find.textContaining('Could not restore the photo'),
-        findsOneWidget,
-      );
+      expect(find.byType(SnackBar), findsOneWidget);
     });
 
     testWidgets('is skipped off Android, where retrieveLostData throws', (

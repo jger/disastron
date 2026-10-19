@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:disastron/core/feedback/app_snackbar.dart';
 import 'package:disastron/features/chat/presentation/chat_handlers.dart';
 import 'package:disastron/features/chat/presentation/widgets/camera_capture_page.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,13 +27,14 @@ class ChatInputFieldState extends State<ChatInputField> {
   final ImagePicker _picker = ImagePicker();
   Uint8List? _pickedImageBytes;
 
-  static const String _unsupportedImageHint =
-      'Image input needs a multimodal model (e.g. Gemma 3n / Gemma 4 preset).';
-
   @override
   void initState() {
     super.initState();
-    unawaited(_restoreLostImage());
+    final bool restoreLostOnAndroid =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+    if (restoreLostOnAndroid) {
+      unawaited(_restoreLostImage());
+    }
   }
 
   @override
@@ -49,18 +51,12 @@ class ChatInputFieldState extends State<ChatInputField> {
   /// file over here instead of returning it from [_pickImage]'s future, which
   /// never completes.
   Future<void> _restoreLostImage() async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
-      return;
-    }
     final LostDataResponse lost = await _picker.retrieveLostData();
     if (lost.isEmpty || !mounted) {
       return;
     }
     if (lost.exception != null) {
-      showAppSnackBar(
-        context,
-        message: 'Could not restore the photo you took. Please try again.',
-      );
+      showAppSnackBar(context, message: 'chat_photo_restore_failed'.tr());
       return;
     }
     final XFile? file = lost.file;
@@ -121,7 +117,7 @@ class ChatInputFieldState extends State<ChatInputField> {
           children: <Widget>[
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Choose from gallery'),
+              title: Text('chat_choose_gallery'.tr()),
               onTap: () {
                 Navigator.pop(ctx);
                 unawaited(_pickImage(ImageSource.gallery));
@@ -129,7 +125,7 @@ class ChatInputFieldState extends State<ChatInputField> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Take a photo'),
+              title: Text('chat_take_photo'.tr()),
               onTap: () {
                 Navigator.pop(ctx);
                 unawaited(_takePhoto());
@@ -189,7 +185,7 @@ class ChatInputFieldState extends State<ChatInputField> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.close, size: 20),
-                          tooltip: 'Remove image',
+                          tooltip: 'chat_remove_image'.tr(),
                           visualDensity: VisualDensity.compact,
                           onPressed: () =>
                               setState(() => _pickedImageBytes = null),
@@ -203,8 +199,8 @@ class ChatInputFieldState extends State<ChatInputField> {
               children: <Widget>[
                 IconButton(
                   tooltip: widget.isImageSupported
-                      ? 'Attach image'
-                      : _unsupportedImageHint,
+                      ? 'chat_attach_image'.tr()
+                      : 'chat_attach_multimodal_hint'.tr(),
                   icon: const Icon(Icons.image_outlined),
                   onPressed: widget.isImageSupported
                       ? () => unawaited(_showImageSourceSheet())
@@ -215,8 +211,8 @@ class ChatInputFieldState extends State<ChatInputField> {
                     controller: _textController,
                     onChanged: (_) => setState(() {}),
                     onSubmitted: (_) => _submit(),
-                    decoration: const InputDecoration.collapsed(
-                      hintText: 'Send a message',
+                    decoration: InputDecoration.collapsed(
+                      hintText: 'chat_send_hint'.tr(),
                     ),
                   ),
                 ),

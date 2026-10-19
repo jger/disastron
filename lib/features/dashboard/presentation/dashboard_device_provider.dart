@@ -138,7 +138,12 @@ Future<DashboardBatterySnapshot> dashboardBattery(Ref ref) async {
   // Registered before the first await: if the provider is disposed during the
   // battery reads below, a timer armed afterwards would outlive its Ref and
   // throw when it fired.
-  if (!Platform.environment.containsKey('FLUTTER_TEST')) {
+  if (kIsWeb) {
+    final timer = Timer(const Duration(minutes: 1), () {
+      ref.invalidateSelf();
+    });
+    ref.onDispose(timer.cancel);
+  } else if (!Platform.environment.containsKey('FLUTTER_TEST')) {
     final timer = Timer(const Duration(minutes: 1), () {
       ref.invalidateSelf();
     });

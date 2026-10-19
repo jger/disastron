@@ -37,3 +37,9 @@ jobs:
 
       - name: Run tests
         run: flutter test
+
+      - name: Check feature import boundaries
+        run: dart run tool/check_feature_imports.dart
+
+      - name: Validate wiki packs
+        run: python3 tool/validate_wiki.py

@@ -41,7 +41,7 @@ class LoraManagerSheet extends ConsumerWidget {
     final bool? ok = await showDialog<bool>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
-        title: const Text('Rename LoRA Adapter'),
+        title: Text('lora_rename_title'.tr()),
         content: TextField(
           controller: controller,
           decoration: const InputDecoration(
@@ -57,7 +57,7 @@ class LoraManagerSheet extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Rename'),
+            child: Text('lora_rename'.tr()),
           ),
         ],
       ),
@@ -82,9 +82,9 @@ class LoraManagerSheet extends ConsumerWidget {
     final bool? delete = await showDialog<bool>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
-        title: const Text('Remove LoRA Adapter?'),
+        title: Text('lora_remove_title'.tr()),
         content: Text(
-          'Delete "${entry.displayLabel}"? This removes the adapter and deletes its weight files from storage.',
+          'lora_remove_body'.tr(args: <String>[entry.displayLabel]),
         ),
         actions: <Widget>[
           TextButton(
@@ -97,7 +97,7 @@ class LoraManagerSheet extends ConsumerWidget {
               backgroundColor: Theme.of(context).colorScheme.error,
               foregroundColor: Theme.of(context).colorScheme.onError,
             ),
-            child: const Text('Delete'),
+            child: Text('lora_delete'.tr()),
           ),
         ],
       ),
@@ -157,7 +157,7 @@ class LoraManagerSheet extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            'LoRA Adapters',
+                            'lora_adapters_title'.tr(),
                             style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(fontWeight: FontWeight.bold),
                           ),
@@ -176,7 +176,7 @@ class LoraManagerSheet extends ConsumerWidget {
                       onPressed: () =>
                           LoraAddDialog.show(context, modelEntryId),
                       icon: const Icon(Icons.add_circle_outline),
-                      tooltip: 'Add LoRA Adapter',
+                      tooltip: 'lora_add_tooltip'.tr(),
                     ),
                   ],
                 ),
@@ -190,7 +190,9 @@ class LoraManagerSheet extends ConsumerWidget {
                       const Center(child: CircularProgressIndicator()),
                   error: (Object err, StackTrace? stack) => Padding(
                     padding: const EdgeInsets.all(20),
-                    child: Text('Error loading LoRA registry: $err'),
+                    child: Text(
+                      'lora_registry_error'.tr(args: <String>['$err']),
+                    ),
                   ),
                   data: (LoraRegistrySnapshot snap) {
                     final List<InstalledLoraEntry> modelLoras = snap
@@ -211,13 +213,13 @@ class LoraManagerSheet extends ConsumerWidget {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'No LoRA Adapters',
+                              'lora_none_title'.tr(),
                               style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: 8),
-                            const Text(
-                              'Attach custom LoRA adapters to customize the behavior of this base model.',
+                            Text(
+                              'lora_none_body'.tr(),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -239,7 +241,7 @@ class LoraManagerSheet extends ConsumerWidget {
                                   ? scheme.primary
                                   : scheme.outline,
                             ),
-                            title: const Text('No LoRA (Use Base Model Only)'),
+                            title: Text('lora_use_base_only'.tr()),
                             trailing: isBaseActive
                                 ? Icon(
                                     Icons.check_circle,
@@ -293,7 +295,7 @@ class LoraManagerSheet extends ConsumerWidget {
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete_outline),
-                                tooltip: 'Delete Adapter',
+                                tooltip: 'lora_delete_tooltip'.tr(),
                                 onPressed: () =>
                                     _confirmDelete(context, ref, entry),
                               ),

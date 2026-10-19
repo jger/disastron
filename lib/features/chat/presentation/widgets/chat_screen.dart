@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:typed_data';
 
 import 'package:disastron/features/chat/chat.dart';
 import 'package:disastron/features/chat/data/gemma_service.dart';
 import 'package:disastron/features/chat/domain/chat_dashboard_context.dart';
+import 'package:disastron/features/chat/domain/checklist_tool.dart';
 import 'package:disastron/features/chat/domain/todo_action_parser.dart';
 import 'package:disastron/features/chat/presentation/chat_dashboard_situation_provider.dart';
 import 'package:disastron/features/chat/presentation/chat_handlers.dart';
@@ -13,6 +15,7 @@ import 'package:disastron/features/chat/presentation/widgets/loading_widget.dart
 import 'package:disastron/features/dashboard/dashboard.dart';
 import 'package:disastron/features/home/home.dart';
 import 'package:disastron/features/inference/inference.dart';
+import 'package:disastron/features/todos/todos.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
@@ -31,6 +34,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _chatReady = false;
   String? _initError;
   bool _showWarningBanner = true;
+  bool _initInFlight = false;
+
+  /// Assistant initialization progress (0.0 .. 1.0) and current stage description.
+  double? _initProgress;
+  String? _initStage;
+  Timer? _progressSimTimer;
 
   /// Effective image attach support after init (native engine may refuse vision).
   bool _runtimeImageSupportEnabled = false;
@@ -46,18 +55,102 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _container = ProviderScope.containerOf(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
-      unawaited(_ensureChatReady(reloadInferenceWeights: true));
+      unawaited(_ensureChatReady(reloadInferenceWeights: false));
     });
   }
 
   @override
   void dispose() {
+    _stopSimulatedProgress();
     // Use cached container — ref is unsafe to call after unmount.
     _container.read(chatResetProvider.notifier).state = null;
     unawaited(_gemma.close());
     super.dispose();
   }
 
+  void _updateInitProgress(double progress, {String? stage}) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _initProgress = progress.clamp(0.0, 1.0);
+      if (stage != null) {
+        _initStage = stage;
+      }
+    });
+  }
+
+  void _onGemmaInitStage(GemmaInitStage stage) {
+    if (!mounted) {
+      return;
+    }
+    switch (stage) {
+      case GemmaInitStage.clearingCaches:
+        _updateInitProgress(0.12, stage: 'chat_starting_engine'.tr());
+        _startAsymptoticProgress(from: 0.12, target: 0.20, rate: 0.08);
+      case GemmaInitStage.loadingModelWeights:
+        _updateInitProgress(0.18, stage: 'chat_starting_loading_weights'.tr());
+        // Loading large ~2.5 GB neural network weights into memory.
+        _startAsymptoticProgress(from: 0.18, target: 0.70, rate: 0.035);
+      case GemmaInitStage.allocatingSession:
+        _updateInitProgress(
+          0.72,
+          stage: 'chat_starting_allocating_session'.tr(),
+        );
+        // Allocating KV cache & GPU/NPU runtime context.
+        _startAsymptoticProgress(from: 0.72, target: 0.97, rate: 0.05);
+      case GemmaInitStage.applyingLoraAdapter:
+        _updateInitProgress(0.75, stage: 'chat_starting_loading_lora'.tr());
+        _startAsymptoticProgress(from: 0.75, target: 0.97, rate: 0.05);
+      case GemmaInitStage.ready:
+        _stopSimulatedProgress();
+        _updateInitProgress(1, stage: 'chat_starting_ready'.tr());
+    }
+  }
+
+  void _startAsymptoticProgress({
+    required double from,
+    required double target,
+    double rate = 0.04,
+    Duration tick = const Duration(milliseconds: 250),
+    double minStep = 0.003,
+  }) {
+    _progressSimTimer?.cancel();
+    if ((_initProgress ?? 0) < from) {
+      _updateInitProgress(from);
+    }
+    _progressSimTimer = Timer.periodic(tick, (Timer timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      final double current = _initProgress ?? from;
+      if (current >= target) {
+        // Even if near target, keep advancing very slightly so it never looks frozen.
+        final double crept = (current + minStep * 0.4).clamp(0.0, 0.98);
+        setState(() {
+          _initProgress = crept;
+        });
+        return;
+      }
+      double step = (target - current) * rate;
+      if (step < minStep) {
+        step = minStep;
+      }
+      final double next = (current + step).clamp(0.0, 0.98);
+      setState(() {
+        _initProgress = next;
+      });
+    });
+  }
+
+  void _stopSimulatedProgress() {
+    _progressSimTimer?.cancel();
+    _progressSimTimer = null;
+  }
+
+  /// Refreshes dashboard samples (slow: GPS/geocoding). Use for injecting context
+  /// into the next user turn, not for blocking chat session creation.
   Future<String> _loadFreshSituationString() async {
     ref
       ..invalidate(dashboardLocationProvider)
@@ -68,6 +161,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } on Object catch (e) {
       return formatChatDashboardSituationError(e);
     }
+  }
+
+  /// Cached dashboard snapshot for [GemmaLocalService.init] — must not block
+  /// the chat tab on a full location refresh.
+  Future<String?> _situationForChatInit() async {
+    try {
+      return await ref
+          .read(chatDashboardSituationProvider.future)
+          .timeout(
+            const Duration(seconds: 5),
+            onTimeout: () =>
+                'context_error: dashboard snapshot timed out after 5s',
+          );
+    } on Object catch (e) {
+      return formatChatDashboardSituationError(e);
+    }
+  }
+
+  void _logChatInit(String phase, Stopwatch sw) {
+    developer.log(
+      '$phase (+${sw.elapsedMilliseconds}ms)',
+      name: 'disastron.chat_init',
+    );
+    debugPrint('[chat_init] $phase (+${sw.elapsedMilliseconds}ms)');
   }
 
   /// When user switches back to Chat, refresh dashboard samples and attach
@@ -117,61 +234,138 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           return;
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Image input disabled: vision engine could not start on this '
-              'device. Text chat still works.',
-            ),
-          ),
+          SnackBar(content: Text('chat_vision_disabled_snack'.tr())),
         );
       });
     }
   }
 
-  Future<void> _ensureChatReady({required bool reloadInferenceWeights}) async {
-    if (!FlutterEdgeAi.hasActiveModel()) {
+  bool _nativeChecklistForRegistry(ModelRegistrySnapshot registry) {
+    final String? activeId = registry.activeEntryId;
+    if (activeId == null) {
+      return false;
+    }
+    for (final InstalledModelEntry entry in registry.entries) {
+      if (entry.id == activeId) {
+        return modelSupportsNativeChecklistTools(
+          modelType: entry.modelType,
+          fileType: entry.fileType,
+        );
+      }
+    }
+    return false;
+  }
+
+  Future<void> _injectChecklistSnapshotForNextTurn() async {
+    if (!_gemma.usesNativeChecklistTools) {
       return;
     }
-    try {
-      final bool useCtx = ref.read(useDisastronContextProvider);
-      final String? system;
-      if (useCtx) {
-        final String situation = await _loadFreshSituationString();
-        system = composeDisasterSystemInstruction(situation);
-      } else {
-        system = null;
+    final List<EmergencyTodo> todos = await ref.read(
+      emergencyTodosProvider.future,
+    );
+    _gemma.setChecklistSnapshotForNextUserMessage(
+      formatChecklistSnapshotForUserTurn(todos),
+    );
+  }
+
+  Future<Map<String, dynamic>> _onChecklistToolCall(
+    FunctionCallResponse call,
+    List<Map<String, dynamic>> ops,
+  ) async {
+    int addedTodoCount = 0;
+    for (final Map<String, dynamic> op in ops) {
+      if ((op['op'] as String?) == 'add' &&
+          ((op['title'] as String?)?.trim().isNotEmpty ?? false)) {
+        addedTodoCount++;
       }
-      final ModelRegistrySnapshot registry = await ref.read(
-        modelRegistrySnapshotProvider.future,
+    }
+    if (ops.isNotEmpty) {
+      await ref.read(emergencyTodosProvider.notifier).applyOps(ops);
+      if (addedTodoCount > 0) {
+        ref
+            .read(todoTabBadgeProvider.notifier)
+            .addFromAssistant(addedTodoCount);
+      }
+    }
+    return <String, dynamic>{
+      'status': 'ok',
+      'applied': ops.length,
+      'added': addedTodoCount,
+    };
+  }
+
+  Future<void> _ensureChatReady({required bool reloadInferenceWeights}) async {
+    if (!FlutterEdgeAi.hasActiveModel() || _initInFlight || _chatReady) {
+      return;
+    }
+    _initInFlight = true;
+    _updateInitProgress(0.06, stage: 'chat_starting_reading_config'.tr());
+    final Stopwatch sw = Stopwatch()..start();
+    _logChatInit('start', sw);
+    try {
+      final ModelRegistryStore store = ModelRegistryStore();
+      await store.migrateFromLegacyIfNeeded();
+      final ModelRegistrySnapshot registry = await store.readSnapshot();
+      _logChatInit('registry', sw);
+      final bool nativeChecklist = _nativeChecklistForRegistry(registry);
+      final bool useCtx = ref.read(useDisastronContextProvider);
+      _updateInitProgress(0.12, stage: 'chat_starting_preparing_context'.tr());
+      final String? situation = useCtx ? await _situationForChatInit() : null;
+      _logChatInit('situation', sw);
+      final String system = disasterChatSystemInstruction(
+        nativeChecklist: nativeChecklist,
+        situationBlock: situation,
       );
       final bool visionRequested = activeRegistryEntrySupportsVision(registry);
 
       final String? activeEntryId = registry.activeEntryId;
       String? loraPath;
       if (activeEntryId != null) {
-        loraPath = await ref.read(activeLoraPathProvider(activeEntryId).future);
+        loraPath = await resolveActiveLoraPath(activeEntryId);
       }
+      _logChatInit('lora ($loraPath)', sw);
+
+      Future<void> initTextOnly() => _gemma
+          .init(
+            systemInstruction: system,
+            reloadInferenceWeights: reloadInferenceWeights,
+            loraPath: loraPath,
+            useNativeChecklistTools: nativeChecklist,
+            onStageChanged: _onGemmaInitStage,
+          )
+          .timeout(const Duration(minutes: 2));
 
       if (visionRequested) {
         try {
-          await _gemma.init(
-            systemInstruction: system,
-            reloadInferenceWeights: reloadInferenceWeights,
-            supportImage: true,
-            maxNumImages: 1,
-            loraPath: loraPath,
-          );
+          await _gemma
+              .init(
+                systemInstruction: system,
+                reloadInferenceWeights: reloadInferenceWeights,
+                supportImage: true,
+                maxNumImages: 1,
+                loraPath: loraPath,
+                useNativeChecklistTools: nativeChecklist,
+                onStageChanged: _onGemmaInitStage,
+              )
+              .timeout(const Duration(minutes: 2));
+          _logChatInit('gemma init (vision)', sw);
+          _stopSimulatedProgress();
+          _updateInitProgress(1, stage: 'chat_starting_ready'.tr());
           _markChatReady(
             runtimeVisionEnabled: true,
             showVisionFallbackSnack: false,
           );
           return;
-        } on Object catch (_) {
+        } on Object catch (e) {
+          _logChatInit('vision init failed ($e), text-only fallback', sw);
           await _gemma.close();
           if (!mounted) {
             return;
           }
-          await _gemma.init(systemInstruction: system, loraPath: loraPath);
+          await initTextOnly();
+          _logChatInit('gemma init (text fallback)', sw);
+          _stopSimulatedProgress();
+          _updateInitProgress(1, stage: 'chat_starting_ready'.tr());
           _markChatReady(
             runtimeVisionEnabled: false,
             showVisionFallbackSnack: true,
@@ -180,16 +374,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
       }
 
-      await _gemma.init(
-        systemInstruction: system,
-        reloadInferenceWeights: reloadInferenceWeights,
-        loraPath: loraPath,
-      );
+      await initTextOnly();
+      _logChatInit('gemma init (text)', sw);
+      _stopSimulatedProgress();
+      _updateInitProgress(1, stage: 'chat_starting_ready'.tr());
       _markChatReady(
         runtimeVisionEnabled: false,
         showVisionFallbackSnack: false,
       );
     } on Object catch (e) {
+      _stopSimulatedProgress();
+      _logChatInit('failed: $e', sw);
       if (mounted) {
         setState(() {
           _chatReady = false;
@@ -198,27 +393,60 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         });
         ref.read(chatResetProvider.notifier).state = null;
       }
+    } finally {
+      _stopSimulatedProgress();
+      _initInFlight = false;
     }
   }
 
   Future<void> _onAssistantMessage(Message message) async {
-    final TodoApplyResult result = await stripTodosAndApply(ref, message.text);
+    int appliedCount = 0;
+    int addedTodoCount = 0;
+    String displayText = message.text;
+    if (_gemma.usesNativeChecklistTools) {
+      final ChecklistTurnResult? toolResult = _gemma
+          .takeLastChecklistTurnResult();
+      if (toolResult != null && toolResult.appliedCount > 0) {
+        appliedCount = toolResult.appliedCount;
+        addedTodoCount = toolResult.addedTodoCount;
+      } else {
+        final TodoApplyResult legacy = await stripTodosAndApply(
+          ref,
+          message.text,
+        );
+        displayText = legacy.displayText;
+        appliedCount = legacy.appliedCount;
+        addedTodoCount = legacy.addedTodoCount;
+      }
+    } else {
+      final TodoApplyResult result = await stripTodosAndApply(
+        ref,
+        message.text,
+      );
+      displayText = result.displayText;
+      appliedCount = result.appliedCount;
+      addedTodoCount = result.addedTodoCount;
+    }
     if (!mounted) {
       return;
     }
-    final String trimmedDisplay = result.displayText.trim();
+    final String trimmedDisplay = displayText.trim();
     final String assistantBody = trimmedDisplay.isEmpty
-        ? (result.appliedCount > 0 ? '(Checklist updated.)' : '(No response)')
+        ? (appliedCount > 0
+              ? 'chat_checklist_updated_short'.tr()
+              : 'chat_no_response'.tr())
         : trimmedDisplay;
     setState(() {
       _messages.add(Message.text(text: assistantBody));
-      if (result.appliedCount > 0) {
-        final String hint = result.addedTodoCount > 0
-            ? ' ${result.addedTodoCount} new on Todos (tab badge).'
-            : ' Open the Todos tab to review.';
+      if (appliedCount > 0) {
+        final String hint = addedTodoCount > 0
+            ? 'chat_checklist_hint_badge'.tr()
+            : 'chat_checklist_hint_review'.tr();
         _messages.add(
           Message(
-            text: 'Checklist updated (${result.appliedCount} action(s)).$hint',
+            text: 'chat_checklist_updated'.tr(
+              args: <String>['$appliedCount', hint],
+            ),
             type: MessageType.systemInfo,
           ),
         );
@@ -230,7 +458,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!draft.isNotEmpty) {
       return;
     }
-    unawaited(ref.read(firstChatAccidentPromptProvider.notifier).markDone());
+    unawaited(_submitHumanMessage(draft));
+  }
+
+  Future<void> _submitHumanMessage(ChatMessageDraft draft) async {
+    await _injectChecklistSnapshotForNextTurn();
+    await ref.read(firstChatAccidentPromptProvider.notifier).markDone();
     final String trimmed = draft.text.trim();
     final Uint8List? img = draft.imageBytes;
     final Message userMsg;
@@ -241,13 +474,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } else {
       userMsg = Message.text(text: trimmed, isUser: true);
     }
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _messages.add(userMsg);
     });
   }
 
   void _onAccidentChip(AccidentChipOption option) {
-    unawaited(ref.read(firstChatAccidentPromptProvider.notifier).markDone());
+    unawaited(_submitAccidentChip(option));
+  }
+
+  Future<void> _submitAccidentChip(AccidentChipOption option) async {
+    await _injectChecklistSnapshotForNextTurn();
+    await ref.read(firstChatAccidentPromptProvider.notifier).markDone();
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _messages.add(Message.text(text: option.prompt, isUser: true));
     });
@@ -257,19 +501,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final bool? ok = await showDialog<bool>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
-        title: const Text('Reset chat?'),
-        content: const Text(
-          'All messages in this session will be cleared and the first-run '
-          'quick actions will appear again.',
-        ),
+        title: Text('chat_reset_title'.tr()),
+        content: Text('chat_reset_body'.tr()),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Reset'),
+            child: Text('reset'.tr()),
           ),
         ],
       ),
@@ -308,6 +549,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           setState(() {
             _showWarningBanner = true;
           });
+          ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
+          if (!_chatReady && !_initInFlight) {
+            unawaited(_ensureChatReady(reloadInferenceWeights: false));
+          }
         }
         unawaited(
           _scheduleDeviceContextInjectIfEnteredChatTab(
@@ -320,8 +565,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         LocalGemmaModelUi? previous,
         LocalGemmaModelUi next,
       ) {
-        if (next.isReady && !_chatReady) {
-          unawaited(_ensureChatReady(reloadInferenceWeights: true));
+        if (next.isReady && !_chatReady && !_initInFlight) {
+          unawaited(_ensureChatReady(reloadInferenceWeights: false));
         }
         if (!next.isReady && _chatReady) {
           unawaited(_gemma.close());
@@ -343,6 +588,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       });
 
     final LocalGemmaModelUi modelUi = ref.watch(localGemmaModelProvider);
+
+    if (modelUi.isReady &&
+        !_chatReady &&
+        !_initInFlight &&
+        _initError == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_chatReady && !_initInFlight && _initError == null) {
+          unawaited(_ensureChatReady(reloadInferenceWeights: false));
+        }
+      });
+    }
     final AsyncValue<bool> accidentDone = ref.watch(
       firstChatAccidentPromptProvider,
     );
@@ -363,18 +619,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             _NoModelBody(
               onRefresh: () {
                 ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
-                unawaited(_ensureChatReady(reloadInferenceWeights: true));
+                unawaited(_ensureChatReady(reloadInferenceWeights: false));
               },
             )
           else if (_initError != null)
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: SelectableText('Chat init failed: $_initError'),
+                child: SelectableText(
+                  'chat_init_failed'.tr(args: <String>['$_initError']),
+                ),
               ),
             )
           else if (!_chatReady)
-            const LoadingWidget(message: 'Starting offline assistant…')
+            LoadingWidget(
+              message: 'chat_starting_assistant'.tr(),
+              progress: _initProgress,
+              stage: _initStage,
+              hint: 'chat_starting_offline_badge'.tr(),
+            )
           else
             Column(
               children: <Widget>[
@@ -395,6 +658,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     humanHandler: _onHumanMessage,
                     messages: _messages,
                     isImageSupported: _runtimeImageSupportEnabled,
+                    onChecklistToolCall: _gemma.usesNativeChecklistTools
+                        ? _onChecklistToolCall
+                        : null,
                   ),
                 ),
               ],
@@ -419,15 +685,14 @@ class _NoModelBody extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'No on-device model yet. Open the Dashboard tab, then import a model file '
-              'or download one when you have a network connection.',
+              'chat_no_model_body'.tr(),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: onRefresh,
-              child: const Text('Check again'),
+              child: Text('chat_check_again'.tr()),
             ),
           ],
         ),

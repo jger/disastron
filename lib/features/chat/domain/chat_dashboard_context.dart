@@ -1,4 +1,5 @@
 import 'package:disastron/features/chat/data/gemma_service.dart';
+import 'package:disastron/features/chat/domain/checklist_tool.dart';
 import 'package:disastron/features/dashboard/dashboard.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -92,11 +93,40 @@ String formatChatDashboardSituationError(Object error) {
   return 'context_error: $error';
 }
 
+/// System instruction for [GemmaLocalService.init], with or without dashboard
+/// context and native vs legacy checklist wiring.
+String disasterChatSystemInstruction({
+  required bool nativeChecklist,
+  String? situationBlock,
+}) {
+  if (situationBlock != null) {
+    return composeDisasterSystemInstruction(
+      situationBlock,
+      includeLegacyTodosBlock: !nativeChecklist,
+    );
+  }
+  if (nativeChecklist) {
+    return '${kDisasterSystemInstructionBase.trim()}\n\n'
+        '${kNativeChecklistToolSystemInstruction.trim()}';
+  }
+  return kDisasterSystemInstruction.trim();
+}
+
 /// Full system instruction: static disaster prompt + structured device context.
-String composeDisasterSystemInstruction(String situationBlock) {
+///
+/// When [includeLegacyTodosBlock] is false (Gemma 4 native `update_checklist`
+/// tool), the `[[TODOS]]` JSON instructions are omitted.
+String composeDisasterSystemInstruction(
+  String situationBlock, {
+  bool includeLegacyTodosBlock = true,
+}) {
   final String trimmed = situationBlock.trim();
   final String block = trimmed.isEmpty ? 'context_error: empty' : trimmed;
-  return '${kDisasterSystemInstruction.trim()}\n\n'
+  final String base = includeLegacyTodosBlock
+      ? kDisasterSystemInstruction.trim()
+      : '${kDisasterSystemInstructionBase.trim()}\n\n'
+            '${kNativeChecklistToolSystemInstruction.trim()}';
+  return '$base\n\n'
       '---\n'
       'Current device context (sampled when Chat was opened; offline estimates, '
       'not live weather):\n'

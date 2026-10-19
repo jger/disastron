@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2024-2026 Jannis Gerardis
 
+import 'dart:async';
+
 import 'package:disastron/features/chat/data/chat_runtime_gateway.dart';
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 
@@ -16,7 +18,18 @@ class FakeInferenceChat extends InferenceChat {
   /// Replayed by [generateChatResponseAsync].
   List<ModelResponse> scriptedResponses = <ModelResponse>[];
 
+  /// When set, [generateChatResponseWithTools] invokes this then appends
+  /// [scriptedResponsesAfterTool].
+  Future<Map<String, dynamic>> Function(FunctionCallResponse call)?
+  onToolCallScript;
+
+  List<ModelResponse> scriptedResponsesAfterTool = <ModelResponse>[];
+
   bool closed = false;
+
+  int clearHistoryCallCount = 0;
+
+  List<Message>? lastClearHistoryReplay;
 
   @override
   Future<void> addQuery(Message message) async => queries.add(message);
@@ -26,12 +39,50 @@ class FakeInferenceChat extends InferenceChat {
       Stream<ModelResponse>.fromIterable(scriptedResponses);
 
   @override
+  Stream<ModelResponse> generateChatResponseWithTools({
+    required FutureOr<Map<String, dynamic>> Function(FunctionCallResponse call)
+    onToolCall,
+    int maxToolTurns = 8,
+    bool Function()? isCancelled,
+    void Function()? onMaxToolTurns,
+  }) async* {
+    for (final ModelResponse r in scriptedResponses) {
+      if (r is FunctionCallResponse) {
+        await onToolCall(r);
+        yield* Stream<ModelResponse>.fromIterable(scriptedResponsesAfterTool);
+        return;
+      }
+      yield r;
+    }
+    if (onToolCallScript != null) {
+      const FunctionCallResponse synthetic = FunctionCallResponse(
+        name: 'update_checklist',
+        args: <String, dynamic>{
+          'ops': <Map<String, dynamic>>[
+            <String, dynamic>{'op': 'add', 'title': 'test'},
+          ],
+        },
+      );
+      await onToolCall(synthetic);
+      yield* Stream<ModelResponse>.fromIterable(scriptedResponsesAfterTool);
+    }
+  }
+
+  @override
+  Future<void> clearHistory({List<Message>? replayHistory}) async {
+    clearHistoryCallCount++;
+    lastClearHistoryReplay = replayHistory;
+  }
+
+  @override
   Future<void> close() async => closed = true;
 }
 
 /// Stand-in for [InferenceModel]. Overrides [createChat] so the real one —
 /// which builds an [InferenceChat] and opens a session — is never reached.
 class FakeInferenceModel extends InferenceModel {
+  FakeInferenceModel({this.fileType = ModelFileType.litertlm});
+
   /// Arguments of every [createChat] call, in order.
   final List<
     ({
@@ -39,6 +90,10 @@ class FakeInferenceModel extends InferenceModel {
       bool? supportImage,
       String? loraPath,
       ModelType? modelType,
+      List<Tool> tools,
+      bool? supportsFunctionCalls,
+      bool enableThinking,
+      int? maxOutputTokens,
     })
   >
   createChatCalls =
@@ -48,6 +103,10 @@ class FakeInferenceModel extends InferenceModel {
           bool? supportImage,
           String? loraPath,
           ModelType? modelType,
+          List<Tool> tools,
+          bool? supportsFunctionCalls,
+          bool enableThinking,
+          int? maxOutputTokens,
         })
       >[];
 
@@ -59,13 +118,13 @@ class FakeInferenceModel extends InferenceModel {
   int closeCount = 0;
 
   @override
+  final ModelFileType fileType;
+
+  @override
   InferenceModelSession? get session => null;
 
   @override
   int get maxTokens => 2048;
-
-  @override
-  ModelFileType get fileType => ModelFileType.task;
 
   @override
   PreferredBackend? get activeBackend => null;
@@ -115,6 +174,10 @@ class FakeInferenceModel extends InferenceModel {
       supportImage: supportImage,
       loraPath: loraPath,
       modelType: modelType,
+      tools: tools,
+      supportsFunctionCalls: supportsFunctionCalls,
+      enableThinking: enableThinking,
+      maxOutputTokens: maxOutputTokens,
     ));
     final FakeInferenceChat created = FakeInferenceChat();
     chats.add(created);
@@ -156,6 +219,8 @@ class FakeChatRuntimeGateway implements ChatRuntimeGateway {
         })
       >[];
 
+  ModelFileType fakeFileType = ModelFileType.litertlm;
+
   @override
   Future<InferenceModel> getActiveModel({
     required int maxTokens,
@@ -169,7 +234,9 @@ class FakeChatRuntimeGateway implements ChatRuntimeGateway {
       maxNumImages: maxNumImages,
       maxConcurrentSessions: maxConcurrentSessions,
     ));
-    final FakeInferenceModel created = FakeInferenceModel();
+    final FakeInferenceModel created = FakeInferenceModel(
+      fileType: fakeFileType,
+    );
     models.add(created);
     return created;
   }

@@ -30,7 +30,7 @@ class DashboardStatusCard extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Text(
-            'Status error: $e',
+            'dashboard_status_error'.tr(args: <String>['$e']),
             style: Theme.of(context).textTheme.bodyMedium
                 ?.copyWith(color: Theme.of(context).colorScheme.error),
           ),
@@ -98,7 +98,7 @@ class _DashboardStatusExpansionTile extends StatelessWidget {
           ],
         ),
         subtitle: Text(
-          'Tap for device details and conditions',
+          'dashboard_status_tap'.tr(),
           style: Theme.of(context).textTheme.labelSmall
               ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
@@ -111,7 +111,7 @@ class _DashboardStatusExpansionTile extends StatelessWidget {
                 _infoRow(
                   context,
                   Icons.battery_std,
-                  'Battery',
+                  'dashboard_battery'.tr(),
                   snapshot.batteryPercent != null
                       ? '${snapshot.batteryPercent}% (${_localizeBatteryState(snapshot.batteryState)})'
                       : '—',
@@ -120,14 +120,14 @@ class _DashboardStatusExpansionTile extends StatelessWidget {
                 _infoRow(
                   context,
                   Icons.place_outlined,
-                  'Place',
+                  'dashboard_place'.tr(),
                   placeLong.isEmpty ? '—' : placeLong,
                 ),
                 const SizedBox(height: 8),
                 _infoRow(
                   context,
                   Icons.my_location,
-                  'Coordinates',
+                  'dashboard_coordinates'.tr(),
                   snapshot.hasFix
                       ? '${snapshot.latitude!.toStringAsFixed(5)}, ${snapshot.longitude!.toStringAsFixed(5)}'
                       : '—',
@@ -136,7 +136,7 @@ class _DashboardStatusExpansionTile extends StatelessWidget {
                 _infoRow(
                   context,
                   Icons.schedule,
-                  'Sampled at',
+                  'dashboard_sampled_at'.tr(),
                   '${MaterialLocalizations.of(context).formatMediumDate(snapshot.sampledAt)} ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(snapshot.sampledAt))}',
                 ),
                 if (snapshot.locationError != null) ...<Widget>[
@@ -149,7 +149,7 @@ class _DashboardStatusExpansionTile extends StatelessWidget {
                 ],
                 const Divider(height: 28),
                 Text(
-                  'Day / night',
+                  'dashboard_day_night'.tr(),
                   style: Theme.of(context).textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.w600),
                 ),

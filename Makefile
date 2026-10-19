@@ -12,6 +12,7 @@ pre-release-checks: ## pub get, format, build_runner, analyze, test (release gat
 	dart run build_runner build --delete-conflicting-outputs
 	dart analyze --fatal-infos --fatal-warnings .
 	dart run tool/check_feature_imports.dart
+	python3 tool/validate_wiki.py
 	flutter test
 
 # --- Patrol E2E (docs/patrol-chat-stop-investigation.md) -----------------
@@ -24,7 +25,8 @@ patrol-prepare: ## One-time: cache the model locally + seed it into the app on t
 patrol-check-device: ## Fail fast if adb /data is too small for Patrol APK reinstall
 	bash tool/patrol/check_device.sh $(DEVICE)
 
-# TARGET: test file to run; DEVICE: adb serial (optional, for multiple devices)
+# TARGET: test file to run; DEVICE: adb serial (required when patrol_cli prompts)
+# Example: make patrol-test DEVICE=emulator-5554 TARGET=patrol_test/chat_vehicle_accident_todos_test.dart
 TARGET ?= patrol_test/chat_stop_regression_test.dart
 
 patrol-test: ## Run the chat stop/continue investigation on the connected device

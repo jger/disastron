@@ -617,7 +617,11 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                           Padding(
                             padding: const EdgeInsets.only(top: 4),
                             child: Chip(
-                              label: Text('LoRA: ${activeLora.displayLabel}'),
+                              label: Text(
+                                'model_lora_chip'.tr(
+                                  args: <String>[activeLora.displayLabel],
+                                ),
+                              ),
                               avatar: const Icon(Icons.bolt, size: 16),
                               visualDensity: VisualDensity.compact,
                               materialTapTargetSize:
@@ -651,7 +655,7 @@ class _ModelSetupWidgetState extends ConsumerState<ModelSetupWidget>
                           ),
                         if (supportsLora)
                           IconButton(
-                            tooltip: 'Manage LoRAs',
+                            tooltip: 'model_manage_loras'.tr(),
                             icon: const Icon(Icons.bolt),
                             onPressed: () {
                               LoraManagerSheet.show(

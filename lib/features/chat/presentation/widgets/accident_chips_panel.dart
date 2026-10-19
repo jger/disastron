@@ -1,38 +1,42 @@
 import 'package:disastron/shared/widgets/genui_card.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class AccidentChipOption {
-  const AccidentChipOption({required this.label, required this.prompt});
+  const AccidentChipOption({required this.labelKey, required this.promptKey});
 
-  final String label;
-  final String prompt;
+  final String labelKey;
+  final String promptKey;
+
+  String get label => labelKey.tr();
+
+  String get prompt => promptKey.tr();
 }
 
-const List<AccidentChipOption> kAccidentChipOptions = <AccidentChipOption>[
+List<AccidentChipOption> accidentChipOptions() => const <AccidentChipOption>[
   AccidentChipOption(
-    label: 'Vehicle crash',
-    prompt: 'Vehicle accident. I need immediate steps: injuries, traffic, fire risk, and who to call.',
+    labelKey: 'chat_accident_vehicle_label',
+    promptKey: 'chat_accident_vehicle_prompt',
   ),
   AccidentChipOption(
-    label: 'Fire / burn',
-    prompt:
-        'Fire or burn emergency. What to do first for safety and first aid.',
+    labelKey: 'chat_accident_fire_label',
+    promptKey: 'chat_accident_fire_prompt',
   ),
   AccidentChipOption(
-    label: 'Cut / bleeding',
-    prompt: 'Serious cut or bleeding. How to slow bleeding and when to seek emergency care.',
+    labelKey: 'chat_accident_bleed_label',
+    promptKey: 'chat_accident_bleed_prompt',
   ),
   AccidentChipOption(
-    label: 'Fall / impact',
-    prompt: 'Fall or strong impact. Check for head/spine injury and what to monitor.',
+    labelKey: 'chat_accident_fall_label',
+    promptKey: 'chat_accident_fall_prompt',
   ),
   AccidentChipOption(
-    label: 'Poisoning',
-    prompt: 'Possible poisoning or harmful substance. Practical steps while offline.',
+    labelKey: 'chat_accident_poison_label',
+    promptKey: 'chat_accident_poison_prompt',
   ),
   AccidentChipOption(
-    label: 'Natural disaster',
-    prompt: 'Natural disaster situation (storm, flood, earthquake). Shelter and evacuation priorities.',
+    labelKey: 'chat_accident_disaster_label',
+    promptKey: 'chat_accident_disaster_prompt',
   ),
 ];
 
@@ -43,15 +47,16 @@ class AccidentChipsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<AccidentChipOption> options = accidentChipOptions();
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: GenUiCard(
-        title: 'What kind of emergency are you dealing with?',
-        subtitle: 'Tap one — you can type details next.',
+        title: 'chat_accident_title'.tr(),
+        subtitle: 'chat_accident_subtitle'.tr(),
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: kAccidentChipOptions
+          children: options
               .map(
                 (AccidentChipOption o) => ActionChip(
                   label: Text(o.label),

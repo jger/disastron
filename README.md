@@ -34,7 +34,7 @@ See [`SECURITY.md`](SECURITY.md) for how to report issues and a short checklist 
 - **Dashboard** — Device snapshot (battery, rough place from GPS/geocoding), expandable **day/night** and **local conditions** (sun times, typical temperatures from bundled climate data). Pull-to-refresh.
 - **Call help** — **Offline** emergency-number list **by detected country** (bundled JSON), with context from location where permissions allow.
 - **CPR & planning** — Quick entry to **bundled offline wiki** articles (e.g. CPR essentials, home kit / trip prep). Not a substitute for professional services or training.
-- **SOS signal** — Screen/torch **Morse SOS**, optional **alarm tone**, **vibration**, and **Bluetooth** awareness (user-toggled); use only where lawful and safe.
+- **SOS signal** — Screen/torch **Morse SOS**, optional **alarm tone**, and **vibration**; use only where lawful and safe.
 - **Wiki tab** — Full list of offline reference articles (markdown).
 - **Todos** — Simple on-device checklist support (including chat-driven actions where implemented).
 - **Chat** — **On-device** LLM inference (Gemma family via `flutter_edge_ai`); models downloaded to storage. With a **multimodal** model active, you can attach **one photo per message** from the gallery or camera; text-only models keep the attach control disabled with an in-app hint. Optional **Hugging Face token** only for authorized model downloads—**no app login**, no cloud chat backend in the default design.

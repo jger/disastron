@@ -10,6 +10,7 @@
 // clearTfliteXnnpackWeightCaches() -> path_provider, unavailable in unit tests.
 
 import 'package:disastron/features/chat/data/gemma_service.dart';
+import 'package:disastron/features/chat/domain/checklist_tool.dart';
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -59,6 +60,17 @@ void main() {
       },
     );
 
+    test('reports discrete stages via onStageChanged', () async {
+      final List<GemmaInitStage> stages = <GemmaInitStage>[];
+      await service.init(loraPath: '/lora.bin', onStageChanged: stages.add);
+
+      expect(stages, <GemmaInitStage>[
+        GemmaInitStage.loadingModelWeights,
+        GemmaInitStage.applyingLoraAdapter,
+        GemmaInitStage.ready,
+      ]);
+    });
+
     test('forwards the active model type instead of defaulting to gemmaIt', () async {
       gateway.activeType = ModelType.gemma4;
 
@@ -69,6 +81,38 @@ void main() {
       expect(
         gateway.models.single.createChatCalls.single.modelType,
         ModelType.gemma4,
+      );
+    });
+
+    test(
+      'enables native checklist tools for gemma4 litertlm when requested',
+      () async {
+        gateway
+          ..activeType = ModelType.gemma4
+          ..fakeFileType = ModelFileType.litertlm;
+
+        await service.init(useNativeChecklistTools: true);
+
+        expect(service.usesNativeChecklistTools, isTrue);
+        final call = gateway.models.single.createChatCalls.single;
+        expect(call.supportsFunctionCalls, isTrue);
+        expect(call.tools.single.name, kUpdateChecklistToolName);
+        expect(call.enableThinking, isFalse);
+        expect(call.maxOutputTokens, 512);
+      },
+    );
+
+    test('does not enable native tools for gemmaIt task files', () async {
+      gateway
+        ..activeType = ModelType.gemmaIt
+        ..fakeFileType = ModelFileType.task;
+
+      await service.init(useNativeChecklistTools: true);
+
+      expect(service.usesNativeChecklistTools, isFalse);
+      expect(
+        gateway.models.single.createChatCalls.single.supportsFunctionCalls,
+        isNot(true),
       );
     });
 
@@ -175,6 +219,91 @@ void main() {
 
       final FakeInferenceChat chat = gateway.models.single.chats.single;
       expect(chat.queries.single.text, contains('context_error: empty'));
+    });
+
+    test('prepends checklist snapshot on the next turn only', () async {
+      await service.init(useNativeChecklistTools: true);
+      service.setChecklistSnapshotForNextUserMessage('id=1 title=water');
+
+      await service
+          .processMessageAsync(Message.text(text: 'help', isUser: true))
+          .drain<void>();
+      await service
+          .processMessageAsync(Message.text(text: 'again', isUser: true))
+          .drain<void>();
+
+      final FakeInferenceChat chat = gateway.models.single.chats.last;
+      expect(chat.queries.first.text, contains('id=1 title=water'));
+      expect(chat.queries.last.text, 'again');
+    });
+
+    test(
+      'routes gemma4 tool turns through generateChatResponseWithTools',
+      () async {
+        gateway.fakeFileType = ModelFileType.litertlm;
+        await service.init(useNativeChecklistTools: true);
+        gateway.models.single.chats.last
+          ..scriptedResponses = <ModelResponse>[
+            const FunctionCallResponse(
+              name: kUpdateChecklistToolName,
+              args: <String, dynamic>{
+                'ops': <Map<String, dynamic>>[
+                  <String, dynamic>{'op': 'add', 'title': 'water'},
+                ],
+              },
+            ),
+          ]
+          ..scriptedResponsesAfterTool = <ModelResponse>[
+            const TextResponse('done'),
+          ];
+
+        var toolOps = <Map<String, dynamic>>[];
+        final List<ModelResponse> got = await service
+            .processMessageAsync(
+              Message.text(text: 'add water', isUser: true),
+              onChecklistToolCall:
+                  (
+                    FunctionCallResponse call,
+                    List<Map<String, dynamic>> ops,
+                  ) async {
+                    toolOps = ops;
+                    return <String, dynamic>{'applied': ops.length, 'added': 1};
+                  },
+            )
+            .toList();
+
+        expect(toolOps, isNotEmpty);
+        expect(
+          got.whereType<TextResponse>().map((TextResponse r) => r.token),
+          <String>['done'],
+        );
+        final ChecklistTurnResult? applied = service
+            .takeLastChecklistTurnResult();
+        expect(applied?.appliedCount, greaterThan(0));
+      },
+    );
+  });
+
+  group('markGenerationStopped', () {
+    test('clears and replays history on the next turn only', () async {
+      await service.init();
+      final FakeInferenceChat chat = gateway.models.single.chats.single
+        ..scriptedResponses = <ModelResponse>[const TextResponse('ok')];
+
+      service.markGenerationStopped();
+
+      await service
+          .processMessageAsync(Message.text(text: 'after stop', isUser: true))
+          .drain<void>();
+
+      expect(chat.clearHistoryCallCount, 1);
+      expect(chat.lastClearHistoryReplay, isNotNull);
+
+      await service
+          .processMessageAsync(Message.text(text: 'next', isUser: true))
+          .drain<void>();
+
+      expect(chat.clearHistoryCallCount, 1);
     });
   });
 
