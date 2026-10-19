@@ -2,6 +2,20 @@
 
 All notable changes will be documented in this file.
 
+# [1.8.0](https://github.com/jger/disastron/compare/v1.7.0...v1.8.0) (2026-10-19)
+
+
+### Bug Fixes
+
+* **chat:** add native checklist tool support and update translations ([f10a4f8](https://github.com/jger/disastron/commit/f10a4f8460b8a0772580b4bc5865b6f0a63b0469))
+* prevent duplicate chat initialization and improve model loading robustness and patrol tests ([94f6628](https://github.com/jger/disastron/commit/94f66281245b7f755b9871afaba9d15ebb819cb7))
+
+
+### Features
+
+* add detailed loading progress stages and UI for chat model initialization ([0fb4552](https://github.com/jger/disastron/commit/0fb4552cc81b9241b0b1e9a8a91a08685eb83913))
+* add internationalization support and reliability keys for translations and prompts ([4313a58](https://github.com/jger/disastron/commit/4313a584dc388c21fc83a4f10543d76af92dca9f))
+
 # [1.7.0](https://github.com/jger/disastron/compare/v1.6.2...v1.7.0) (2026-10-11)
 
 
