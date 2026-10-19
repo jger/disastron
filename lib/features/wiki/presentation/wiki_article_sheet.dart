@@ -91,16 +91,15 @@ Future<void> openWikiArticleSheet(
                         if (snapshot.hasData) {
                           var svgString = snapshot.data!;
                           final RegExp slugRegex = RegExp(r'\{\{([\w_]+)\}\}');
-                          svgString = svgString.replaceAllMapped(
-                            slugRegex,
-                            (match) {
-                              final String? key = match.group(1);
-                              if (key == null) {
-                                return '';
-                              }
-                              return svgLabels[key] ?? key;
-                            },
-                          );
+                          svgString = svgString.replaceAllMapped(slugRegex, (
+                            match,
+                          ) {
+                            final String? key = match.group(1);
+                            if (key == null) {
+                              return '';
+                            }
+                            return svgLabels[key] ?? key;
+                          });
 
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8),
