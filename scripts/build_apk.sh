@@ -9,10 +9,11 @@ mkdir -p dist
 APK_NAME="disastron-${VERSION}.apk"
 cp build/app/outputs/flutter-apk/app-release.apk "dist/${APK_NAME}"
 (
-  if command -v shasum >/dev/null 2>&1; then
-    shasum -a 256 "${APK_NAME}" > "${APK_NAME}.sha256"
-  else
+  cd dist
+  if command -v sha256sum >/dev/null 2>&1; then
     sha256sum "${APK_NAME}" > "${APK_NAME}.sha256"
+  else
+    shasum -a 256 "${APK_NAME}" > "${APK_NAME}.sha256"
   fi
 )
 
