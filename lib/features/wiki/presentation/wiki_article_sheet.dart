@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -18,76 +19,121 @@ Future<void> openWikiArticleSheet(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
-    builder: (BuildContext ctx) => DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.92,
-      maxChildSize: 0.96,
-      minChildSize: 0.5,
-      builder: (_, ScrollController sc) => SingleChildScrollView(
-        controller: sc,
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-        child: MarkdownBody(
-          data: '# $title\n\n$bodyMarkdown',
-          onTapLink: (String linkText, String? href, String _) {
-            if (href == null ||
-                !href.startsWith(kWikiLinkScheme) ||
-                onWikiLink == null) {
-              return;
-            }
-            final String articleId = href.substring(kWikiLinkScheme.length);
-            if (articleId.isEmpty) {
-              return;
-            }
-            onWikiLink(articleId);
-          },
-          sizedImageBuilder: (MarkdownImageConfig config) {
-            final uriString = config.uri.toString();
-            final isSvg = uriString.toLowerCase().endsWith('.svg');
-
-            if (isSvg) {
-              return FutureBuilder<String>(
-                future: rootBundle.loadString(uriString),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    var svgString = snapshot.data!;
-                    final RegExp slugRegex = RegExp(r'\{\{([\w_]+)\}\}');
-                    svgString = svgString.replaceAllMapped(slugRegex, (match) {
-                      final String? key = match.group(1);
-                      if (key == null) {
-                        return '';
-                      }
-                      return svgLabels[key] ?? key;
-                    });
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: SvgPicture.string(svgString),
+    builder: (BuildContext ctx) {
+      final ColorScheme colorScheme = Theme.of(ctx).colorScheme;
+      return DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.92,
+        maxChildSize: 0.96,
+        minChildSize: 0.5,
+        builder: (_, ScrollController sc) => SingleChildScrollView(
+          controller: sc,
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: colorScheme.secondaryContainer.withValues(alpha: 0.65),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: colorScheme.outlineVariant),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 18,
+                      color: colorScheme.onSecondaryContainer,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'terms_doctors'.tr(),
+                        style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSecondaryContainer,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
+                    ),
+                  ],
+                ),
+              ),
+              MarkdownBody(
+                data: '# $title\n\n$bodyMarkdown',
+                onTapLink: (String linkText, String? href, String _) {
+                  if (href == null ||
+                      !href.startsWith(kWikiLinkScheme) ||
+                      onWikiLink == null) {
+                    return;
+                  }
+                  final String articleId = href.substring(
+                    kWikiLinkScheme.length,
+                  );
+                  if (articleId.isEmpty) {
+                    return;
+                  }
+                  onWikiLink(articleId);
+                },
+                sizedImageBuilder: (MarkdownImageConfig config) {
+                  final uriString = config.uri.toString();
+                  final isSvg = uriString.toLowerCase().endsWith('.svg');
+
+                  if (isSvg) {
+                    return FutureBuilder<String>(
+                      future: rootBundle.loadString(uriString),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          var svgString = snapshot.data!;
+                          final RegExp slugRegex = RegExp(r'\{\{([\w_]+)\}\}');
+                          svgString = svgString.replaceAllMapped(
+                            slugRegex,
+                            (match) {
+                              final String? key = match.group(1);
+                              if (key == null) {
+                                return '';
+                              }
+                              return svgLabels[key] ?? key;
+                            },
+                          );
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: SvgPicture.string(svgString),
+                            ),
+                          );
+                        }
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: SizedBox(
+                            height: 100,
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                        );
+                      },
                     );
                   }
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: SizedBox(
-                      height: 100,
-                      child: Center(child: CircularProgressIndicator()),
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(uriString),
                     ),
                   );
                 },
-              );
-            }
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset(uriString),
               ),
-            );
-          },
+            ],
+          ),
         ),
-      ),
-    ),
+      );
+    },
   );
 }

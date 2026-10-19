@@ -20,7 +20,8 @@ module.exports = {
     [
       '@semantic-release/exec',
       {
-        prepareCmd: 'bash scripts/increment_build.sh',
+        prepareCmd:
+          'bash scripts/increment_build.sh && bash scripts/build_apk.sh ${nextRelease.version}',
       },
     ],
     [
@@ -29,6 +30,15 @@ module.exports = {
         assets: ['pubspec.yaml', 'CHANGELOG.md'],
         message:
           'chore(release): bump version to ${nextRelease.version} [skip ci]',
+      },
+    ],
+    [
+      '@semantic-release/github',
+      {
+        assets: [
+          { path: 'dist/*.apk', label: 'Disastron Android APK' },
+          { path: 'dist/*.sha256', label: 'SHA-256 checksum' },
+        ],
       },
     ],
   ],

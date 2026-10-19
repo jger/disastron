@@ -1,107 +1,94 @@
 # Disastron
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Latest Release](https://img.shields.io/github/v/release/jger/disastron?label=Download%20APK)](https://github.com/jger/disastron/releases/latest)
 
-Offline-first Flutter app for **emergency readiness and calm decision support** when networks fail or you need answers without leaving the device.
+**Disastron** is a free, open-source, **offline-first emergency readiness and calm decision-support app**. When mobile networks fail, power is scarce, or you need reliable answers without leaving your device, Disastron keeps essential tools, survival guides, and optional on-device AI in your pocket.
 
-## About the name
+---
 
-**Disastron** is formed from Ancient Greek **δις** (*dis*, here “twice” or “doubly”) and **ἄστρον** (*astron*, “star”) — **δις ἄστρον**, evoking a **bad omen in the stars** or an **ill‑starred** moment. English **disaster** comes from the same picture by another route: Italian *disastro* from Latin *dis-* + *astrum* (“star”), i.e. fate turning against you under unfavorable stars. The app name compresses that old sense of cosmic misalignment into one word.
+## Download for Android
 
-## Why this exists
+You can download the latest signed Android APK (~250 MB) directly from **[GitHub Releases](https://github.com/jger/disastron/releases/latest)**:
 
-The goal is to offer the **strongest help we can build—without artificial limits**—to anyone who needs it. **Human life is not a market segment**; access to solid guidance in a crisis should not be gated by subscriptions or vendor lock-in.
+1. Go to the **[Latest Release](https://github.com/jger/disastron/releases/latest)** page and download **`disastron-<version>.apk`**.
+2. Open the downloaded file on your Android phone or tablet (allow *Install unknown apps* if prompted).
+3. *(Optional)* To use offline AI chat, open **Settings → Offline model** inside the app to download an on-device model over Wi-Fi.
 
-**Open source:** application source code and bundled assets in this repository are released under the [MIT License](LICENSE). Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+> **Important:** By downloading or using Disastron, you acknowledge that it is an **offline educational and preparedness reference tool only**—not a medical device, not medical advice, and not a substitute for emergency services (such as 112 or 911). Provided "AS IS" without warranty; see [Important Notices](#important-notices) below.
 
-## Important notices
+<details>
+<summary>Verify your download (SHA-256 checksum & update notes)</summary>
 
-- **Not medical advice** — Wiki articles (including CPR reminders) and on-device chat output are for **education and convenience only**. They are **not** a substitute for certified training, professional care, or calling emergency services when someone is hurt or unwell.
-- **Emergency numbers** — The bundled list is maintained in good faith; **verify numbers** for your region and situation. Official guidance from local authorities always takes precedence.
-- **SOS, alarm, torch, vibration** — Use these features **only where lawful and safe**; they can distract others or cause distress if misused.
-- **On-device AI** — Local models can **hallucinate or be wrong**. Do not rely on them for life-critical decisions; use judgment and human help.
+Each release includes a `.sha256` file next to the APK. To verify the file on macOS or Linux:
 
-## Privacy
+```bash
+shasum -a 256 -c disastron-<version>.apk.sha256
+```
 
-The app is **offline-first** by design. Things that can leave the device when you choose to use them include: **optional downloads** of inference model files from Hugging Face (and any URL you paste), and **location / coarse place** when you grant OS permissions (used for context such as emergency numbers and dashboard text).
+**Updating:** Future GitHub APK releases are signed with the same key and can be installed directly over an existing GitHub APK install without losing your data. Note that if you installed Disastron from Google Play, you cannot cross-update directly between the Play Store version and the GitHub APK without uninstalling first.
+</details>
 
-## Security
-
-See [`SECURITY.md`](SECURITY.md) for how to report issues and a short checklist for secret scanning before releases.
+---
 
 ## Features
 
-- **Dashboard** — Device snapshot (battery, rough place from GPS/geocoding), expandable **day/night** and **local conditions** (sun times, typical temperatures from bundled climate data). Pull-to-refresh.
-- **Call help** — **Offline** emergency-number list **by detected country** (bundled JSON), with context from location where permissions allow.
-- **CPR & planning** — Quick entry to **bundled offline wiki** articles (e.g. CPR essentials, home kit / trip prep). Not a substitute for professional services or training.
-- **SOS signal** — Screen/torch **Morse SOS**, optional **alarm tone**, and **vibration**; use only where lawful and safe.
-- **Wiki tab** — Full list of offline reference articles (markdown).
-- **Todos** — Simple on-device checklist support (including chat-driven actions where implemented).
-- **Chat** — **On-device** LLM inference (Gemma family via `flutter_edge_ai`); models downloaded to storage. With a **multimodal** model active, you can attach **one photo per message** from the gallery or camera; text-only models keep the attach control disabled with an in-app hint. Optional **Hugging Face token** only for authorized model downloads—**no app login**, no cloud chat backend in the default design.
-- **Settings** — **Theme & appearance** (multiple modes, including dark high contrast for visibility and battery messaging), **offline model** install (presets, URL, file from device).
+Everything in Disastron is designed around one core principle: **work offline** so maps, cell towers, and cloud accounts are never single points of failure.
 
-Core principle: **work offline** so maps, towers, and accounts are not single points of failure when things go wrong.
+- **Dashboard** — Quick snapshot of your device battery, rough location (via GPS), **day/night sun times**, and **typical seasonal temperatures** from bundled climate data.
+- **Call Help** — Offline **emergency numbers by country**, automatically matched to your detected region when location access is enabled.
+- **CPR & Emergency Planning** — One-tap access to bundled **offline survival and first-aid guides** (CPR essentials, home emergency kits, evacuation prep).
+- **SOS Signal** — Screen and flashlight **Morse code SOS**, optional **high-visibility alarm tone**, and **vibration**.
+- **Offline Wiki** — Searchable library of emergency preparedness and medical reference articles stored completely on your device.
+- **Checklists (Todos)** — Simple on-device checklists to track supplies and preparation steps.
+- **Offline AI Chat** — Private, **100% on-device AI assistant** (powered by local Gemma models). Supports attaching a photo from your camera or gallery when using a multimodal model. No account, no cloud server, and no internet connection required once a model is installed.
+- **Battery-Aware Themes** — Multiple appearance modes, including **Dark High Contrast** for readability in difficult conditions and lower OLED battery use.
 
-## Model training (LoRA)
+---
 
-Dataset pipeline, n8n synthesis workflows, and Gemma 4 E2B LoRA training live in a separate **`disastron-training`** repository (not bundled here). The app wiki (`assets/wiki/`) is the source of truth for bundled content; training artifacts are versioned there. LoRA adapters are not bundled in the mobile app by default (LiteRT-LM vs PyTorch).
+## Why Disastron Exists
 
-## Development
+The goal is to offer the **strongest help we can build—without artificial limits**—to anyone who needs it. **Human life is not a market segment**; access to solid guidance in a crisis should not be gated by subscriptions, ads, or vendor lock-in.
 
-Requirements: Flutter **3.47.5** ([`.fvmrc`](.fvmrc)), Dart `>=3.13.0`.
+### About the Name
 
-```bash
-cd disastron   # your clone of this repository
-flutter pub get
-dart run build_runner build --delete-conflicting-outputs
-flutter run
-```
+**Disastron** comes from Ancient Greek **δις** (*dis*, “twice” or “doubly”) and **ἄστρον** (*astron*, “star”) — **δις ἄστρον**, evoking an **ill‑starred** moment. The English word *disaster* comes from the same image via Italian (*disastro*) and Latin (*dis-* + *astrum*): fate turning against you under unfavorable stars.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for PR workflow, wiki validation, and maintainer release signing. Content licensing for wiki articles: [CONTENT_ATTRIBUTION.md](CONTENT_ATTRIBUTION.md).
+---
 
-## Patrol (on-device E2E)
+## Privacy
 
-[Patrol](https://patrol.leancode.co/) drives real on-device UI tests under `patrol_test/` — used where plain `flutter test` integration tests can't reach the device (e.g. native permission dialogs, or devices like MIUI where `adb shell input` is blocked). Requires `patrol_cli` 4.8.0+ with `patrol` 4.10 (`dart pub global activate patrol_cli 4.8.0`) and a connected/booted Android device or emulator.
+Disastron is **offline-first** by design:
+- **No accounts, analytics, or cloud chat servers.**
+- **Location** stays on your device and is used only to show local emergency numbers, sun times, and regional climate context when you grant permission.
+- **Network requests** happen only when you explicitly choose to download an optional AI model file (from Hugging Face or a custom URL).
 
-```bash
-make patrol-prepare   # one-time: cache + seed a model onto the device (see PRESET in Makefile)
-make patrol-test       # run the default investigation test (TARGET/DEVICE overridable)
-```
+---
 
-`patrol-test` pre-grants runtime permissions and runs with `--no-uninstall` so app data (including the multi-GB seeded model) survives between runs. If the Gradle-based orchestrator can't install on your device, fall back to `make patrol-test-manual` (`tool/patrol/run_no_orchestrator.sh`, plain `adb install` + `am instrument`). See [`docs/patrol-chat-stop-investigation.md`](docs/patrol-chat-stop-investigation.md) for the full workflow and background.
+## Important Notices
 
-**Patrol MCP** (`.mcp.json`, `patrol_mcp` package) exposes Patrol to MCP-capable AI agents (e.g. Claude Code) as tools to launch/restart a test run, take screenshots, and inspect the native UI tree — useful for driving and debugging on-device test sessions interactively rather than only via `make patrol-test`.
+- **Not a medical device & not medical advice** — Disastron is **not a medical device** (under EU MDR, US FDA, or any other regulatory framework) and is not intended to diagnose, treat, cure, triage, monitor, or prevent any disease or injury. Wiki articles (including CPR reminders), checklists, and on-device AI chat outputs are strictly for **general education and preparedness only**. They are **not** a substitute for certified first-aid training, professional medical care, or calling official emergency services (such as 112 or 911) when someone is hurt or unwell.
+- **Emergency numbers** — The bundled list is maintained in good faith; always **verify emergency numbers** for your region ahead of time. Official guidance from local authorities always takes precedence.
+- **SOS, alarm, torch, vibration** — Use signaling tools **only where lawful and safe**; they can distract others or cause distress if misused.
+- **On-device AI** — Local AI models can **hallucinate or produce inaccurate, incomplete, or unsafe output**. Never rely on AI outputs for life-critical or medical decisions; always use your own judgment and seek professional human help.
+- **No warranty / limitation of liability** — Disastron is provided **"AS IS"**, without warranty of any kind. Neither the author nor contributors shall be liable for any injury, loss of life, or damages arising from the use or inability to use this software.
 
-## Tech (short)
+---
 
-Flutter, Riverpod, Auto Route, `flutter_edge_ai`, `image_picker` (chat attachments on supported models), bundled assets (wiki, emergency numbers, climate normals), local permissions for location / camera / photos / audio / vibration as required by the platform.
+## Contributing & Development
 
-## Releases (semantic-release)
+Application source code and bundled assets are released under the [MIT License](LICENSE). Contributions are welcome!
 
-Versions and GitHub Releases are driven by **[semantic-release](https://github.com/semantic-release/semantic-release)** at the repo root (`package.json`, `release.config.js`). Use **[Conventional Commits](https://www.conventionalcommits.org/)** (`feat:`, `fix:`, `chore:`, …) on `main` so releases and changelog entries are generated correctly. The release workflow bumps **`pubspec.yaml`**, updates **`CHANGELOG.md`**, and commits with **`[skip ci]`** on the release commit.
+- **Developer setup, architecture, E2E testing (Patrol), and release pipeline:** see **[CONTRIBUTING.md](CONTRIBUTING.md)**
+- **Wiki content attribution & licensing:** see **[CONTENT_ATTRIBUTION.md](CONTENT_ATTRIBUTION.md)**
+- **Community guidelines:** see **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)**
+- **Reporting security issues:** see **[SECURITY.md](SECURITY.md)**
 
-**CI setup:** add a repository secret `GH_TOKEN` — a personal access token (or fine-grained token) with `contents: write` so the workflow can push release commits and create GitHub Releases (same as the Triliza release workflow).
+---
 
-**Local checks** (same Flutter steps as CI, without publishing):
+## Legal & Licenses
 
-```bash
-make pre-release-checks
-```
-
-## Third-party software
-
-Dart and Flutter dependencies ship under their own licenses. Full gathered texts are in [`third_party_licenses.txt`](third_party_licenses.txt); [`third_party_licenses.json`](third_party_licenses.json) records how that file was produced. See [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) and [`NOTICE`](NOTICE).
-
-## Downloaded models (separate from repo license)
-
-Preset and custom installs fetch **model weight files** (for example Gemma checkpoints) from Hugging Face or URLs you supply. Those files are **not** licensed under the MIT terms of this repository. You must comply with each model’s terms (for gated Gemma checkpoints, see [Google Gemma terms](https://ai.google.dev/gemma/terms) and the model card on Hugging Face). **Do not** commit downloaded `.task` / `.litertlm` / other weight blobs to git.
-
-## Trademarks
-
-**Gemma** and **Hugging Face** are trademarks of their respective owners. This project is an independent app; it is not endorsed by Google or Hugging Face.
-
-## License
-
-Copyright (c) 2024-2026 Jannis Gerardis.
-
-Source code and bundled assets in this repository are licensed under the **MIT License** — see [`LICENSE`](LICENSE). SPDX identifier: `MIT` (also noted in `// SPDX-License-Identifier: MIT` headers in Dart library files).
+- **Open Source License:** Copyright (c) 2024–2026 Jannis Gerardis. Licensed under the [MIT License](LICENSE).
+- **Third-Party Software:** Full license texts for libraries used in Disastron are available in [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md), [`third_party_licenses.txt`](third_party_licenses.txt), and [`NOTICE`](NOTICE).
+- **Downloaded AI Models:** Optional model weights downloaded inside the app (such as Gemma checkpoints from Hugging Face) are governed by their respective model licenses (e.g. [Google Gemma Terms of Use](https://ai.google.dev/gemma/terms)), separate from the MIT license of this repository.
+- **Trademarks:** **Gemma** and **Hugging Face** are trademarks of their respective owners. Disastron is an independent project and is not endorsed by Google or Hugging Face.

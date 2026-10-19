@@ -26,7 +26,7 @@ Key Features:
 - Climate Estimates: View expected typical weather conditions calculated offline using GPS coordinates and historical climate databases.
 
 Important Information:
-Wiki content and AI assistant outputs are strictly for educational and preparation purposes and do not constitute professional medical advice. Always contact local emergency services in an immediate crisis. AI model weights are not pre-packaged with the application; downloading them requires accepting their respective license terms on Hugging Face.
+Disastron is not a medical device and is not intended to diagnose, treat, cure, triage, monitor, or prevent any disease or injury. Wiki content and AI assistant outputs are strictly for educational and preparation purposes and do not constitute professional medical advice. Always contact local emergency services in an immediate crisis. AI model weights are not pre-packaged with the application; downloading them requires accepting their respective license terms on Hugging Face.
 
 Privacy-First:
 Disastron operates offline by default. No data is collected or sent to external servers. Location and network permissions are optional and used solely for offline configuration, local climate estimation, and model downloads.
