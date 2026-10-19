@@ -60,6 +60,17 @@ void main() {
       },
     );
 
+    test('reports discrete stages via onStageChanged', () async {
+      final List<GemmaInitStage> stages = <GemmaInitStage>[];
+      await service.init(loraPath: '/lora.bin', onStageChanged: stages.add);
+
+      expect(stages, <GemmaInitStage>[
+        GemmaInitStage.loadingModelWeights,
+        GemmaInitStage.applyingLoraAdapter,
+        GemmaInitStage.ready,
+      ]);
+    });
+
     test('forwards the active model type instead of defaulting to gemmaIt', () async {
       gateway.activeType = ModelType.gemma4;
 

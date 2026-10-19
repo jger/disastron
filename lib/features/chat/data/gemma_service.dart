@@ -24,6 +24,24 @@ Use only ops add / setDone / remove. For setDone/remove you must use todo ids fr
 const String kDisasterSystemInstruction =
     '$kDisasterSystemInstructionBase$kLegacyTodosSystemInstructionAppend';
 
+/// Discrete stages during on-device model and session initialization.
+enum GemmaInitStage {
+  /// Purging outdated weight caches if a reload was explicitly requested.
+  clearingCaches,
+
+  /// Loading the large (~2.5 GB) neural model weights from storage into memory.
+  loadingModelWeights,
+
+  /// Allocating KV cache and GPU/NPU runtime context.
+  allocatingSession,
+
+  /// Applying emergency response LoRA adapter weights into the model.
+  applyingLoraAdapter,
+
+  /// Model and conversation session are ready for inference.
+  ready,
+}
+
 class GemmaLocalService {
   GemmaLocalService({ChatRuntimeGateway? runtime})
     : _runtime = runtime ?? const FlutterEdgeAiChatRuntimeGateway();
@@ -98,6 +116,7 @@ class GemmaLocalService {
     int? maxNumImages,
     String? loraPath,
     bool useNativeChecklistTools = false,
+    void Function(GemmaInitStage stage)? onStageChanged,
   }) async {
     final bool visionFlagChanged =
         _lastInitSupportImage != null && _lastInitSupportImage != supportImage;
@@ -111,8 +130,10 @@ class GemmaLocalService {
 
     if (_model == null) {
       if (reloadInferenceWeights) {
+        onStageChanged?.call(GemmaInitStage.clearingCaches);
         await clearTfliteXnnpackWeightCaches();
       }
+      onStageChanged?.call(GemmaInitStage.loadingModelWeights);
       _model = await _runtime.getActiveModel(
         maxTokens: _kContextWindowTokens,
         supportImage: supportImage,
@@ -128,6 +149,12 @@ class GemmaLocalService {
           modelType: activeType,
           fileType: _model!.fileType,
         );
+
+    onStageChanged?.call(
+      loraPath != null
+          ? GemmaInitStage.applyingLoraAdapter
+          : GemmaInitStage.allocatingSession,
+    );
 
     await _chat?.close();
     _chat = null;
@@ -146,6 +173,7 @@ class GemmaLocalService {
     );
     // Fresh chat — no wedged session to recover from.
     _needsSessionReset = false;
+    onStageChanged?.call(GemmaInitStage.ready);
   }
 
   /// Records that an in-flight generation was stopped (stop button or the

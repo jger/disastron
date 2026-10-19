@@ -36,6 +36,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _showWarningBanner = true;
   bool _initInFlight = false;
 
+  /// Assistant initialization progress (0.0 .. 1.0) and current stage description.
+  double? _initProgress;
+  String? _initStage;
+  Timer? _progressSimTimer;
+
   /// Effective image attach support after init (native engine may refuse vision).
   bool _runtimeImageSupportEnabled = false;
 
@@ -56,10 +61,92 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
+    _stopSimulatedProgress();
     // Use cached container — ref is unsafe to call after unmount.
     _container.read(chatResetProvider.notifier).state = null;
     unawaited(_gemma.close());
     super.dispose();
+  }
+
+  void _updateInitProgress(double progress, {String? stage}) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _initProgress = progress.clamp(0.0, 1.0);
+      if (stage != null) {
+        _initStage = stage;
+      }
+    });
+  }
+
+  void _onGemmaInitStage(GemmaInitStage stage) {
+    if (!mounted) {
+      return;
+    }
+    switch (stage) {
+      case GemmaInitStage.clearingCaches:
+        _updateInitProgress(0.12, stage: 'chat_starting_engine'.tr());
+        _startAsymptoticProgress(from: 0.12, target: 0.20, rate: 0.08);
+      case GemmaInitStage.loadingModelWeights:
+        _updateInitProgress(0.18, stage: 'chat_starting_loading_weights'.tr());
+        // Loading large ~2.5 GB neural network weights into memory.
+        _startAsymptoticProgress(from: 0.18, target: 0.70, rate: 0.035);
+      case GemmaInitStage.allocatingSession:
+        _updateInitProgress(
+          0.72,
+          stage: 'chat_starting_allocating_session'.tr(),
+        );
+        // Allocating KV cache & GPU/NPU runtime context.
+        _startAsymptoticProgress(from: 0.72, target: 0.97, rate: 0.05);
+      case GemmaInitStage.applyingLoraAdapter:
+        _updateInitProgress(0.75, stage: 'chat_starting_loading_lora'.tr());
+        _startAsymptoticProgress(from: 0.75, target: 0.97, rate: 0.05);
+      case GemmaInitStage.ready:
+        _stopSimulatedProgress();
+        _updateInitProgress(1, stage: 'chat_starting_ready'.tr());
+    }
+  }
+
+  void _startAsymptoticProgress({
+    required double from,
+    required double target,
+    double rate = 0.04,
+    Duration tick = const Duration(milliseconds: 250),
+    double minStep = 0.003,
+  }) {
+    _progressSimTimer?.cancel();
+    if ((_initProgress ?? 0) < from) {
+      _updateInitProgress(from);
+    }
+    _progressSimTimer = Timer.periodic(tick, (Timer timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      final double current = _initProgress ?? from;
+      if (current >= target) {
+        // Even if near target, keep advancing very slightly so it never looks frozen.
+        final double crept = (current + minStep * 0.4).clamp(0.0, 0.98);
+        setState(() {
+          _initProgress = crept;
+        });
+        return;
+      }
+      double step = (target - current) * rate;
+      if (step < minStep) {
+        step = minStep;
+      }
+      final double next = (current + step).clamp(0.0, 0.98);
+      setState(() {
+        _initProgress = next;
+      });
+    });
+  }
+
+  void _stopSimulatedProgress() {
+    _progressSimTimer?.cancel();
+    _progressSimTimer = null;
   }
 
   /// Refreshes dashboard samples (slow: GPS/geocoding). Use for injecting context
@@ -212,6 +299,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       return;
     }
     _initInFlight = true;
+    _updateInitProgress(0.06, stage: 'chat_starting_reading_config'.tr());
     final Stopwatch sw = Stopwatch()..start();
     _logChatInit('start', sw);
     try {
@@ -221,6 +309,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _logChatInit('registry', sw);
       final bool nativeChecklist = _nativeChecklistForRegistry(registry);
       final bool useCtx = ref.read(useDisastronContextProvider);
+      _updateInitProgress(0.12, stage: 'chat_starting_preparing_context'.tr());
       final String? situation = useCtx ? await _situationForChatInit() : null;
       _logChatInit('situation', sw);
       final String system = disasterChatSystemInstruction(
@@ -242,6 +331,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             reloadInferenceWeights: reloadInferenceWeights,
             loraPath: loraPath,
             useNativeChecklistTools: nativeChecklist,
+            onStageChanged: _onGemmaInitStage,
           )
           .timeout(const Duration(minutes: 2));
 
@@ -255,9 +345,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 maxNumImages: 1,
                 loraPath: loraPath,
                 useNativeChecklistTools: nativeChecklist,
+                onStageChanged: _onGemmaInitStage,
               )
               .timeout(const Duration(minutes: 2));
           _logChatInit('gemma init (vision)', sw);
+          _stopSimulatedProgress();
+          _updateInitProgress(1, stage: 'chat_starting_ready'.tr());
           _markChatReady(
             runtimeVisionEnabled: true,
             showVisionFallbackSnack: false,
@@ -271,6 +364,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           }
           await initTextOnly();
           _logChatInit('gemma init (text fallback)', sw);
+          _stopSimulatedProgress();
+          _updateInitProgress(1, stage: 'chat_starting_ready'.tr());
           _markChatReady(
             runtimeVisionEnabled: false,
             showVisionFallbackSnack: true,
@@ -281,11 +376,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       await initTextOnly();
       _logChatInit('gemma init (text)', sw);
+      _stopSimulatedProgress();
+      _updateInitProgress(1, stage: 'chat_starting_ready'.tr());
       _markChatReady(
         runtimeVisionEnabled: false,
         showVisionFallbackSnack: false,
       );
     } on Object catch (e) {
+      _stopSimulatedProgress();
       _logChatInit('failed: $e', sw);
       if (mounted) {
         setState(() {
@@ -296,6 +394,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ref.read(chatResetProvider.notifier).state = null;
       }
     } finally {
+      _stopSimulatedProgress();
       _initInFlight = false;
     }
   }
@@ -533,7 +632,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
             )
           else if (!_chatReady)
-            LoadingWidget(message: 'chat_starting_assistant'.tr())
+            LoadingWidget(
+              message: 'chat_starting_assistant'.tr(),
+              progress: _initProgress,
+              stage: _initStage,
+              hint: 'chat_starting_offline_badge'.tr(),
+            )
           else
             Column(
               children: <Widget>[
