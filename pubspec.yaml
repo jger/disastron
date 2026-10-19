@@ -331,3 +331,8 @@ flutter_launcher_icons:
 #    macos:
 #      generate: true
 #      image_path: "path/to/image.png"
+
+hooks:
+  user_defines:
+    flutter_soloud:
+      no_xiph_libs: true
