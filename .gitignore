@@ -75,6 +75,8 @@ assets/model.bin
 *.task
 *.litertlm
 *.jks
+android/app/release.jks
 key.properties
+dist/
 # patrol_cli regenerates this before every test build
 patrol_test/test_bundle.dart

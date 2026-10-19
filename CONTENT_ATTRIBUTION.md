@@ -4,9 +4,9 @@ Application **source code** and most **bundled assets** in this repository are u
 
 Wiki and safety content follows separate attribution rules below.
 
-## Not medical advice
+## Not a medical device / not medical advice
 
-Wiki articles (including CPR and first-aid reminders) and on-device chat output are for **education and convenience only**. They are **not** a substitute for certified training, professional care, or calling emergency services.
+Disastron is **not a medical device** (under EU MDR, US FDA, or any other regulatory framework) and is not intended to diagnose, treat, cure, triage, monitor, or prevent any disease or injury. Wiki articles (including CPR and first-aid reminders) and on-device chat output are strictly for **general education and preparedness only**. They are **not** a substitute for certified training, professional medical care, or calling official emergency services.
 
 ## IFRC first aid guidelines
 
