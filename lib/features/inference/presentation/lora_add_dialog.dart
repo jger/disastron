@@ -57,7 +57,7 @@ class _LoraAddDialogState extends ConsumerState<LoraAddDialog>
   Future<void> _downloadLora() async {
     final String url = _urlController.text.trim();
     if (url.isEmpty) {
-      setState(() => _errorMessage = 'Please enter a valid URL.');
+      setState(() => _errorMessage = 'lora_invalid_url'.tr());
       return;
     }
 
@@ -98,9 +98,8 @@ class _LoraAddDialogState extends ConsumerState<LoraAddDialog>
 
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('LoRA adapter installed successfully.')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('lora_installed_snack'.tr())));
       }
     } on Object catch (e) {
       if (mounted) {
@@ -137,9 +136,8 @@ class _LoraAddDialogState extends ConsumerState<LoraAddDialog>
 
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('LoRA adapter imported successfully.')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('lora_imported_snack'.tr())));
       }
     } on Object catch (e) {
       setState(() {
@@ -162,7 +160,7 @@ class _LoraAddDialogState extends ConsumerState<LoraAddDialog>
     final ColorScheme scheme = Theme.of(context).colorScheme;
 
     return AlertDialog(
-      title: const Text('Add LoRA Adapter'),
+      title: Text('lora_add_title'.tr()),
       content: SizedBox(
         width: 400,
         child: SingleChildScrollView(
@@ -176,14 +174,14 @@ class _LoraAddDialogState extends ConsumerState<LoraAddDialog>
                   LinearProgressIndicator(value: _progress! / 100.0),
                   const SizedBox(height: 8),
                   Text(
-                    'Downloading: $_progress%',
+                    'lora_downloading_pct'.tr(args: <String>['$_progress']),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ] else ...<Widget>[
                   const Center(child: CircularProgressIndicator()),
                   const SizedBox(height: 8),
-                  const Text('Importing file...', textAlign: TextAlign.center),
+                  Text('lora_importing'.tr(), textAlign: TextAlign.center),
                 ],
                 const SizedBox(height: 16),
                 if (_progress != null)
@@ -195,9 +193,9 @@ class _LoraAddDialogState extends ConsumerState<LoraAddDialog>
               ] else ...<Widget>[
                 TabBar(
                   controller: _tabController,
-                  tabs: const <Tab>[
-                    Tab(text: 'From URL'),
-                    Tab(text: 'Pick File'),
+                  tabs: <Tab>[
+                    Tab(text: 'lora_tab_from_url'.tr()),
+                    Tab(text: 'lora_tab_pick_file'.tr()),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -226,31 +224,31 @@ class _LoraAddDialogState extends ConsumerState<LoraAddDialog>
                         children: <Widget>[
                           TextField(
                             controller: _urlController,
-                            decoration: const InputDecoration(
-                              labelText: 'LoRA Download URL',
+                            decoration: InputDecoration(
+                              labelText: 'lora_url_label'.tr(),
                               hintText: 'https://...',
-                              border: OutlineInputBorder(),
+                              border: const OutlineInputBorder(),
                             ),
                           ),
                           const SizedBox(height: 12),
                           HuggingFaceTokenInput(
                             controller: _tokenController,
-                            labelText: 'HF Token (optional)',
+                            labelText: 'lora_hf_token_label'.tr(),
                           ),
                           const SizedBox(height: 12),
                           TextField(
                             controller: _labelController,
-                            decoration: const InputDecoration(
-                              labelText: 'Display Label (optional)',
+                            decoration: InputDecoration(
+                              labelText: 'lora_display_label'.tr(),
                               hintText: 'e.g. Fine-tuned LoRA',
-                              border: OutlineInputBorder(),
+                              border: const OutlineInputBorder(),
                             ),
                           ),
                           const Spacer(),
                           FilledButton.icon(
                             onPressed: _downloadLora,
                             icon: const Icon(Icons.download),
-                            label: const Text('Download & Install'),
+                            label: Text('lora_download_install'.tr()),
                           ),
                         ],
                       ),
@@ -265,15 +263,15 @@ class _LoraAddDialogState extends ConsumerState<LoraAddDialog>
                             color: scheme.primary,
                           ),
                           const SizedBox(height: 16),
-                          const Text(
-                            'Select a local LoRA binary (.bin / .task / .litertlm) from your device storage.',
+                          Text(
+                            'lora_pick_local_help'.tr(),
                             textAlign: TextAlign.center,
                           ),
                           const Spacer(),
                           FilledButton.icon(
                             onPressed: _pickLoraFile,
                             icon: const Icon(Icons.folder_open),
-                            label: const Text('Choose File'),
+                            label: Text('lora_choose_file'.tr()),
                           ),
                         ],
                       ),

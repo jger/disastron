@@ -9,6 +9,11 @@ const int kChecklistSnapshotMaxItems = 15;
 
 const String kUpdateChecklistToolName = 'update_checklist';
 
+/// Appended to the system prompt on Gemma 4 when native tool calling is active.
+const String kNativeChecklistToolSystemInstruction = '''
+When you suggest actionable checklist items the user should track, call the update_checklist tool (ops: add, setDone, remove). Use ids from the checklist snapshot in the user message for setDone/remove. Keep titles short. Do not embed [[TODOS]] JSON in your reply.
+''';
+
 const Tool kUpdateChecklistTool = Tool(
   name: kUpdateChecklistToolName,
   description: 'Update the user emergency checklist: add items, mark done, or remove by id.',

@@ -1,5 +1,6 @@
 import 'package:disastron/features/inference/presentation/local_gemma_model_provider.dart';
 import 'package:disastron/features/inference/presentation/model_install_status_copy.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -68,11 +69,11 @@ class InterruptedDownloadPanel extends ConsumerWidget {
                   children: <Widget>[
                     TextButton(
                       onPressed: notifier.discardPendingDownload,
-                      child: const Text('Discard'),
+                      child: Text('install_discard'.tr()),
                     ),
                     FilledButton(
                       onPressed: notifier.resumePendingNetworkInstall,
-                      child: const Text('Resume download'),
+                      child: Text('install_resume_download'.tr()),
                     ),
                   ],
                 ),
@@ -106,12 +107,12 @@ class InterruptedDownloadPanel extends ConsumerWidget {
         FilledButton.icon(
           onPressed: notifier.resumePendingNetworkInstall,
           icon: const Icon(Icons.play_arrow),
-          label: const Text('Resume download'),
+          label: Text('install_resume_download'.tr()),
         ),
         const SizedBox(height: 8),
         OutlinedButton(
           onPressed: notifier.discardPendingDownload,
-          child: const Text('Discard partial download'),
+          child: Text('install_discard_partial'.tr()),
         ),
       ],
     );

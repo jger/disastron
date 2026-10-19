@@ -4,6 +4,7 @@
 import 'dart:async';
 
 import 'package:camera/camera.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -64,7 +65,7 @@ class _CameraCapturePageState extends State<CameraCapturePage>
     try {
       final List<CameraDescription> cameras = await availableCameras();
       if (cameras.isEmpty) {
-        _failWith('No camera available on this device.');
+        _failWith('chat_camera_unavailable'.tr());
         return;
       }
       final CameraDescription camera = cameras.firstWhere(
@@ -89,8 +90,10 @@ class _CameraCapturePageState extends State<CameraCapturePage>
     } on CameraException catch (e) {
       _failWith(
         e.code == 'CameraAccessDenied'
-            ? 'Camera permission denied. Enable it in Settings to take a photo.'
-            : 'Could not start the camera: ${e.description ?? e.code}',
+            ? 'chat_camera_denied'.tr()
+            : 'chat_camera_start_failed'.tr(
+                args: <String>[e.description ?? e.code],
+              ),
       );
     }
   }
@@ -116,7 +119,9 @@ class _CameraCapturePageState extends State<CameraCapturePage>
       }
       Navigator.of(context).pop(bytes);
     } on CameraException catch (e) {
-      _failWith('Could not take the photo: ${e.description ?? e.code}');
+      _failWith(
+        'chat_photo_failed'.tr(args: <String>[e.description ?? e.code]),
+      );
       if (mounted) {
         setState(() => _isCapturing = false);
       }
@@ -133,10 +138,10 @@ class _CameraCapturePageState extends State<CameraCapturePage>
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.close),
-          tooltip: 'Cancel',
+          tooltip: 'cancel'.tr(),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Take a photo'),
+        title: Text('chat_take_photo'.tr()),
       ),
       body: _buildBody(controller),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

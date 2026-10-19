@@ -273,6 +273,29 @@ void main() {
     );
   });
 
+  group('markGenerationStopped', () {
+    test('clears and replays history on the next turn only', () async {
+      await service.init();
+      final FakeInferenceChat chat = gateway.models.single.chats.single
+        ..scriptedResponses = <ModelResponse>[const TextResponse('ok')];
+
+      service.markGenerationStopped();
+
+      await service
+          .processMessageAsync(Message.text(text: 'after stop', isUser: true))
+          .drain<void>();
+
+      expect(chat.clearHistoryCallCount, 1);
+      expect(chat.lastClearHistoryReplay, isNotNull);
+
+      await service
+          .processMessageAsync(Message.text(text: 'next', isUser: true))
+          .drain<void>();
+
+      expect(chat.clearHistoryCallCount, 1);
+    });
+  });
+
   group('close', () {
     test('closes the chat and the model', () async {
       await service.init();

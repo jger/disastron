@@ -1,4 +1,5 @@
 import 'package:disastron/shared/widgets/genui_card.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
@@ -19,7 +20,7 @@ class ChatMessageWidget extends StatelessWidget {
         child: Align(
           alignment: Alignment.centerLeft,
           child: GenUiCard(
-            title: 'Todos',
+            title: 'chat_todos_card_title'.tr(),
             subtitle: message.text,
             trailing: Icon(Icons.checklist_rounded, color: cs.primary),
             child: const SizedBox.shrink(),
@@ -60,7 +61,7 @@ class ChatMessageWidget extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerRight,
                       child: IconButton(
-                        tooltip: 'Copy',
+                        tooltip: 'chat_copy'.tr(),
                         icon: const Icon(Icons.copy, size: 18),
                         visualDensity: VisualDensity.compact,
                         onPressed: () async {
@@ -69,7 +70,7 @@ class ChatMessageWidget extends StatelessWidget {
                           );
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Copied')),
+                              SnackBar(content: Text('chat_copied'.tr())),
                             );
                           }
                         },

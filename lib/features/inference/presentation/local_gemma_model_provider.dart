@@ -358,7 +358,15 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   @override
   LocalGemmaModelUi build() {
     final bool active = FlutterEdgeAi.hasActiveModel();
-    if (!active && !kIsWeb) {
+    if (kIsWeb) {
+      unawaited(
+        _tryRestoreModel().then((_) {
+          if (FlutterEdgeAi.hasActiveModel()) {
+            unawaited(_orchestrator.reconcileActiveWithPluginIfPossible());
+          }
+        }),
+      );
+    } else if (!active) {
       unawaited(_tryRestoreModel().then((_) => refreshPendingDownload()));
     } else if (active) {
       unawaited(_orchestrator.reconcileActiveWithPluginIfPossible());
@@ -386,10 +394,7 @@ class LocalGemmaModel extends _$LocalGemmaModel {
   }
 
   Future<void> _tryRestoreModel() async {
-    if (kIsWeb) {
-      return;
-    }
-    if (FlutterEdgeAi.hasActiveModel()) {
+    if (!kIsWeb && FlutterEdgeAi.hasActiveModel()) {
       return;
     }
     if (_restoreInFlight) {

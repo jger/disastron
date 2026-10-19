@@ -1,6 +1,7 @@
 import 'package:disastron/features/inference/domain/model_install_activity_kind.dart';
 import 'package:disastron/features/inference/domain/predefined_models.dart';
 import 'package:disastron/features/inference/presentation/local_gemma_model_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class InstallStatusCopy {
   const InstallStatusCopy({required this.title, this.subtitle});
@@ -28,26 +29,27 @@ String _modelDisplayName(LocalGemmaModelUi ui) {
     }
     return urlOrPath;
   }
-  return 'Model';
+  return 'model_display_fallback'.tr();
+}
+
+bool _hasConcreteModelName(LocalGemmaModelUi ui) {
+  return ui.pendingPresetId != null || ui.pendingDownloadUrl != null;
 }
 
 /// User-facing copy when a network download was interrupted but can be resumed.
 InstallStatusCopy interruptedDownloadStatusCopy(LocalGemmaModelUi ui) {
   final String name = _modelDisplayName(ui);
   final int p = (ui.pendingProgress ?? ui.progress).clamp(0, 100);
+  final String sub = 'install_interrupted_sub'.tr();
   if (p > 0) {
     return InstallStatusCopy(
-      title: 'Download of $name interrupted at $p%',
-      subtitle:
-          'Resume continues from saved progress when possible. On Hugging Face, '
-          'resume is best-effort; if it fails, discard and start again.',
+      title: 'install_interrupted_at'.tr(args: <String>[name, '$p']),
+      subtitle: sub,
     );
   }
   return InstallStatusCopy(
-    title: 'Download of $name interrupted',
-    subtitle:
-        'Resume continues from saved progress when possible. On Hugging Face, '
-        'resume is best-effort; if it fails, discard and start again.',
+    title: 'install_interrupted'.tr(args: <String>[name]),
+    subtitle: sub,
   );
 }
 
@@ -67,93 +69,97 @@ InstallStatusCopy modelInstallStatusCopy(LocalGemmaModelUi ui) {
           : null;
       if (p == 0) {
         return InstallStatusCopy(
-          title: 'Preparing download of $name…',
-          subtitle: 'Wi‑Fi check, Hugging Face auth, or connection setup. Progress appears when bytes flow.',
+          title: 'install_prep_download'.tr(args: <String>[name]),
+          subtitle: 'install_prep_download_sub'.tr(),
         );
       }
       if (p < 100) {
         return InstallStatusCopy(
-          title: 'Downloading $name…',
+          title: 'install_downloading'.tr(args: <String>[name]),
           subtitle: model?.sizeMb != null
-              ? 'Approx. size: ~${model!.sizeMb} MB. Please keep the app open.'
-              : 'Please keep the app open and connected.',
+              ? 'install_downloading_size_sub'.tr(
+                  args: <String>['${model!.sizeMb}'],
+                )
+              : 'install_downloading_sub'.tr(),
         );
       }
       return InstallStatusCopy(
-        title: 'Finishing install of $name…',
-        subtitle: 'Validating files and activating the model.',
+        title: 'install_finishing'.tr(args: <String>[name]),
+        subtitle: 'install_finishing_sub'.tr(),
       );
     case ModelInstallActivityKind.importLocalFile:
       final String name = _modelDisplayName(ui);
       if (p == 0) {
         return InstallStatusCopy(
-          title: 'Reading $name…',
-          subtitle: 'Large files can take a moment before progress updates.',
+          title: 'install_reading'.tr(args: <String>[name]),
+          subtitle: 'install_reading_sub'.tr(),
         );
       }
       if (p < 100) {
         return InstallStatusCopy(
-          title: 'Installing $name…',
-          subtitle: 'Importing model file into secure local storage.',
+          title: 'install_importing'.tr(args: <String>[name]),
+          subtitle: 'install_importing_sub'.tr(),
         );
       }
       return InstallStatusCopy(
-        title: 'Finishing install of $name…',
-        subtitle: 'Validating and activating the model.',
+        title: 'install_finishing'.tr(args: <String>[name]),
+        subtitle: 'install_finishing_sub'.tr(),
       );
     case ModelInstallActivityKind.restoreSaved:
       final String name = _modelDisplayName(ui);
       if (p == 0) {
         return InstallStatusCopy(
-          title: 'Restoring $name…',
-          subtitle: 'Loading from device storage.',
+          title: 'install_restoring'.tr(args: <String>[name]),
+          subtitle: 'install_restoring_sub'.tr(),
         );
       }
       if (p < 100) {
         return InstallStatusCopy(
-          title: 'Loading $name…',
-          subtitle: 'Restoring previously installed model from storage.',
+          title: 'install_loading_saved'.tr(args: <String>[name]),
+          subtitle: 'install_loading_saved_sub'.tr(),
         );
       }
       return InstallStatusCopy(
-        title: 'Finishing restore of $name…',
-        subtitle: 'Activating the model.',
+        title: 'install_finishing_restore'.tr(args: <String>[name]),
+        subtitle: 'install_finishing_restore_sub'.tr(),
       );
     case ModelInstallActivityKind.activateExisting:
       final String name = _modelDisplayName(ui);
       if (p == 0) {
         return InstallStatusCopy(
-          title: 'Switching to $name…',
-          subtitle: 'Preparing the selected model.',
+          title: 'install_switching'.tr(args: <String>[name]),
+          subtitle: 'install_switching_sub'.tr(),
         );
       }
       if (p < 100) {
         return InstallStatusCopy(
-          title: 'Loading $name…',
-          subtitle: 'Preparing model for inference.',
+          title: 'install_loading'.tr(args: <String>[name]),
+          subtitle: 'install_loading_sub'.tr(),
         );
       }
       return InstallStatusCopy(
-        title: 'Finishing activation of $name…',
-        subtitle: 'Activating the selected model.',
+        title: 'install_finishing_activate'.tr(args: <String>[name]),
+        subtitle: 'install_finishing_activate_sub'.tr(),
       );
     case ModelInstallActivityKind.unknown:
       final String name = _modelDisplayName(ui);
       if (p == 0) {
-        return const InstallStatusCopy(
-          title: 'Preparing…',
-          subtitle: 'Setup or transfer will show progress when it starts.',
+        return InstallStatusCopy(
+          title: 'install_preparing'.tr(),
+          subtitle: 'install_preparing_sub'.tr(),
         );
       }
       if (p < 100) {
         return InstallStatusCopy(
-          title: name != 'Model' ? 'Working on $name…' : 'Working…',
-          subtitle: 'Setup or transfer in progress.',
+          title: _hasConcreteModelName(ui)
+              ? 'install_working_on'.tr(args: <String>[name])
+              : 'install_working'.tr(),
+          subtitle: 'install_working_sub'.tr(),
         );
       }
-      return const InstallStatusCopy(
-        title: 'Finishing…',
-        subtitle: 'Almost done.',
+      return InstallStatusCopy(
+        title: 'install_almost'.tr(),
+        subtitle: 'install_almost_sub'.tr(),
       );
   }
 }

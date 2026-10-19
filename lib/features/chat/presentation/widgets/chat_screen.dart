@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:typed_data';
 
 import 'package:disastron/features/chat/chat.dart';
@@ -48,7 +49,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _container = ProviderScope.containerOf(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
-      unawaited(_ensureChatReady(reloadInferenceWeights: true));
+      unawaited(_ensureChatReady(reloadInferenceWeights: false));
     });
   }
 
@@ -60,6 +61,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.dispose();
   }
 
+  /// Refreshes dashboard samples (slow: GPS/geocoding). Use for injecting context
+  /// into the next user turn, not for blocking chat session creation.
   Future<String> _loadFreshSituationString() async {
     ref
       ..invalidate(dashboardLocationProvider)
@@ -70,6 +73,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } on Object catch (e) {
       return formatChatDashboardSituationError(e);
     }
+  }
+
+  /// Cached dashboard snapshot for [GemmaLocalService.init] — must not block
+  /// the chat tab on a full location refresh.
+  Future<String?> _situationForChatInit() async {
+    try {
+      return await ref
+          .read(chatDashboardSituationProvider.future)
+          .timeout(
+            const Duration(seconds: 5),
+            onTimeout: () =>
+                'context_error: dashboard snapshot timed out after 5s',
+          );
+    } on Object catch (e) {
+      return formatChatDashboardSituationError(e);
+    }
+  }
+
+  void _logChatInit(String phase, Stopwatch sw) {
+    developer.log(
+      '$phase (+${sw.elapsedMilliseconds}ms)',
+      name: 'disastron.chat_init',
+    );
   }
 
   /// When user switches back to Chat, refresh dashboard samples and attach
@@ -119,12 +145,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           return;
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Image input disabled: vision engine could not start on this '
-              'device. Text chat still works.',
-            ),
-          ),
+          SnackBar(content: Text('chat_vision_disabled_snack'.tr())),
         );
       });
     }
@@ -188,22 +209,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!FlutterEdgeAi.hasActiveModel()) {
       return;
     }
+    final Stopwatch sw = Stopwatch()..start();
+    _logChatInit('start', sw);
     try {
       final ModelRegistrySnapshot registry = await ref.read(
         modelRegistrySnapshotProvider.future,
       );
+      _logChatInit('registry', sw);
       final bool nativeChecklist = _nativeChecklistForRegistry(registry);
       final bool useCtx = ref.read(useDisastronContextProvider);
-      final String? system;
-      if (useCtx) {
-        final String situation = await _loadFreshSituationString();
-        system = composeDisasterSystemInstruction(
-          situation,
-          includeLegacyTodosBlock: !nativeChecklist,
-        );
-      } else {
-        system = null;
-      }
+      final String? situation = useCtx ? await _situationForChatInit() : null;
+      _logChatInit('situation', sw);
+      final String system = disasterChatSystemInstruction(
+        nativeChecklist: nativeChecklist,
+        situationBlock: situation,
+      );
       final bool visionRequested = activeRegistryEntrySupportsVision(registry);
 
       final String? activeEntryId = registry.activeEntryId;
@@ -212,31 +232,39 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         loraPath = await ref.read(activeLoraPathProvider(activeEntryId).future);
       }
 
+      Future<void> initTextOnly() => _gemma.init(
+        systemInstruction: system,
+        reloadInferenceWeights: reloadInferenceWeights,
+        loraPath: loraPath,
+        useNativeChecklistTools: nativeChecklist,
+      );
+
       if (visionRequested) {
         try {
-          await _gemma.init(
-            systemInstruction: system,
-            reloadInferenceWeights: reloadInferenceWeights,
-            supportImage: true,
-            maxNumImages: 1,
-            loraPath: loraPath,
-            useNativeChecklistTools: nativeChecklist,
-          );
+          await _gemma
+              .init(
+                systemInstruction: system,
+                reloadInferenceWeights: reloadInferenceWeights,
+                supportImage: true,
+                maxNumImages: 1,
+                loraPath: loraPath,
+                useNativeChecklistTools: nativeChecklist,
+              )
+              .timeout(const Duration(minutes: 2));
+          _logChatInit('gemma init (vision)', sw);
           _markChatReady(
             runtimeVisionEnabled: true,
             showVisionFallbackSnack: false,
           );
           return;
-        } on Object catch (_) {
+        } on Object catch (e) {
+          _logChatInit('vision init failed ($e), text-only fallback', sw);
           await _gemma.close();
           if (!mounted) {
             return;
           }
-          await _gemma.init(
-            systemInstruction: system,
-            loraPath: loraPath,
-            useNativeChecklistTools: nativeChecklist,
-          );
+          await initTextOnly();
+          _logChatInit('gemma init (text fallback)', sw);
           _markChatReady(
             runtimeVisionEnabled: false,
             showVisionFallbackSnack: true,
@@ -245,17 +273,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
       }
 
-      await _gemma.init(
-        systemInstruction: system,
-        reloadInferenceWeights: reloadInferenceWeights,
-        loraPath: loraPath,
-        useNativeChecklistTools: nativeChecklist,
-      );
+      await initTextOnly();
+      _logChatInit('gemma init (text)', sw);
       _markChatReady(
         runtimeVisionEnabled: false,
         showVisionFallbackSnack: false,
       );
     } on Object catch (e) {
+      _logChatInit('failed: $e', sw);
       if (mounted) {
         setState(() {
           _chatReady = false;
@@ -274,9 +299,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (_gemma.usesNativeChecklistTools) {
       final ChecklistTurnResult? toolResult = _gemma
           .takeLastChecklistTurnResult();
-      if (toolResult != null) {
+      if (toolResult != null && toolResult.appliedCount > 0) {
         appliedCount = toolResult.appliedCount;
         addedTodoCount = toolResult.addedTodoCount;
+      } else {
+        final TodoApplyResult legacy = await stripTodosAndApply(
+          ref,
+          message.text,
+        );
+        displayText = legacy.displayText;
+        appliedCount = legacy.appliedCount;
+        addedTodoCount = legacy.addedTodoCount;
       }
     } else {
       final TodoApplyResult result = await stripTodosAndApply(
@@ -292,17 +325,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
     final String trimmedDisplay = displayText.trim();
     final String assistantBody = trimmedDisplay.isEmpty
-        ? (appliedCount > 0 ? '(Checklist updated.)' : '(No response)')
+        ? (appliedCount > 0
+              ? 'chat_checklist_updated_short'.tr()
+              : 'chat_no_response'.tr())
         : trimmedDisplay;
     setState(() {
       _messages.add(Message.text(text: assistantBody));
       if (appliedCount > 0) {
         final String hint = addedTodoCount > 0
-            ? ' $addedTodoCount new on Todos (tab badge).'
-            : ' Open the Todos tab to review.';
+            ? 'chat_checklist_hint_badge'.tr()
+            : 'chat_checklist_hint_review'.tr();
         _messages.add(
           Message(
-            text: 'Checklist updated ($appliedCount action(s)).$hint',
+            text: 'chat_checklist_updated'.tr(
+              args: <String>['$appliedCount', hint],
+            ),
             type: MessageType.systemInfo,
           ),
         );
@@ -314,8 +351,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!draft.isNotEmpty) {
       return;
     }
-    unawaited(_injectChecklistSnapshotForNextTurn());
-    unawaited(ref.read(firstChatAccidentPromptProvider.notifier).markDone());
+    unawaited(_submitHumanMessage(draft));
+  }
+
+  Future<void> _submitHumanMessage(ChatMessageDraft draft) async {
+    await _injectChecklistSnapshotForNextTurn();
+    await ref.read(firstChatAccidentPromptProvider.notifier).markDone();
     final String trimmed = draft.text.trim();
     final Uint8List? img = draft.imageBytes;
     final Message userMsg;
@@ -326,14 +367,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } else {
       userMsg = Message.text(text: trimmed, isUser: true);
     }
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _messages.add(userMsg);
     });
   }
 
   void _onAccidentChip(AccidentChipOption option) {
-    unawaited(_injectChecklistSnapshotForNextTurn());
-    unawaited(ref.read(firstChatAccidentPromptProvider.notifier).markDone());
+    unawaited(_submitAccidentChip(option));
+  }
+
+  Future<void> _submitAccidentChip(AccidentChipOption option) async {
+    await _injectChecklistSnapshotForNextTurn();
+    await ref.read(firstChatAccidentPromptProvider.notifier).markDone();
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _messages.add(Message.text(text: option.prompt, isUser: true));
     });
@@ -343,19 +394,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final bool? ok = await showDialog<bool>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
-        title: const Text('Reset chat?'),
-        content: const Text(
-          'All messages in this session will be cleared and the first-run '
-          'quick actions will appear again.',
-        ),
+        title: Text('chat_reset_title'.tr()),
+        content: Text('chat_reset_body'.tr()),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Reset'),
+            child: Text('reset'.tr()),
           ),
         ],
       ),
@@ -407,7 +455,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         LocalGemmaModelUi next,
       ) {
         if (next.isReady && !_chatReady) {
-          unawaited(_ensureChatReady(reloadInferenceWeights: true));
+          unawaited(_ensureChatReady(reloadInferenceWeights: false));
         }
         if (!next.isReady && _chatReady) {
           unawaited(_gemma.close());
@@ -449,18 +497,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             _NoModelBody(
               onRefresh: () {
                 ref.read(localGemmaModelProvider.notifier).refreshFromEngine();
-                unawaited(_ensureChatReady(reloadInferenceWeights: true));
+                unawaited(_ensureChatReady(reloadInferenceWeights: false));
               },
             )
           else if (_initError != null)
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: SelectableText('Chat init failed: $_initError'),
+                child: SelectableText(
+                  'chat_init_failed'.tr(args: <String>['$_initError']),
+                ),
               ),
             )
           else if (!_chatReady)
-            const LoadingWidget(message: 'Starting offline assistant…')
+            LoadingWidget(message: 'chat_starting_assistant'.tr())
           else
             Column(
               children: <Widget>[
@@ -508,15 +558,14 @@ class _NoModelBody extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'No on-device model yet. Open the Dashboard tab, then import a model file '
-              'or download one when you have a network connection.',
+              'chat_no_model_body'.tr(),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: onRefresh,
-              child: const Text('Check again'),
+              child: Text('chat_check_again'.tr()),
             ),
           ],
         ),

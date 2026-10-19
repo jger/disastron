@@ -142,7 +142,7 @@ class GemmaInputFieldState extends State<GemmaInputField> {
           Padding(
             padding: const EdgeInsets.only(bottom: 4, right: 4),
             child: IconButton(
-              tooltip: 'Stop generating',
+              tooltip: 'chat_stop_generating'.tr(),
               icon: Icon(
                 Icons.stop_circle_outlined,
                 size: 28,

@@ -84,7 +84,8 @@ class WikiDownload extends _$WikiDownload {
     }
   }
 
-  Future<void> deleteDownloadedPage(WikiSource source) async {
+  /// Returns false when delete failed (state updated to [WikiDownloadStatus.failed]).
+  Future<bool> deleteDownloadedPage(WikiSource source) async {
     try {
       await _service.deleteOfflinePage(source.url);
       final map = Map<String, WikiDownloadState>.from(state.value ?? {});
@@ -92,6 +93,15 @@ class WikiDownload extends _$WikiDownload {
         status: WikiDownloadStatus.notDownloaded,
       );
       state = AsyncValue.data(map);
-    } catch (_) {}
+      return true;
+    } on Object catch (e) {
+      final map = Map<String, WikiDownloadState>.from(state.value ?? {});
+      map[source.url] = WikiDownloadState(
+        status: WikiDownloadStatus.failed,
+        error: e.toString(),
+      );
+      state = AsyncValue.data(map);
+      return false;
+    }
   }
 }

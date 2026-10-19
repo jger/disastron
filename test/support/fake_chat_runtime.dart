@@ -27,6 +27,10 @@ class FakeInferenceChat extends InferenceChat {
 
   bool closed = false;
 
+  int clearHistoryCallCount = 0;
+
+  List<Message>? lastClearHistoryReplay;
+
   @override
   Future<void> addQuery(Message message) async => queries.add(message);
 
@@ -65,7 +69,10 @@ class FakeInferenceChat extends InferenceChat {
   }
 
   @override
-  Future<void> clearHistory({List<Message>? replayHistory}) async {}
+  Future<void> clearHistory({List<Message>? replayHistory}) async {
+    clearHistoryCallCount++;
+    lastClearHistoryReplay = replayHistory;
+  }
 
   @override
   Future<void> close() async => closed = true;

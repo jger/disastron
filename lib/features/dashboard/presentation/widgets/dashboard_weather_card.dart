@@ -48,7 +48,7 @@ class DashboardWeatherCard extends ConsumerWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Conditions',
+                        'dashboard_conditions'.tr(),
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -76,12 +76,12 @@ class DashboardWeatherCard extends ConsumerWidget {
         final bool isDay = light?.isDay ?? false;
 
         final String phaseLabel = polarNight
-            ? 'Polar night'
+            ? 'dashboard_polar_night'.tr()
             : polarDay
-            ? 'Polar day'
+            ? 'dashboard_polar_day'.tr()
             : isDay
-            ? 'Day'
-            : 'Night';
+            ? 'dashboard_day'.tr()
+            : 'dashboard_night'.tr();
 
         final IconData phaseIcon = polarDay || (!polarNight && isDay)
             ? Icons.wb_sunny_outlined
@@ -106,7 +106,7 @@ class DashboardWeatherCard extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Conditions',
+                        'dashboard_conditions'.tr(),
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -132,7 +132,7 @@ class DashboardWeatherCard extends ConsumerWidget {
                       style: theme.textTheme.bodySmall,
                       children: <InlineSpan>[
                         TextSpan(
-                          text: 'Sun up ',
+                          text: 'dashboard_sun_up'.tr(),
                           style: TextStyle(color: cs.onSurfaceVariant),
                         ),
                         TextSpan(
@@ -147,7 +147,7 @@ class DashboardWeatherCard extends ConsumerWidget {
                           style: TextStyle(color: cs.onSurfaceVariant),
                         ),
                         TextSpan(
-                          text: 'Sun down ',
+                          text: 'dashboard_sun_down'.tr(),
                           style: TextStyle(color: cs.onSurfaceVariant),
                         ),
                         TextSpan(
@@ -167,8 +167,8 @@ class DashboardWeatherCard extends ConsumerWidget {
                 ] else if (light != null) ...<Widget>[
                   Text(
                     polarNight
-                        ? 'Sun stays below the horizon here today.'
-                        : 'Sun stays above the horizon here today.',
+                        ? 'dashboard_polar_night_desc'.tr()
+                        : 'dashboard_polar_day_desc'.tr(),
                     style: small,
                   ),
                   if (s.forecast != null || s.forecastError != null)
@@ -176,24 +176,33 @@ class DashboardWeatherCard extends ConsumerWidget {
                 ],
                 if (s.forecast != null) ...<Widget>[
                   Text(
-                    'Typical temps',
+                    'dashboard_typical_temps'.tr(),
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: cs.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${loc.formatShortMonthDay(DateTime(2024, s.forecast!.month1to12))}: '
-                    'day ${s.forecast!.dayAvgC.toStringAsFixed(1)}°C, '
-                    'night ${s.forecast!.nightAvgC.toStringAsFixed(1)}°C',
+                    'dashboard_typical_month_line'.tr(
+                      args: <String>[
+                        loc.formatShortMonthDay(
+                          DateTime(2024, s.forecast!.month1to12),
+                        ),
+                        s.forecast!.dayAvgC.toStringAsFixed(1),
+                        s.forecast!.nightAvgC.toStringAsFixed(1),
+                      ],
+                    ),
                     style: theme.textTheme.bodySmall,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Data source: bundled stations (${s.forecast!.nearestStationKm.toStringAsFixed(0)} km). '
-                    'Not a live forecast.',
+                    'dashboard_climate_disclaimer'.tr(
+                      args: <String>[
+                        s.forecast!.nearestStationKm.toStringAsFixed(0),
+                      ],
+                    ),
                     style: small,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
@@ -218,7 +227,7 @@ class DashboardWeatherCard extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           child: Text(
-            'Conditions error: $e',
+            'dashboard_conditions_error'.tr(args: <String>['$e']),
             style: Theme.of(context).textTheme.bodySmall
                 ?.copyWith(color: Theme.of(context).colorScheme.error),
           ),
