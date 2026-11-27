@@ -1,25 +1,24 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Get commit count from main branch
 COMMIT_COUNT=$(git rev-list --count main)
 
-# Read current version from pubspec.yaml
-CURRENT_VERSION=$(grep "^version:" pubspec.yaml | sed 's/version: //')
+# Use version passed as argument if provided, otherwise read from pubspec.yaml
+if [ -n "${1:-}" ]; then
+  BASE_VERSION="$1"
+else
+  BASE_VERSION=$(grep "^version:" pubspec.yaml | sed 's/version: //')
+fi
 
 # Remove existing build number if present
-CURRENT_VERSION=${CURRENT_VERSION%+*}
-
-# Extract version parts (assuming format like 1.9.3)
-VERSION_PARTS=(${CURRENT_VERSION//./ })
-MAJOR=${VERSION_PARTS[0]}
-MINOR=${VERSION_PARTS[1]}
-PATCH=${VERSION_PARTS[2]}
+BASE_VERSION=${BASE_VERSION%+*}
 
 # Create new version with commit count as build number
-NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}+${COMMIT_COUNT}"
+NEW_VERSION="${BASE_VERSION}+${COMMIT_COUNT}"
 
 # Update pubspec.yaml
 sed -i.bak "s/^version: .*/version: ${NEW_VERSION}/" pubspec.yaml
-rm pubspec.yaml.bak
+rm -f pubspec.yaml.bak
 
 echo "Updated version to: ${NEW_VERSION} (${COMMIT_COUNT} commits in main)"

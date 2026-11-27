@@ -12,16 +12,10 @@ module.exports = {
       },
     ],
     [
-      'semantic-release-dart',
-      {
-        updateBuildNumber: false,
-      },
-    ],
-    [
       '@semantic-release/exec',
       {
         prepareCmd:
-          'bash scripts/increment_build.sh && bash scripts/build_apk.sh ${nextRelease.version}',
+          'bash scripts/increment_build.sh ${nextRelease.version} && bash scripts/build_apk.sh ${nextRelease.version}',
       },
     ],
     [
