@@ -60,8 +60,16 @@ case "$PRESET" in
     ;;
 esac
 
-FILE="$(basename "$URL")"
+FILE="$(basename "${URL%%[?#]*}")"
+if [[ ! "$FILE" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || [[ "$FILE" == *".."* ]]; then
+  echo "error: unsafe or invalid model filename '$FILE' derived from URL." >&2
+  exit 1
+fi
 CACHED="$CACHE_DIR/$FILE"
+
+sh_quote() {
+  printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"
+}
 
 echo "==> preset: $PRESET"
 echo "==> file:   $FILE"
@@ -102,18 +110,21 @@ fi
 
 # --- 3. seed into app-private storage (idempotent) ---------------------------
 DEVICE_SEED="files/patrol_seed/$FILE"
-EXISTING=$("${ADB[@]}" shell run-as "$PKG" sh -c "\"wc -c < $DEVICE_SEED\"" 2>/dev/null | tr -d '[:space:]' || echo 0)
+Q_PKG=$(sh_quote "$PKG")
+Q_TMP=$(sh_quote "/data/local/tmp/$FILE")
+Q_SEED=$(sh_quote "$DEVICE_SEED")
+EXISTING=$("${ADB[@]}" shell "run-as $Q_PKG sh -c 'wc -c < \"\$1\"' _ $Q_SEED" 2>/dev/null | tr -d '[:space:]' || echo 0)
 if [ "${EXISTING:-0}" = "$LOCAL_SIZE" ]; then
   echo "==> device seed already up to date ($DEVICE_SEED, $EXISTING bytes) — skipping push"
 else
   # Stream from the host — do NOT adb push to /data/local/tmp first: that needs
   # ~2× model size on /data (tmp copy + sandbox copy) and fails on 10G AVDs.
-  "${ADB[@]}" shell rm -f "/data/local/tmp/$FILE" 2>/dev/null || true
-  "${ADB[@]}" shell run-as "$PKG" mkdir -p files/patrol_seed
-  "${ADB[@]}" shell run-as "$PKG" rm -f "$DEVICE_SEED" 2>/dev/null || true
+  "${ADB[@]}" shell "rm -f -- $Q_TMP" 2>/dev/null || true
+  "${ADB[@]}" shell "run-as $Q_PKG mkdir -p files/patrol_seed"
+  "${ADB[@]}" shell "run-as $Q_PKG rm -f -- $Q_SEED" 2>/dev/null || true
   echo "==> streaming into app sandbox via run-as (debug build required)"
-  cat "$CACHED" | "${ADB[@]}" shell "run-as $PKG sh -c 'cat > $DEVICE_SEED'"
-  SEEDED=$("${ADB[@]}" shell run-as "$PKG" sh -c "\"wc -c < $DEVICE_SEED\"" | tr -d '[:space:]')
+  "${ADB[@]}" shell "run-as $Q_PKG sh -c 'cat > \"\$1\"' _ $Q_SEED" < "$CACHED"
+  SEEDED=$("${ADB[@]}" shell "run-as $Q_PKG sh -c 'wc -c < \"\$1\"' _ $Q_SEED" | tr -d '[:space:]')
   if [ "$SEEDED" != "$LOCAL_SIZE" ]; then
     echo "error: size mismatch after seeding (device $SEEDED vs local $LOCAL_SIZE)" >&2
     exit 1
