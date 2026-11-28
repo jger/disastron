@@ -2,6 +2,13 @@
 
 All notable changes will be documented in this file.
 
+## [1.8.2](https://github.com/jger/disastron/compare/v1.8.1...v1.8.2) (2026-11-28)
+
+
+### Bug Fixes
+
+* improve shell script robustness and security in secret scan and model prep workflows ([9432382](https://github.com/jger/disastron/commit/94323823424b33a1b40218f045a36c2c49d1b62d))
+
 ## [1.8.1](https://github.com/jger/disastron/compare/v1.8.0...v1.8.1) (2026-10-19)
 
 
