@@ -7,7 +7,6 @@ import 'package:disastron/features/inference/domain/inference_path_utils.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
 import 'package:flutter_edge_ai/mobile/smart_downloader.dart';
-import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 /// Result of checking whether a pending download can be resumed.
@@ -56,7 +55,7 @@ class ModelDownloadResumeService {
 
   static Future<String> targetPathForUrl(String url) async {
     final String dir = (await getApplicationDocumentsDirectory()).path;
-    return p.join(dir, basenameFromStored(url));
+    return resolveConfinedFilePath(dir, url);
   }
 
   /// Cancels a zombie WorkManager task without deleting partial bytes on disk.

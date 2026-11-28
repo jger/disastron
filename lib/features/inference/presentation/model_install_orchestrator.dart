@@ -11,7 +11,6 @@ import 'package:disastron/features/inference/domain/predefined_models.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_edge_ai/core/di/service_registry.dart';
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
-import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 class ColdStartRestoreResult {
@@ -46,7 +45,7 @@ class ModelInstallOrchestrator {
       return entry.sourceUrlOrPath;
     }
     final String dir = (await getApplicationDocumentsDirectory()).path;
-    return p.join(dir, basenameFromStored(entry.sourceUrlOrPath));
+    return resolveConfinedFilePath(dir, entry.sourceUrlOrPath);
   }
 
   /// On-disk path for an installed entry, or null if missing / web.
@@ -117,7 +116,8 @@ class ModelInstallOrchestrator {
     final String id = presetId != null
         ? _entryIdForPreset(presetId)
         : _entryIdForUrl(url);
-    final String title = inferred.displayTitle ?? basenameFromStored(url);
+    final String filename = safeFilenameFromStored(url);
+    final String title = inferred.displayTitle ?? filename;
 
     var netBuilder = FlutterEdgeAi.installModel(
       modelType: resolvedType,
@@ -357,10 +357,10 @@ class ModelInstallOrchestrator {
     void Function(int progress)? onProgress,
     CancelToken? cancelToken,
   }) async {
-    final String filename = basenameFromStored(url);
-    final String targetPath = p.join(
+    final String filename = safeFilenameFromStored(url);
+    final String targetPath = resolveConfinedFilePath(
       (await getApplicationDocumentsDirectory()).path,
-      filename,
+      url,
     );
 
     final String loraEntryId = 'lora:${url.hashCode}';
@@ -442,14 +442,15 @@ class ModelInstallOrchestrator {
     if (entry == null) return;
 
     if (!entry.importedFromPicker) {
-      final String filename = basenameFromStored(entry.sourceUrlOrPath);
-      final String localPath = p.join(
+      final String? localPath = tryResolveConfinedFilePath(
         (await getApplicationDocumentsDirectory()).path,
-        filename,
+        entry.sourceUrlOrPath,
       );
-      final File file = File(localPath);
-      if (file.existsSync()) {
-        await file.delete();
+      if (localPath != null) {
+        final File file = File(localPath);
+        if (file.existsSync()) {
+          await file.delete();
+        }
       }
     }
 

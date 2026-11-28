@@ -65,6 +65,19 @@ ModelType modelTypeForInferenceSource(String urlOrPath) {
 ModelType modelTypeForInferenceUrl(String url) =>
     modelTypeForInferenceSource(url);
 
+/// True only for HTTPS URLs on official Hugging Face hosts. The saved HF token
+/// must never be attached to downloads from any other origin (CWE-201).
+bool isTrustedHuggingFaceDownloadUrl(String url) {
+  final Uri? uri = Uri.tryParse(url.trim());
+  if (uri == null || uri.scheme.toLowerCase() != 'https') {
+    return false;
+  }
+  final String host = uri.host.toLowerCase();
+  return host == 'huggingface.co' ||
+      host == 'www.huggingface.co' ||
+      host == 'hf.co';
+}
+
 /// Gemma-family installs may use a Hugging Face token for gated URLs.
 bool inferenceModelTypeUsesHuggingFaceToken(ModelType modelType) {
   return modelType == ModelType.gemmaIt ||

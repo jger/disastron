@@ -5,6 +5,8 @@ import 'package:disastron/features/inference/data/model_download_resume_service.
 import 'package:disastron/features/inference/data/model_registry_store.dart';
 import 'package:disastron/features/inference/data/pending_model_download_store.dart';
 import 'package:disastron/features/inference/domain/inference_model_descriptor.dart';
+import 'package:disastron/features/inference/domain/inference_model_helpers.dart'
+    show isTrustedHuggingFaceDownloadUrl;
 import 'package:disastron/features/inference/domain/inference_path_utils.dart';
 import 'package:disastron/features/inference/domain/model_install_activity_kind.dart';
 import 'package:disastron/features/inference/domain/model_install_domain_error.dart';
@@ -531,7 +533,9 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       final String? trimmed = token?.trim();
       final String? effectiveToken = (trimmed != null && trimmed.isNotEmpty)
           ? trimmed
-          : await ref.read(huggingfaceTokenProvider.future);
+          : isTrustedHuggingFaceDownloadUrl(url)
+          ? await ref.read(huggingfaceTokenProvider.future)
+          : null;
       await _resumeService.cancelStaleTask(url);
       _resetStallTimer(epoch);
       await _orchestrator.installFromNetwork(
@@ -617,7 +621,9 @@ class LocalGemmaModel extends _$LocalGemmaModel {
       final String? trimmed = token?.trim();
       final String? effectiveToken = (trimmed != null && trimmed.isNotEmpty)
           ? trimmed
-          : await ref.read(huggingfaceTokenProvider.future);
+          : isTrustedHuggingFaceDownloadUrl(model.url)
+          ? await ref.read(huggingfaceTokenProvider.future)
+          : null;
       await _resumeService.cancelStaleTask(model.url);
       _resetStallTimer(epoch);
       await _orchestrator.installPreset(

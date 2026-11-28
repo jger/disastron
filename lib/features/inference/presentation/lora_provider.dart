@@ -1,6 +1,5 @@
 import 'package:disastron/features/inference/data/lora_registry_store.dart';
 import 'package:disastron/features/inference/domain/inference_path_utils.dart';
-import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -29,11 +28,15 @@ Future<String?> resolveActiveLoraPath(String modelEntryId) async {
   final LoraRegistrySnapshot snap = await store.readSnapshot();
   final InstalledLoraEntry? active = snap.activeLoraForModel(modelEntryId);
   if (active == null) return null;
-  return resolveLoraFilePath(active);
+  try {
+    return await resolveLoraFilePath(active);
+  } on FormatException {
+    return null;
+  }
 }
 
 Future<String> resolveLoraFilePath(InstalledLoraEntry entry) async {
   if (entry.importedFromPicker) return entry.sourceUrlOrPath;
   final String dir = (await getApplicationDocumentsDirectory()).path;
-  return p.join(dir, basenameFromStored(entry.sourceUrlOrPath));
+  return resolveConfinedFilePath(dir, entry.sourceUrlOrPath);
 }
