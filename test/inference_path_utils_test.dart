@@ -99,10 +99,10 @@ void main() {
     setUp(() async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
       sandboxRoot = await Directory.systemTemp.createTemp('disastron_cwe22_');
-      docsDir = await Directory(p.join(sandboxRoot.path, 'app_flutter')).create();
-      sharedPrefsDir = await Directory(
-        p.join(sandboxRoot.path, 'shared_prefs'),
-      ).create();
+      docsDir = await Directory(p.join(sandboxRoot.path, 'app_flutter'))
+          .create();
+      sharedPrefsDir = await Directory(p.join(sandboxRoot.path, 'shared_prefs'))
+          .create();
       victimFile = File(
         p.join(sharedPrefsDir.path, 'FlutterSharedPreferences.xml'),
       );
